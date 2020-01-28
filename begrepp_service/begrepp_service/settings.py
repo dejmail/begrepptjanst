@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ordbok.apps.OrdbokConfig'
 ]
 
 MIDDLEWARE = [
@@ -76,9 +77,13 @@ WSGI_APPLICATION = 'begrepp_service.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME' : 'H:\Mina dokument\coding\db.sqlite3'
+
     }
 }
+# 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+# 'https://vgregion-my.sharepoint.com/:u:/r/personal/liath1_vgregion_se/Documents/coding/db.sqlite3?csf=1&e=3sSgsQ'
+# 
 
 
 # Password validation

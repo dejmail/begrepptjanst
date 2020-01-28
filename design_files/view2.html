@@ -1,0 +1,61 @@
+<!doctype html>
+<title>Ordlistan</title>
+<style>
+  * {
+    box-sizing: border-box; 
+  }
+  body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: row;
+    margin: 0;
+  }
+  .col-1 {
+    background: #006298;
+    flex: 1;
+  }
+  .col-2 {
+    display: flex;
+    flex-direction: column;
+    flex: 5;
+    border-style: solid;
+  }
+  .content {
+    display: flex;
+    flex-direction: row;
+  }
+  .content > article {
+    flex: 4;
+    min-height: 60vh;
+  }
+  header, footer {
+    background: #006298;
+    height: 20vh;
+  }
+  header, footer, article, nav {
+    padding: 1em;
+  }
+</style>
+<body>
+  <nav class="col-1">Logotyp</nav>
+  <div class="col-2">
+  	<header>ORDLISTAN/Name of site<br><br><br>Search for your concept     <input type="text" placeholder="Search.."></header>
+    <main class="content">
+    <article>The Term you searched for: XYZ
+      
+      <ul>
+  <li>CONCEPT: xyz</li>
+<li>SOURCE: VGR/FVM </li>
+  <li>DEFINITION: blu blu blu blu blu</li>
+  <li>ENGLISH TERM: 123</li>
+        <li>ENGLISH DEFINITION: 123123123123123123</li>
+        <li>KONTEXT: bla bla bla bla bla bla bla</li>
+        <li>VERSION: 1.0</li>
+</ul>
+      
+      THIS TERM ARE IN USE WITHIN: <br>
+      <ul><li>Klindok</li><li>primary</li></ul></article><br><br><b>If the term is not found there will be a button for <button>"request term"</button></B>
+    </main>
+  	<footer> A B C D E F G H F ... By pressing the Letter you will search for terms starting with that letter<br><br><br>Contact info</footer>
+  </div>
+</body>
