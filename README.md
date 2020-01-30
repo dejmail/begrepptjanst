@@ -1,8 +1,5 @@
 
-# begrepp_service
+# begrepptjanst
 
 Webb tjänst for att hantera de olika begreppen som Informatik behöver ta hand om.
-=======
-# begreptj-nst
-Begrepp tjänst för VGR Informatik
 
