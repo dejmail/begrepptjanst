@@ -4,5 +4,5 @@ from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman
 
 admin.site.register(Begrepp)
-admin.site.register(Beställare)
-admin.site.register(Domän)
+admin.site.register(Bestallare)
+admin.site.register(Doman)
