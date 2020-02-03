@@ -2,10 +2,15 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-
+import socket
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings')
+    if socket.gethostname() == 'suijin.oderland.com':
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
+    else:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.local')
+
+        
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
