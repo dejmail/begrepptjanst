@@ -8,9 +8,15 @@ https://docs.djangoproject.com/en/2.2/howto/deployment/wsgi/
 """
 
 import os
+import socket
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings')
+if socket.gethostname() == 'suijin.oderland.com':
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
+else:
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.local')
+
+#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.base')
 
 application = get_wsgi_application()
