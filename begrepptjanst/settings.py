@@ -37,8 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ordbok.apps.OrdbokConfig',
-    'djangorestframework'
+    'ordbok.apps.OrdbokConfig'
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
