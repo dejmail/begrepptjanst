@@ -25,7 +25,7 @@ SECRET_KEY = 'j4kf!tlx#w%=0+t(u38(1jqno8x)b$-^gb@$@%5s2q$wki*mx^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['vgrinformatik.se']
+ALLOWED_HOSTS = ['vgrinformatik.se', '127.0.0.1']
 
 
 # Application definition
