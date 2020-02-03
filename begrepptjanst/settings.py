@@ -25,7 +25,7 @@ SECRET_KEY = 'j4kf!tlx#w%=0+t(u38(1jqno8x)b$-^gb@$@%5s2q$wki*mx^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['vgrinformatik.se', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ordbok.apps.OrdbokConfig'
+    'ordbok.apps.OrdbokConfig',
+    'djangorestframework'
 ]
 
 MIDDLEWARE = [
@@ -76,11 +77,16 @@ WSGI_APPLICATION = 'begrepptjanst.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME' : 'H:\Mina dokument\coding\db.sqlite3'
-
+        'ENGINE': 'django.db.backends.mysql', 
+        'NAME': 'vgrinfor_begrepp',
+        'USER': 'vgrinfor_admin',
+        'PASSWORD': 'YqvyYGm5cJMLmzt',
+        'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
+        'PORT': '3306',
+        'DEFAULT-CHARACTER-SET' : 'utf8',
     }
 }
+
 # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
 # 'https://vgregion-my.sharepoint.com/:u:/r/personal/liath1_vgregion_se/Documents/coding/db.sqlite3?csf=1&e=3sSgsQ'
 # 
@@ -121,5 +127,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
-STATIC_URL = '/static/'
+STATIC_ROOT = '/home/vgrinfor/public_html/begrepptjanst/static'
+STATIC_URL = '/begrepptjanst/static/'
