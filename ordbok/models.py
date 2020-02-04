@@ -20,10 +20,10 @@ class Bestallare(models.Model):
     beställare_kontext = models.CharField(max_length=255)
     beställare_namn = models.CharField(max_length=255)
     beställare_telefon = models.IntegerField()
-    domän = models.ForeignKey("Doman", on_delete=models.PROTECT, default=0, blank=True, null=True)
+    domän = models.ForeignKey("Doman", to_field='domän_id', on_delete=models.PROTECT, blank=True, null=True)
 
 class Doman(models.Model):
-    domän_id = models.CharField(max_length=255)
+    domän_id = models.CharField(max_length=255, primary_key=True)
     domän_namn = models.CharField(max_length=255)
     domän_email = models.CharField(max_length=255)
 
