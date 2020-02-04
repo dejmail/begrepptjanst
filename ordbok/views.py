@@ -3,5 +3,5 @@ from django.http import HttpResponse
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the ordbok index.")
-# Create your views here.
+    return render(request, 'view2.html')
+
