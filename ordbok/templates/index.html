@@ -1,0 +1,53 @@
+<!doctype html ><title>Ordlistan</title><head> <link rel="stylesheet" href="styles.css"> <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script></head>
+
+<body>
+  <nav class="col-1"><h1>Logotyp</h1><br><br><br><BR><input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for concept.." title="Type in a name">
+
+<ul id="myUL">
+  <li style="font-size:30px"><a id="1" href="view2.html">vårdkontakt</a></li> <!-- // Här lägger vi begreppen i en lista-->
+  <li style="font-size:30px"><a href="view2.html">vårdbehov</a></li>
+
+  <li style="font-size:30px"><a href="view2.html">patientprocess</a></li>
+  <li style="font-size:30px"><a href="view2.html">process</a></li>
+
+<li style="font-size:30px"><a href="view2.html">vårdplan</a></li>
+   <li style="font-size:30px"><a href="view2.html">ordination</a></li>
+  <li style="font-size:30px"><a href="view2.html">behandling</a></li>
+</ul>
+
+<script>
+function myFunction() {                           
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById("myInput");
+    filter = input.value.toUpperCase();
+    ul = document.getElementById("myUL");              //detta är JS för listan. Här behöver vi göra databasanrom för 'begrepp' ist för myUL
+    li = ul.getElementsByTagName("li");                //6LcfSNUUAAAAAFtsGjemGWM3zvsAY-jXx-qWTa_y
+    for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName("a")[0];
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+}
+</script></nav>
+  <div class="col-2">
+  	<header><h1>ORDLISTAN/Name of site</h1><br><br><br></header>
+    <main class="content"><article>
+     
+      
+ </article>
+    </main>
+  	<footer>
+      <form action="view3.html">
+         <button type="submit">Beställ nytt begrepp</button>
+      </form>
+</footer>
+  </div>
+</body>
