@@ -19,6 +19,5 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('', include('ordbok.urls')),
-    #path(r'^$', TemplateView.as_view(template_name='index.html'), name='index'),
     path('admin/', admin.site.urls),
 ]

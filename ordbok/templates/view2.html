@@ -1,0 +1,95 @@
+<!doctype html>
+<title>Ordlistan</title>
+<style>
+  * {
+    box-sizing: border-box; 
+  }
+  body {
+    display: flex;
+    min-height: 100vh;
+    flex-direction: row;
+    margin: 0;
+  }
+  .col-1 {
+    background: #006298;
+    flex: 1;
+  }
+  .col-2 {
+    display: flex;
+    flex-direction: column;
+    flex: 5;
+    border-style: solid;
+  }
+  .content {
+    display: flex;
+    flex-direction: row;
+  }
+  .content > article {
+    flex: 4;
+    min-height: 60vh;
+  }
+  header, footer {
+    background: #006298;
+    height: 20vh;
+  }
+  header, footer, article, nav {
+    padding: 1em;
+  }
+</style>
+<body>
+  <nav class="col-1"><h1>Logotyp</h1><br><br>     <input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for names.." title="Type in a name">
+
+<ul id="myUL">
+  <li style="font-size:30px"><a id="1" href="#">vårdkontakt</a></li>
+  <li style="font-size:30px"><a href="view2.html">vårdbehov</a></li>
+
+  <li style="font-size:30px"><a href="view2.html">patientprocess</a></li>
+  <li style="font-size:30px"><a href="view2.html">process</a></li>
+
+<li style="font-size:30px"><a href="view2.html">vårdplan</a></li>
+   <li style="font-size:30px"><a href="view2.html">ordination</a></li>
+  <li style="font-size:30px"><a href="view2.html">behandling</a></li>
+</ul>
+
+
+<script>
+function myFunction() {
+    var input, filter, ul, li, a, i, txtValue;
+    input = document.getElementById("myInput");
+    filter = input.value.toUpperCase();
+    ul = document.getElementById("myUL");
+    li = ul.getElementsByTagName("li");
+    for (i = 0; i < li.length; i++) {
+        a = li[i].getElementsByTagName("a")[0];
+        txtValue = a.textContent || a.innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+}
+</script></nav>
+  <div class="col-2">
+  	<header><h1>ORDLISTAN/Name of site</h1><br><br><br></header>
+    <main class="content">
+    <article>The Term you searched for: XYZ
+      
+      <ul>
+  <li>CONCEPT: xyz</li>
+<li>SOURCE: VGR/FVM </li>
+  <li>DEFINITION: blu blu blu blu blu</li>
+  <li>ENGLISH TERM: 123</li>
+        <li>ENGLISH DEFINITION: 123123123123123123</li>
+        <li>KONTEXT: bla bla bla bla bla bla bla</li>
+        <li>VERSION: 1.0</li>
+</ul>
+      
+      THIS TERM ARE IN USE WITHIN: <br>
+      <ul><li>Klindok</li><li>primary</li></ul></article><br><br>
+    </main>
+  	<footer>       <form action="view3.html">
+         <button type="submit">Beställ nytt begrepp</button>
+      </form><br><br><br><button>Contact info</button></footer>
+  </div>
+</body>
