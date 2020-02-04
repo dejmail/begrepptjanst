@@ -9,7 +9,7 @@ class Begrepp(models.Model):
     definition = models.TextField()
     kontext_beskrivning = models.TextField()
     synonym = models.CharField(max_length=255)
-    term = models.CharField(max_length=255)
+    begrepp = models.CharField(max_length=255)
     utländsk_definition = models.TextField()
     utländsk_term = models.CharField(max_length=255)
     begrepp_version_nummer = models.IntegerField()
@@ -20,10 +20,10 @@ class Bestallare(models.Model):
     beställare_kontext = models.CharField(max_length=255)
     beställare_namn = models.CharField(max_length=255)
     beställare_telefon = models.IntegerField()
-    domain_id = models.CharField(max_length=255)
+    domän = models.ForeignKey("Doman", on_delete=models.PROTECT, default=0, blank=True, null=True)
 
 class Doman(models.Model):
-    domain_id = models.ForeignKey('Bestallare', on_delete=models.CASCADE)
+    domän_id = models.CharField(max_length=255)
     domän_namn = models.CharField(max_length=255)
     domän_email = models.CharField(max_length=255)
 
