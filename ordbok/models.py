@@ -18,7 +18,7 @@ class Begrepp(models.Model):
 
     begrepp_kontext = models.TextField()
     begrepp_version_nummer = models.DateField()
-    beställare_id = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
+    beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     externt_id = models.CharField(max_length=255, null=True)
     externt_register = models.CharField(max_length=255, null=True)
