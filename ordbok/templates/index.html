@@ -1,113 +1,47 @@
-<!doctype html ><title>Ordlistan</title><head> <link rel="stylesheet" href="styles.css"> <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script><style>
-    * {
-      box-sizing: border-box; 
-    }
-    body {
-      display: flex;
-      min-height: 100vh;
-      flex-direction: row;
-      margin: 0;
-    }
-    .col-1 {
-      background: #006298;
-      flex: 1;
-      font-color:white;
-    }
-    .col-2 {
-      display: flex;
-      flex-direction: column;
-      flex: 5;
-      border-style: solid;
-    }
-    .content {
-      display: flex;
-      flex-direction: row;
-    }
-    .content > article {
-      flex: 4;
-      min-height: 60vh;
-    }
-    header, footer {
-      background: #006298;
-      height: 20vh;
-    }
-    header, footer, article, nav {
-      padding: 1em;
-    }
-  ul {
-   list-style-type: square;
-   list-style-position: outside;
-   list-style-image: none;
-  }
-  a {
-      color:black;
-  }
-  </style>
+{% load static %}
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="colorlib.com">
+    <link href="https://fonts.googleapis.com/css?family=Poppins" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
   </head>
-
-<body>
-  <nav class="col-1"><h1>Logotyp</h1><br><br><br><BR><input type="text" id="myInput" onkeyup="myFunction()" placeholder="Search for concept.." title="Type in a name">
-
-<ul id="myUL">
-  <li style="font-size:30px"><a id="1" href="view2">vårdkontakt</a></li> <!-- // Här lägger vi begreppen i en lista-->
-  <li style="font-size:30px"><a href="view2">vårdbehov</a></li>
-
-  <li style="font-size:30px"><a href="view2">patientprocess</a></li>
-  <li style="font-size:30px"><a href="view2">process</a></li>
-
-<li style="font-size:30px"><a href="view2">vårdplan</a></li>
-   <li style="font-size:30px"><a href="view2">ordination</a></li>
-  <li style="font-size:30px"><a href="view2">behandling</a></li>
-</ul>
-
-<script>
-function myFunction() {                           
-    var input, filter, ul, li, a, i, txtValue;
-    input = document.getElementById("myInput");
-    filter = input.value.toUpperCase();
-    ul = document.getElementById("myUL");              //detta är JS för listan. Här behöver vi göra databasanrom för 'begrepp' ist för myUL
-    li = ul.getElementsByTagName("li");                //6LcfSNUUAAAAAFtsGjemGWM3zvsAY-jXx-qWTa_y
-    for (i = 0; i < li.length; i++) {
-        a = li[i].getElementsByTagName("a")[0];
-        txtValue = a.textContent || a.innerText;
-        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            li[i].style.display = "";
-        } else {
-            li[i].style.display = "none";
-        }
-    }
-}
-</script></nav>
-  <div class="col-2">
-  	<header><h1>ORDLISTAN/Name of site</h1><br><br><br></header>
-    <main class="content"><article>
-
-        
-What is Lorem Ipsum?
-
-Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
-Why do we use it?
-
-It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy. Various versions have evolved over the years, sometimes by accident, sometimes on purpose (injected humour and the like).
-
-Where does it come from?
-
-Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.
-
-The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.
-
-     
-      
- </article>
-    </main>
-  	<footer>
-      <form action="view3">
-         <button type="submit">Beställ nytt begrepp</button>
+  <body>
+    <div class="s003">
+      <form>
+        <div class="inner-form">
+          <div class="input-field first-wrap">
+            <div class="input-select">
+              <select data-trigger="" name="choices-single-defaul">
+                <option placeholder="">Begrepp</option>
+                <option>önska begrepp</option>
+                
+              </select>
+            </div>
+          </div>
+          <div class="input-field second-wrap">
+            <input id="search" type="text" placeholder="sök" />
+          </div>
+          <div class="input-field third-wrap">
+            <button class="btn-search" type="button">
+              <svg class="svg-inline--fa fa-search fa-w-16" aria-hidden="true" data-prefix="fas" data-icon="search" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path fill="currentColor" d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
       </form>
-</footer>
-  </div>
-</body>
+    </div>
+    <script src="js/extention/choices.js"></script>
+    <script>
+      const choices = new Choices('[data-trigger]',
+      {
+        searchEnabled: false,
+        itemSelectText: '',
+      });
+
+    </script>
+  </body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+</html>
