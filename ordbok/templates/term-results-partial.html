@@ -1,0 +1,9 @@
+{% if begrepp %}
+    <ul>
+        {% for term in begrepp %}
+        <li>{{ term.term }}</li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No terms found.</p>
+{% endif %}
