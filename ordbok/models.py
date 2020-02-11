@@ -23,11 +23,13 @@ class Begrepp(models.Model):
     externt_id = models.CharField(max_length=255, null=True)
     externt_register = models.CharField(max_length=255, null=True)
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
-    #synonym = models.ForeignKey('Synonym', on_delete=models.CASCADE)
     term = models.CharField(max_length=255)
     utländsk_definition = models.TextField()
     utländsk_term = models.CharField(max_length=255)
     vgr_id = models.CharField(max_length=255, null=True)
+    
+    def __str__(self):
+        return self.term
 
 class Bestallare(models.Model):
     class Meta:
@@ -39,18 +41,27 @@ class Bestallare(models.Model):
     beställare_telefon = models.IntegerField()
     domän = models.ForeignKey("Doman", to_field='domän_id', on_delete=models.PROTECT, blank=True, null=True)
 
+    def __str__(self):
+        return self.beställare_namn
+
 class Doman(models.Model):
-    class Meta:
+    class Meta:     
         verbose_name_plural = "Domäner"
 
     domän_id = models.CharField(max_length=255, primary_key=True)
     domän_namn = models.CharField(max_length=255)
     domän_email = models.CharField(max_length=255)
 
+    def __str__(self):
+        return self.domän_namn
+
 class Synonym(models.Model):
 
     class Meta:
         verbose_name_plural = "Synonymer"
 
-    synonym_id = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     synonym = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.synonym
