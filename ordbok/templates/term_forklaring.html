@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block förklaring %}
+
+{% if json %}
+    
+            {% for attribut in json %}
+                {% for item in attribut %}
+                {{item}}
+                {% endfor %}
+            {% endfor %}
+    
+            {% else %}
+                <p>No terms found.</p>
+            {% endif %}
+
+{% endblock %}
+

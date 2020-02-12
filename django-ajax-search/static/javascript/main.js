@@ -2,18 +2,18 @@ const user_input = $("#user-input")
 const search_icon = $('#search-icon')
 const begrepp_div = $('#replaceable-content')
 const endpoint = '/begrepp/'
-const delay_by_in_ms = 700
+const delay_by_in_ms = 50
 let scheduled_function = false
 
 let ajax_call = function (endpoint, request_parameters) {
 	$.getJSON(endpoint, request_parameters)
 		.done(response => {
 			// fade out the begrepp_div, then:
-			begrepp_div.fadeTo('slow', 0).promise().then(() => {
+			begrepp_div.fadeTo('fast', 0).promise().then(() => {
 				// replace the HTML contents
 				begrepp_div.html(response['html_from_view'])
 				// fade-in the div with new contents
-				begrepp_div.fadeTo('slow', 1)
+				begrepp_div.fadeTo('fast', 1)
 				// stop animating search icon
 				search_icon.removeClass('blink')
 			})
