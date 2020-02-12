@@ -2,7 +2,7 @@ const user_input = $("#user-input")
 const search_icon = $('#search-icon')
 const begrepp_div = $('#replaceable-content')
 const endpoint = '/begrepp/'
-const delay_by_in_ms = 50
+const delay_by_in_ms = 350
 let scheduled_function = false
 
 let ajax_call = function (endpoint, request_parameters) {
@@ -38,3 +38,4 @@ user_input.on('keyup', function () {
 	// setTimeout returns the ID of the function to be executed
 	scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
 })
+

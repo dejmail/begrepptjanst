@@ -1,7 +1,7 @@
 {% if begrepp %}
     <ul>
         {% for term in begrepp %}
-        <li><a id={{term.term}} onClick="visa_mening({{term.id}})">{{ term.term }}</a></li>
+        <li><a href="javascript:visa_mening({{term.id}})" id={{term.term}} >{{ term.term }}</a></li>
         {% endfor %}
     </ul>
 {% else %}
@@ -23,21 +23,5 @@ function reply_click()
     alert(event.srcElement.id);
 }
 
-function visa_mening(term_id)
-{ 
-   
-  $.ajax({
-      type: "GET",
-      dataType: "json",
-      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
-      success: function(json) {
-        $('#förklaring').html(json.definition);
-      },
-      error: function() {
-        $('#förklaring').html("nothing to show here");
-      },
-    });
-
-}
 
 </script>
