@@ -1,18 +1,12 @@
-{% extends "base.html" %}
-
 {% block förklaring %}
-
-{% if json %}
-    
-            {% for attribut in json %}
-                {% for item in attribut %}
-                {{item}}
-                {% endfor %}
-            {% endfor %}
-    
-            {% else %}
+<div id="förklaring" class="förklaring">
+{% if begrepp %}
+<h5>Term Förklaring</h5>
+{% for attribut,values in begrepp.items %}
+    <p>{{attribut}} -- {{values}}</p>               
+{% endfor %}    
+    {% else %}
                 <p>No terms found.</p>
             {% endif %}
-
+</div>
 {% endblock %}
-

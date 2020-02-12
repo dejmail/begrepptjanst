@@ -42,11 +42,11 @@
    
 
   
-  <div id="förklaring" class="förklaring">
   {% block förklaring %}
-  
-  {% endblock %}
+  <div id="förklaring" class="förklaring">
   </div>
+  {% endblock %}
+
   
 
 
@@ -56,3 +56,24 @@
   {% endblock %}
 </body>
 </html>
+
+
+<script>
+
+function visa_mening(term_id)
+{    
+  $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
+      success: function(data) {
+        var display_html = data.html_from_view;
+        $('#förklaring').html(display_html);
+      },
+      error: function() {
+        $('#förklaring').html("nothing to show here");
+      },
+    });
+    
+}
+</script>
