@@ -5,9 +5,10 @@
         {% endfor %}
     </ul>
 {% else %}
-    <p>No terms found.</p>
+<div  name="nyTerm">
+    {% include 'requestTerm.html' %}
+</div>
 {% endif %}
-
 
 <script>
 $("#valtterm").on('click', function() {
