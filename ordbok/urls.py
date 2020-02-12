@@ -10,6 +10,7 @@ urlpatterns = [
     path('view3', views.view3 , name="view3"),
     path('base', views.base, name="base"),
     path("begrepp/", ordbok_views.begrepp_view, name="begrepp"),
+    path("begrepp_forklaring/", ordbok_views.begrepp_förklaring_view, name="begrepp_förklaring"),
 
 ]
 
