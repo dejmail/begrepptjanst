@@ -65,22 +65,15 @@ def begrepp_förklaring_view(request):
     if url_parameter:
         exact_term = Begrepp.objects.get(id__exact=url_parameter)
         model_dict = model_to_dict(exact_term)
-        #term_json =serializers.serialize('json', [exact_term,])
-        #print(term_json)
+
     else:
         term_json = 'Error - Record not found'
 
     ctx["begrepp"] = [exact_term,]
     if request.is_ajax():
         print('ajax request received')
-        # html = render_to_string(
-        #     template_name="term_forklaring.html", context={"begrepp" : term_json}
-        # )
-        # data_dict = {"html_from_view": html}
-        
-        #print(data_dict.get('html_from_view'))
-        
+     
         return HttpResponse(json.dumps(model_dict, cls=DjangoJSONEncoder), content_type="application/json; charset=ISO-8859-1")
-        #return render(request, "term_forklaring.html", context={'data' : term_json}, content_type="application/json")
+
 
     return render(request, "term.html", context=ctx)
