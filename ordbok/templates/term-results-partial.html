@@ -1,9 +1,42 @@
 {% if begrepp %}
     <ul>
         {% for term in begrepp %}
-        <li>{{ term.term }}</li>
+        <li><a id={{term.term}} onClick="visa_mening({{term.id}})">{{ term.term }}</a></li>
         {% endfor %}
     </ul>
 {% else %}
     <p>No terms found.</p>
 {% endif %}
+
+
+<script>
+$("#valtterm").on('click', function() {
+    event.preventDefault();
+    document.getElementById("valtterm").style.flexGrow = "5";
+    window.location = "";
+});
+
+
+function reply_click()
+{
+    alert(event.srcElement.id);
+}
+
+function visa_mening(term_id)
+{ 
+   
+  $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
+      success: function(json) {
+        $('#förklaring').html(json.definition);
+      },
+      error: function() {
+        $('#förklaring').html("nothing to show here");
+      },
+    });
+
+}
+
+</script>
