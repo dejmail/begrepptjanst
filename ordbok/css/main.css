@@ -342,6 +342,7 @@ textarea {
   padding: 0;
   /* 2 */
 }
+/**
 
 /**
  * Correct the cursor style of increment and decrement buttons in Chrome.
@@ -711,7 +712,7 @@ legend {
   .choices__list--dropdown .choices__item--selectable {
     padding-right: 100px;
   }
-  .choices__list--dropdown .choices__item--selectable:after {
+  .choices__list--dropdown .choices__item--selec:after {
     content: attr(data-select-text);
     font-size: 12px;
     opacity: 0;
