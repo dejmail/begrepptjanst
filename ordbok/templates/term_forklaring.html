@@ -1,6 +1,7 @@
 {% block förklaring %}
 <div id="förklaring">
 {% if begrepp %}
+<div class="searchTable">
 <h5>Term Förklaring</h5>
 
 <table border="1">
@@ -13,6 +14,7 @@
 {% endfor %}   
     </tbody>
 </table> 
+</div>
     {% else %}
                 <p>No terms found.</p>
             {% endif %}
