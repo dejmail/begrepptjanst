@@ -1,10 +1,18 @@
 {% block förklaring %}
-<div id="förklaring" class="förklaring">
+<div id="förklaring">
 {% if begrepp %}
 <h5>Term Förklaring</h5>
+
+<table border="1">
+    <tbody>
 {% for attribut,values in begrepp.items %}
-    <p>{{attribut}} -- {{values}}</p>               
-{% endfor %}    
+<tr>
+    <td>{{attribut}}</td>
+    <td>{{values}}</td>
+</tr>
+{% endfor %}   
+    </tbody>
+</table> 
     {% else %}
                 <p>No terms found.</p>
             {% endif %}
