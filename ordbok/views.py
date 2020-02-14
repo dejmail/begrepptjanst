@@ -1,14 +1,13 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from ordbok.models import Begrepp
-from django.template.loader import render_to_string
-from django.core import serializers
 import json
-from django.http import JsonResponse
 from pdb import set_trace
-from django.forms.models import model_to_dict
-from django.core.serializers.json import DjangoJSONEncoder
 
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.template.loader import render_to_string
+
+from ordbok.models import Begrepp
+from .forms import TermRequestForm
 
 
 def index(request):
@@ -76,3 +75,15 @@ def begrepp_förklaring_view(request):
         return HttpResponse(json.dumps(data_dict), content_type="application/json")
 
     return render(request, "base.html", context=ctx)
+
+def hantera_request_term(request):
+    
+    if request.method == 'POST':
+        print(request.POST)
+        form = TermRequestForm(request.POST)
+        if form.is_valid():
+            print('form is valid')  # does nothing, just trigger the validation
+    else:
+        form = TermRequestForm()
+    #set_trace()
+    return render(request, 'requestTerm.html', {'form': form})

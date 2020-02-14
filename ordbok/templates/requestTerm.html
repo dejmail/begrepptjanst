@@ -1,40 +1,15 @@
-{% extends "base.html" %}
+    {% if form %}
+    <h5>Beställ en ny term</h5>
+    <form action="/requestterm/", method='POST'>{% csrf_token %}
+    {{form}}
 
-{% block nyTerm %}	
-<form>
-    Efterfråga begrepp:<br>
-    <input type="text" name="bergrepp"><br>
-    First name:<br>
-    <input type="text" name="firstname"><br>
-    Last name:<br>
-    <input type="text" name="lastname"><br>
-    Epost<br>
-    <input type="email" name="epost"><br>
-    Mobil Telefon:<br>
-    <input type="tel" name="phone" pattern="[0-9]{10}"><br>
-    Workstream:<br>
-    <select name="ws">
-        
-        <option value="ws1">Ordination & beställningar</option>
-        <option value="ws2">Dokumentation Vårdproffesion</option>
-        <option value="ws3">Operation</option>
-        <option value="ws4">Akutsjukvård</option>
-        <option value="ws4">Onkologi</option>
-        <option value="ws4">Primärvård</option>
-        <option value="ws4">Mödravård Obstetrik</option>
-        <option value="ws4">PAS</option>
-        <option value="ws4">Materiallogistik</option>
-        <option value="ws4">Medicinsk dokumentation</option>
-        <option value="ws4">Kärnfunktioner</option>
-        <option value="ws4">Psykiatri</option>
-        <option value="ws4">Rapporter</option>
+    {% else %}
+        {% for term in begrepp %}
+        {{ term.term }}
+        {% endfor %}
+    <h5>Ingen term hittades</h5>
+    There is no form variable coming in
+    {% endif %}
+    <input type="submit" value="Submit">
 
-      </select><br>
-      Kontext/fritext: <br>
-      <textarea rows="4" cols="50" name="comment" form="usrform" placeholder="Beskriv begreppets kontext ex NI/socialstyrelsen"></textarea><br>
-        WorkFlowId/name:<br>
-        <input type="text" name="wfId"><br><br>
-        <input type="submit" value="Efterfråga begrepp!">
-
-  </form>
-{% endblock %}
+</form>

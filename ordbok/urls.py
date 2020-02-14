@@ -11,6 +11,7 @@ urlpatterns = [
     path('base', views.base, name="base"),
     path("begrepp/", ordbok_views.begrepp_view, name="begrepp"),
     path("begrepp_forklaring/", ordbok_views.begrepp_förklaring_view, name="begrepp_förklaring"),
+    path('requesttermform/', ordbok_views.hantera_request_term, name='hantera_term_request')
 
 ]
 
