@@ -27,7 +27,8 @@ class Begrepp(models.Model):
     utländsk_definition = models.TextField()
     utländsk_term = models.CharField(max_length=255)
     vgr_id = models.CharField(max_length=255, null=True)
-    
+
+
     def __str__(self):
         return self.term
 
@@ -39,7 +40,6 @@ class Bestallare(models.Model):
     beställare_datum = models.DateField()
     beställare_email = models.EmailField()
     beställare_telefon = models.IntegerField()
-    domän = models.ForeignKey("Doman", to_field='domän_id', on_delete=models.PROTECT, blank=True, null=True)
 
     def __str__(self):
         return self.beställare_namn
@@ -48,6 +48,7 @@ class Doman(models.Model):
     class Meta:     
         verbose_name_plural = "Domäner"
 
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     domän_id = models.CharField(max_length=255, primary_key=True)
     domän_namn = models.CharField(max_length=255)
     domän_email = models.CharField(max_length=255)
