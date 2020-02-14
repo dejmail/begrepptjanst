@@ -5,8 +5,26 @@
         {% endfor %}
     </ul>
 {% else %}
-<div  name="nyTerm">
-    {% include 'requestTerm.html' %}
+<script>
+    function populate_request_form()
+    {    
+    $.ajax({
+        type: "GET",
+        dataType: "html",
+        url: "{% url 'hantera_term_request' %}",
+        success: function(data) {
+            var display_html = data.html_from_view;
+            $('#nyTermForm').html(data);
+        },
+        error: function() {
+            $('#nyTermForm').html("Loaded");
+        },
+        });
+    }
+    </script>
+
+<div id="nyTermForm">
+    <input type="image" src="/static/FFFFFF-0.8.png" onload=populate_request_form()>
 </div>
 {% endif %}
 
@@ -22,6 +40,16 @@ function reply_click()
 {
     alert(event.srcElement.id);
 }
+
+// function include_form(){
+
+//     document.getElementById("order_new_term").innerHTML = "{% url 'hantera_term_request'%}";
+
+// this.location.replace()
+// }
+// $( "#order_new_term" ).load( "{% url 'hantera_term_request' %}" );
+
+
 
 
 </script>
