@@ -1,8 +1,53 @@
 from django.contrib import admin
-
-# Register your models here.
 from ordbok.models import Begrepp, Bestallare, Doman
 
-admin.site.register(Begrepp)
-admin.site.register(Bestallare)
-admin.site.register(Doman)
+admin.site.site_header = "BegreppTjänst Admin"
+admin.site.site_title = "BegpreppTjänst Admin Portal"
+admin.site.index_title = "Välkommen till BegreppTjänst Portalen"
+
+class BegreppAdmin(admin.ModelAdmin):
+    list_display = ('term',
+                    'definition',
+                    'begrepp_kontext',    
+                    'externt_register',
+                    'term',
+                    'utländsk_definition',
+                    'utländsk_term',
+                    'begrepp_version_nummer',
+                    'status',)
+
+    list_filter = ("begrepp_version_nummer", "status",)
+
+    search_fields = ('term',
+                    'definition',
+                    'begrepp_kontext',    
+                    'externt_register',
+                    'term',
+                    'utländsk_definition',
+                    'utländsk_term',
+                    'begrepp_version_nummer',
+                    'status',)
+
+    date_hierarchy = 'begrepp_version_nummer'
+
+
+class BestallareAdmin(admin.ModelAdmin):
+
+    list_display = ('beställare_namn',
+                    'beställare_email',
+                    'beställare_telefon',
+                    'beställare_datum',)
+
+class DomanAdmin(admin.ModelAdmin):
+
+    list_display = ('domän_namn',
+                    'domän_id',
+                    'domän_kontext',
+                    'begrepp',)
+
+    list_filter = ("domän_namn",)
+
+
+admin.site.register(Begrepp, BegreppAdmin)
+admin.site.register(Bestallare, BestallareAdmin)
+admin.site.register(Doman, DomanAdmin)
