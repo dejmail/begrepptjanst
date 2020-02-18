@@ -123,29 +123,31 @@ def begrepp_förklaring_view(request):
 def hantera_request_term(request):
     
     if request.method == 'POST':
-        print(request.POST)
         form = TermRequestForm(request.POST)
         if form.is_valid():
+
+            ny_beställare = Bestallare()
+            ny_beställare.beställare_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
+            ny_beställare.beställare_namn = form.clean_name()
+            ny_beställare.beställare_email = form.clean_epost()
+            ny_beställare.beställare_telefon = form.clean_telefon()
+            ny_beställare.save()
+
             ny_term = Begrepp()
             ny_term.term = form.cleaned_data.get('begrepp')
             ny_term.begrepp_kontext = request.POST.get('kontext')
             ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
+            ny_term.beställare = ny_beställare
             ny_term.save()
 
-            användare = Bestallare()
-            användare.beställare_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
-            användare.beställare_namn = form.clean_name()
-            användare.beställare_email = form.clean_epost()
-            användare.bestälnlare_telefon = form.clean_telefon()
-            användare.save()
-
             inkommande_domän = Doman()
-            inkommande_domän.namn = form.cleaned_data.get('workstream')
-            inkommande_domän.kontext = form.cleaned_data.get('workflow')
+            
+            inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
+            inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
+            inkommande_domän.begrepp = ny_term
             inkommande_domän.save()
 
-
-
+            return HttpResponse('Tack! Begrepp skickades in för granskning')
 
     else:
         form = TermRequestForm()
