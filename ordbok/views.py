@@ -48,22 +48,32 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
     #transaction.commit_unless_managed()
 
     # Data retrieval operation - no commit required
-    result = cursor.execute(f"SELECT begrepp_kontext,\
-                             begrepp_version_nummer,\
-                             definition,\
-                             externt_id,\
-                             externt_register,\
-                             status,\
-                             term,\
-                             utländsk_definition,\
-                             utländsk_term,\
-                             vgr_id,\
-                             beställare_id,\
-                             synonym,\
-                             domän_namn FROM [ordbok_begrepp]\
-                             LEFT JOIN ordbok_synonym ON [ordbok_begrepp].id = ordbok_synonym.begrepp_id\
-                             LEFT JOIN ordbok_doman ON [ordbok_begrepp].id = ordbok_doman.begrepp_id\
-                             WHERE ordbok_begrepp.id={url_parameter}")
+    
+    result = cursor.execute(f"SELECT\
+                                begrepp_kontext,\
+                                begrepp_version_nummer,\
+                                definition,\
+                                externt_id,\
+                                externt_register,\
+                                status,\
+                                term,\
+                                utländsk_definition,\
+                                utländsk_term,\
+                                vgr_id,\
+                                beställare_id,\
+                                synonym,\
+                                domän_namn\
+                                FROM\
+                                    [ordbok_begrepp]\
+                                LEFT JOIN\
+                                    ordbok_synonym\
+                                    ON [ordbok_begrepp].id = ordbok_synonym.begrepp_id\
+                                LEFT JOIN\
+                                    ordbok_doman\
+                                    ON [ordbok_begrepp].id = ordbok_doman.begrepp_id\
+                                WHERE\
+                                    ordbok_begrepp.id = {int(url_parameter)};")
+
     column_names = [i[0] for i in result.description]
     retur_records = result.fetchall()
     
