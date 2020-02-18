@@ -23,6 +23,7 @@ DATABASES = {
         'HOST': 'vgrinformatik.se',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
         'DEFAULT-CHARACTER-SET' : 'utf8',
+        
     }
 }
 
@@ -32,6 +33,8 @@ TEMPLATE_DIRS = [PROJECT_PATH + '/templates/',]
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"), 'django-ajax-search/static/',
     os.path.join(os.path.dirname(ordbok.__file__), 'django-ajax-search','static'),
+    os.path.join(os.path.dirname(ordbok.__file__), 'static'),    
+    os.path.join(os.path.dirname(ordbok.__file__), 'static', 'images'),
 ]
 
 STATIC_URL = '/static/'
