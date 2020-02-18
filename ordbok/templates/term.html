@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 
 {% block content %}	
-<h3>Term</h3>
-<div class="row">
-	<div class="col-4"></div>
+
+<div class="row mt-5">
 	
-	<div class="col-4">
+	<div class="col-3"></div>
+	
+	<div class="col-6">
 		<form class="form-inline">
 		<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
 		<input id="user-input" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search">
@@ -14,18 +15,21 @@
 	<div class="col-4"></div>
 </div>
 
-<div class="row">
-	<div id="replaceable-content" class="col-4">
+<div class="row mt-10">
+	
+	<div id="replaceable-content" class="col-3">
+		<h5>Term</h5>
+		
 		{% include 'term-results-partial.html' %}
 	</div>
 	
-	<div id="" class="col-4">
+	<div id="" class="col-9">
 		{% block förklaring %}
-			<div id="förklaring" >
+			<div id="förklaring" class="table table-striped">
 			</div>
 		{% endblock %}
 	</div>
-	<div id="" class="col-4">		
+			
 	</div>
 </div>
 
