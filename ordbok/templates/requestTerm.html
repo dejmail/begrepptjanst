@@ -1,7 +1,9 @@
+{% load crispy_forms_filters %}
     {% if form %}
     <h5>Beställ en ny term</h5>
     <form action="/requestterm/", method='POST'>{% csrf_token %}
-    {{form}}
+      
+    {{ form|crispy }}
 
     {% else %}
         {% for term in begrepp %}
