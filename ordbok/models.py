@@ -17,15 +17,15 @@ class Begrepp(models.Model):
                   (DEFAULT_STATUS, DEFAULT_STATUS))
 
     begrepp_kontext = models.TextField()
-    begrepp_version_nummer = models.DateField()
+    begrepp_version_nummer = models.DateTimeField()
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     externt_id = models.CharField(max_length=255, null=True)
     externt_register = models.CharField(max_length=255, null=True)
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255)
-    utländsk_definition = models.TextField()
-    utländsk_term = models.CharField(max_length=255)
+    utländsk_definition = models.TextField(default='Inte definierad')
+    utländsk_term = models.CharField(default='Inte definierad', max_length=255)
     vgr_id = models.CharField(max_length=255, null=True)
 
 
@@ -37,7 +37,7 @@ class Bestallare(models.Model):
         verbose_name_plural = "Beställare"
 
     beställare_namn = models.CharField(max_length=255)
-    beställare_datum = models.DateField()
+    beställare_datum = models.DateTimeField()
     beställare_email = models.EmailField()
     beställare_telefon = models.IntegerField()
 
@@ -49,9 +49,9 @@ class Doman(models.Model):
         verbose_name_plural = "Domäner"
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
-    domän_id = models.CharField(max_length=255, primary_key=True)
-    domän_namn = models.CharField(max_length=255)
-    domän_email = models.CharField(max_length=255)
+    domän_id = models.IntegerField(primary_key=True)
+    domän_kontext = models.TextField()
+    domän_namn = models.CharField(max_length=255)       
 
     def __str__(self):
         return self.domän_namn
