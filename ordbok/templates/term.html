@@ -3,15 +3,29 @@
 {% block content %}	
 <h3>Term</h3>
 <div class="row">
-	<div class="col-6 align-left">
+	<div class="col-4"></div>
+	
+	<div class="col-4">
 		<form class="form-inline">
 		<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
 		<input id="user-input" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search">
 		</form>
-	</div>
+	</div>	
+	<div class="col-4"></div>
+</div>
 
-	<div id="replaceable-content" class="col-6">
+<div class="row">
+	<div id="replaceable-content" class="col-4">
 		{% include 'term-results-partial.html' %}
+	</div>
+	
+	<div id="" class="col-4">
+		{% block förklaring %}
+			<div id="förklaring" >
+			</div>
+		{% endblock %}
+	</div>
+	<div id="" class="col-4">		
 	</div>
 </div>
 
