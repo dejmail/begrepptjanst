@@ -13,11 +13,17 @@
     <td>{{values}}</td>
 </tr>
 {% endfor %}   
+<tr>
+    <td><input type="submit" value="Opponera"></td>
+    <td><input type="submit" value="Bekräfta"></td>
+</tr>
     </tbody>
 </table> 
 </div>
     {% else %}
                 <p>No terms found.</p>
             {% endif %}
+
+
 </div>
 {% endblock %}
