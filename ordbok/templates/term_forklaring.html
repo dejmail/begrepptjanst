@@ -1,29 +1,79 @@
+{% load crispy_forms_filters %}
 {% block förklaring %}
+
 <div id="förklaring" class="förklaring">
 {% if begrepp %}
 
 <div class="searchTable">
 <h5>Term Förklaring</h5>
 
-<table class="table table-bordered">
+<table id="term_förklaring_tabell" class="table table-bordered">
     <tbody>
 {% for attribut,values in begrepp.items %}
 <tr>
     <td>{{attribut}}</td>
     <td>{{values}}</td>
 </tr>
-{% endfor %}   
+{% endfor %}
 <tr>
-    <td><input type="submit" value="Opponera"></td>
-    <td><input type="submit" value="Bekräfta"></td>
+    <td><button onclick="opponera_definition()">Opponera</button></td>
+    <td><button onclick="bekräfta_definition()">Bekräfta</button></td>
 </tr>
     </tbody>
 </table> 
 </div>
+
     {% else %}
                 <p>No terms found.</p>
             {% endif %}
 
 
 </div>
+
+<div id="opponera_term" class="d-none">
+    <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='POST'>{% csrf_token %}
+        {{ form|crispy }}
+
+            {% for term in opponera %}
+                {{ term.term }}
+            {% endfor %}
+    </form>
+</div>
+
+<div id="bekräfta_term" class="d-none">
+    <form id="bekräfta_term_form" action="{% url 'bekräfta_term' %}", method='POST'>{% csrf_token %}
+        {{ form|crispy }}
+
+            {% for term in bekräfta %}
+                {{ term.term }}
+            {% endfor %}
+    </form>
+</div>
+<script>
+
+function opponera_definition() {
+    
+    var begrepp_info = "{{begrepp}}";
+    alert(begrepp_info);
+
+//   document.getElementById("demo").innerHTML = "Hello World";
+}
+
+function bekräfta_definition() {
+    var begrepp_info = "{{begrepp}}";
+    alert(begrepp_info);
+
+}
+
+document.getElementById('opponera').onclick = function(e){
+  alert('click');
+}
+ 
+
+
+
+  </script>
+
 {% endblock %}
+
+
