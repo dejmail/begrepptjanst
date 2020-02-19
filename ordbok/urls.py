@@ -11,7 +11,7 @@ urlpatterns = [
     path('base', views.base, name="base"),
     path("begrepp/", ordbok_views.begrepp_view, name="begrepp"),
     path("term_opponering/", ordbok_views.opponera_term, name="opponera_term"),
-    path("term_bekräftelse/", ordbok_views.bekräfta_term, name="bekräfta_term"),
+    path("term_bekraftelse/", ordbok_views.bekräfta_term, name="bekräfta_term"),
     path("begrepp_forklaring/", ordbok_views.begrepp_förklaring_view, name="begrepp_förklaring"),
     path('requesttermform/', ordbok_views.hantera_request_term, name='hantera_term_request')
 
