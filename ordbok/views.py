@@ -7,10 +7,9 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from datetime import datetime
 from django.db import connection, transaction
-
+from django.core.mail import EmailMessage
 from ordbok.models import Begrepp, Bestallare, Doman, Synonym
-from .forms import TermRequestForm
-#from models import select_related as select_retarded
+from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm
 
 def index(request):
     return render(request, 'index.html')
@@ -60,7 +59,6 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                                 utländsk_definition,\
                                 utländsk_term,\
                                 vgr_id,\
-                                beställare_id,\
                                 synonym,\
                                 domän_namn\
                                 FROM\
@@ -103,6 +101,7 @@ def begrepp_view(request):
 def begrepp_förklaring_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
+    #set_trace()
     if url_parameter:
         exact_term = retur_komplett_förklaring_custom_sql(url_parameter)
         #set_trace()
@@ -151,5 +150,31 @@ def hantera_request_term(request):
 
     else:
         form = TermRequestForm()
-    #set_trace()
+    
     return render(request, 'requestTerm.html', {'form': form})
+
+def opponera_term(request):
+
+    if request.method == 'POST':
+        form = OpponeraTermForm(request.POST)
+        if form.is_valid():
+            pass
+        return HttpResponse('Tack! Dina synpunkter har skickats in för granskning')
+
+    else:
+        form = OpponeraTermForm()
+    
+    return render(request, 'opponera_term.html', {'opponera': form})
+
+def bekräfta_term(request):
+
+    if request.method == 'POST':
+        form = BekräftaTermForm(request.POST)
+        if form.is_valid():
+            pass
+        return HttpResponse('Tack! Begrepp definitionen bekräftades')
+
+    else:
+        form = BekräftaTermForm()
+    
+    return render(request, 'bekräfta_term.html', {'bekräfta': form})
