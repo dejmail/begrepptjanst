@@ -16,8 +16,8 @@
 </tr>
 {% endfor %}
 <tr>
-    <td><button onclick="opponera_definition()">Opponera</button></td>
-    <td><button onclick="bekräfta_definition()">Bekräfta</button></td>
+    <td><button id="opponera_button">Opponera</button></td>
+    <td><button id="bekärfta_button">Bekräfta</button></td>
 </tr>
     </tbody>
 </table> 
@@ -30,50 +30,30 @@
 
 </div>
 
-<div id="opponera_term" class="d-none">
-    <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='POST'>{% csrf_token %}
-        {{ form|crispy }}
+<div id="opponera_bekräfta">
 
-            {% for term in opponera %}
-                {{ term.term }}
-            {% endfor %}
-    </form>
 </div>
 
-<div id="bekräfta_term" class="d-none">
-    <form id="bekräfta_term_form" action="{% url 'bekräfta_term' %}", method='POST'>{% csrf_token %}
-        {{ form|crispy }}
-
-            {% for term in bekräfta %}
-                {{ term.term }}
-            {% endfor %}
-    </form>
-</div>
 <script>
 
-function opponera_definition() {
+function get_form_function(url, div_to_replace){
+        
+        $.ajax({
+            url : url,
+            type : 'GET',
+            success: function(response){
+                $(div_to_replace).html(response);
+            }
+        });
+    }
     
-    var begrepp_info = "{{begrepp}}";
-    alert(begrepp_info);
+$(document).ready(function(){
+    $("#opponera_button").click(function(){
+        get_form_function("{% url 'opponera_term' %}", "#opponera_bekräfta");});
+    $("#bekräfta_button").click(function(){
+        get_form_function("{% url 'bekräfta_term' %}", "#opponera_bekräfta");});
+  });
 
-//   document.getElementById("demo").innerHTML = "Hello World";
-}
-
-function bekräfta_definition() {
-    var begrepp_info = "{{begrepp}}";
-    alert(begrepp_info);
-
-}
-
-document.getElementById('opponera').onclick = function(e){
-  alert('click');
-}
- 
-
-
-
-  </script>
+</script>
 
 {% endblock %}
-
-
