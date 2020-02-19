@@ -177,4 +177,4 @@ def bekräfta_term(request):
     else:
         form = BekräftaTermForm()
     
-    return render(request, 'bekräfta_term.html', {'bekräfta': form})
+    return render(request, 'bekrafta_term.html', {'bekräfta': form})
