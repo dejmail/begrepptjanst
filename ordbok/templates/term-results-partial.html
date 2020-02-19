@@ -1,10 +1,14 @@
 {% if begrepp %}
+
     <ul>
         {% for term in begrepp %}
-        <li><a href="javascript:visa_mening({{term.id}})" id={{term.term}} >{{ term.term }}</a></li>
+            {% if term|yesno %}
+                <li><a href="javascript:visa_mening({{term.id}})" id={{term.term}} >{{ term.term }}</a></li>
+            {% endif %}
         {% endfor %}
     </ul>
 {% else %}
+
 <script>
     function populate_request_form()
     {    
@@ -14,10 +18,10 @@
         url: "{% url 'hantera_term_request' %}",
         success: function(data) {
             var display_html = data.html_from_view;
-            $('#nyTermForm').html(data);
+            $('#mitten-span').html(data);
         },
         error: function() {
-            $('#nyTermForm').html("Loaded");
+            $('#mitten-span').html("Loaded");
         },
         });
     }
@@ -28,28 +32,12 @@
 </div>
 {% endif %}
 
+
 <script>
 $("#valtterm").on('click', function() {
     event.preventDefault();
     document.getElementById("valtterm").style.flexGrow = "5";
     window.location = "";
 });
-
-
-function reply_click()
-{
-    alert(event.srcElement.id);
-}
-
-// function include_form(){
-
-//     document.getElementById("order_new_term").innerHTML = "{% url 'hantera_term_request'%}";
-
-// this.location.replace()
-// }
-// $( "#order_new_term" ).load( "{% url 'hantera_term_request' %}" );
-
-
-
 
 </script>
