@@ -1,21 +1,21 @@
 from django import forms
 from .models import Doman
 
-class TermRequestForm(forms.Form):
+workstream_choices = [('Ordination & Beställningar','Ordination & Beställningar'),
+                        ('Akutsjukvård','Akutsjukvård'),
+                        ('Dokumentation Vårdproffesion','Dokumentation Vårdproffesion'),
+                        ('Kärnfunktioner','Kärnfunktioner'),
+                        ('Materiallogistik','Materiallogistik'),
+                        ('Medicinsk Dokumentation','Medicinsk Dokumentation'),
+                        ('Mödravård Obstetrik','Mödravård Obstetrik'),
+                        ('Onkologi','Onkologi'),
+                        ('Operation','Operation'),
+                        ('PAS','PAS'),
+                        ('Primärvård','Primärvård'),
+                        ('Psykiatri','Psykiatri'),
+                        ('Rapporter','Rapporter')]
 
-    workstream_choices = [('Ordination & beställningar','Ordination & beställningar'),
-                          ('Akutsjukvård','Akutsjukvård'),
-                          ('Dokumentation Vårdproffesion','Dokumentation Vårdproffesion'),
-                          ('Kärnfunktioner','Kärnfunktioner'),
-                          ('Materiallogistik','Materiallogistik'),
-                          ('Medicinsk dokumentation','Medicinsk dokumentation'),
-                          ('Mödravård Obstetrik','Mödravård Obstetrik'),
-                          ('Onkologi','Onkologi'),
-                          ('Operation','Operation'),
-                          ('PAS','PAS'),
-                          ('Primärvård','Primärvård'),
-                          ('Psykiatri','Psykiatri'),
-                          ('Rapporter','Rapporter')]
+class TermRequestForm(forms.Form):
 
     def clean_name(self):
         namn =  self.cleaned_data.get('namn')
@@ -47,7 +47,7 @@ class OpponeraTermForm(forms.Form):
 
 class BekräftaTermForm(forms.Form):
 
-    namn = forms.CharField()
+    term_id = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20)
-    resonemang = forms.CharField(widget=forms.Textarea, max_length=2000)
+    kontext = forms.CharField(label='WDPW Acitivity ID / Dokument Kontext')
+    workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))

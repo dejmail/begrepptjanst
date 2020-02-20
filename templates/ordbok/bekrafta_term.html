@@ -1,0 +1,10 @@
+{% load crispy_forms_filters %}
+
+<div id="opponera_bekräfta" class="md-5">
+    <h5>Bekräfta Term</h5>
+    <p>Bekräfta att din arbetström använder det här termen också</p>
+    <form id="bekräfta_term_form" action="{% url 'bekräfta_term' %}", method='POST'>{% csrf_token %}
+        {{ bekräfta|crispy }}
+    <input type="submit" value="Submit">
+    </form>
+</div>

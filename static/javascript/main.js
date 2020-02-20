@@ -1,31 +1,35 @@
 const user_input = $("#user-input")
 const search_icon = $('#search-icon')
 const begrepp_div = $('#replaceable-content')
-const endpoint = '/begrepp/'
-const delay_by_in_ms = 350
+const endpoint = '/'
+const delay_by_in_ms = 750
 let scheduled_function = false
 
-let ajax_call = function (endpoint, request_parameters) {
-	$.getJSON(endpoint, request_parameters)
-		.done(response => {
-			// fade out the begrepp_div, then:
-			begrepp_div.fadeTo('fast', 0).promise().then(() => {
-				// replace the HTML contents
-				begrepp_div.html(response['html_from_view'])
-				// fade-in the div with new contents
-				begrepp_div.fadeTo('fast', 1)
-				// stop animating search icon
-				search_icon.removeClass('blink')
-			})
-		})
-}
 
-
-user_input.on('keyup', function () {
+user_input.keydown(function () {
 
 	const request_parameters = {
+		
 		q: $(this).val() // value of user_input: the HTML element with ID user-input
 	}
+
+	if (request_parameters.q.length > 1) {
+	
+	var ajax_call = function (endpoint, request_parameters) {
+		$.getJSON(endpoint, request_parameters)
+			.done(response => {
+				// fade out the begrepp_div, then:
+				begrepp_div.fadeTo('fast', 0).promise().then(() => {
+					// replace the HTML contents
+					begrepp_div.html(response['html_from_view'])
+					// fade-in the div with new contents
+					begrepp_div.fadeTo('fast', 1)
+					// stop animating search icon
+					search_icon.removeClass('blink')
+				})
+			})
+	}
+}
 
 	// start animating the search icon with the CSS class
 	search_icon.addClass('blink')
@@ -37,5 +41,7 @@ user_input.on('keyup', function () {
 
 	// setTimeout returns the ID of the function to be executed
 	scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
+
 })
+
 
