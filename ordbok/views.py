@@ -10,6 +10,9 @@ from django.db import connection, transaction
 from django.core.mail import EmailMessage
 from ordbok.models import Begrepp, Bestallare, Doman, Synonym
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm
+import re
+
+re_pattern = re.compile(r'\s+')
 
 def autocompleteModel(request):
     if request.is_ajax():
@@ -29,7 +32,7 @@ def autocompleteModel(request):
 def retur_komplett_förklaring_custom_sql(url_parameter):
     
     cursor = connection.cursor()
-    sql_statement = f"SELECT\
+    sql_statement = f'''SELECT\
                             begrepp_kontext,\
                             begrepp_version_nummer,\
                             definition,\
@@ -51,14 +54,29 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                                 ordbok_doman\
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
                             WHERE\
-                                ordbok_begrepp.id = {int(url_parameter)};"
+                                ordbok_begrepp.id = {url_parameter};'''
     
-    result = cursor.execute(sql_statement)
+    column_names = ['begrepp_kontext',
+                   'begrepp_version_nummer',
+                   'definition',
+                   'externt_id',
+                   'externt_register',
+                   'status',
+                   'term',
+                   'utländsk_definition',
+                   'utländsk_term',
+                   'vgr_id',
+                   'synonym',
+                   'domän_namn']
+
+    clean_statement = re.sub(re_pattern, ' ', sql_statement)
+    cursor.execute(clean_statement)
+    result = cursor.fetchall()
+    #set_trace()
+    #column_names = [i[0] for i in result.description]
+    #retur_records = result.fetchall()
     
-    column_names = [i[0] for i in result.description]
-    retur_records = result.fetchall()
-    
-    return dict(zip(column_names, retur_records[0]))
+    return dict(zip(column_names, result[0]))
 
 def begrepp_view(request):
     ctx = {}
