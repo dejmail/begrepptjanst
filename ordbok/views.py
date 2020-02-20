@@ -67,7 +67,6 @@ def begrepp_view(request):
  
         begrepp = Begrepp.objects.filter(term__icontains=url_parameter)
     else:
-    #    begrepp = False
         begrepp = Begrepp.objects.all()
 
     ctx["begrepp"] = begrepp
@@ -86,14 +85,11 @@ def begrepp_förklaring_view(request):
     url_parameter = request.GET.get("q")
     
     if url_parameter:
-        set_trace()
         exact_term = retur_komplett_förklaring_custom_sql(url_parameter)
     else:
         term_json = 'Error - Record not found'
-
     
     if request.is_ajax():
-        #set_trace()
         html = render_to_string(template_name="term_forklaring.html", context={"begrepp": exact_term})
         data_dict = {"html_from_view": html}
         
