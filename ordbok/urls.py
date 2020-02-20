@@ -5,11 +5,7 @@ from .views import autocompleteModel
 from ordbok import views as ordbok_views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('view2', views.view2, name= "view2"),
-    path('view3', views.view3 , name="view3"),
-    path('base', views.base, name="base"),
-    path("begrepp/", ordbok_views.begrepp_view, name="begrepp"),
+    path("", ordbok_views.begrepp_view, name="begrepp"),
     path("term_opponering/", ordbok_views.opponera_term, name="opponera_term"),
     path("term_bekraftelse/", ordbok_views.bekräfta_term, name="bekräfta_term"),
     path("begrepp_forklaring/", ordbok_views.begrepp_förklaring_view, name="begrepp_förklaring"),

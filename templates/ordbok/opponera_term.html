@@ -2,7 +2,7 @@
 <div id="opponera_bekräfta" class="md-5">
     <h5>Opponera Term</h5>
     <p>Skriva vad du inte håller med om</p>
-    <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='GET'>{% csrf_token %}
+    <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='POST'>{% csrf_token %}
         {{ opponera|crispy }}
 
     <input type="submit" value="Submit">

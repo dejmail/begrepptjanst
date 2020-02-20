@@ -28,13 +28,10 @@ DATABASES = {
 # }
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
-TEMPLATE_DIRS = [PROJECT_PATH + '/templates/',]
+TEMPLATE_DIRS = ['/templates/',]
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"), 'django-ajax-search/static/',
-    os.path.join(os.path.dirname(ordbok.__file__), 'django-ajax-search','static'),
-    os.path.join(os.path.dirname(ordbok.__file__), 'static'),    
-    os.path.join(os.path.dirname(ordbok.__file__), 'static', 'images'),
+    "static",
 ]
 
 STATIC_URL = '/static/'

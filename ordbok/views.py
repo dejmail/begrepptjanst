@@ -11,18 +11,6 @@ from django.core.mail import EmailMessage
 from ordbok.models import Begrepp, Bestallare, Doman, Synonym
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm
 
-def index(request):
-    return render(request, 'index.html')
-
-def view2(request):
-    return render(request,'view2.html')
-
-def view3(request):
-    return render(request, 'view3.html')
-
-def base(request):
-    return render(request, 'base.html')
-
 def autocompleteModel(request):
     if request.is_ajax():
         q = request.GET.get('txtSearch', '')
@@ -101,17 +89,15 @@ def begrepp_view(request):
 def begrepp_förklaring_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
-    #set_trace()
+    
     if url_parameter:
         exact_term = retur_komplett_förklaring_custom_sql(url_parameter)
-        #set_trace()
-        #exact_term = Begrepp.objects.get(id__exact=url_parameter)
-        #model_dict = model_to_dict(exact_term)
     else:
         term_json = 'Error - Record not found'
 
-    #ctx["begrepp"] = exact_term
+    
     if request.is_ajax():
+        #set_trace()
         html = render_to_string(template_name="term_forklaring.html", context={"begrepp": exact_term})
         data_dict = {"html_from_view": html}
         
@@ -168,13 +154,25 @@ def opponera_term(request):
 
 def bekräfta_term(request):
 
+    url_parameter = request.GET.get("q")
+
+    if request.method == 'GET':
+        inkommande_term = Begrepp(term=url_parameter)
+        form = BekräftaTermForm(initial={'term_id' : inkommande_term})
+
     if request.method == 'POST':
+    
         form = BekräftaTermForm(request.POST)
         if form.is_valid():
-            pass
-        return HttpResponse('Tack! Begrepp definitionen bekräftades')
+            kopplad_domän = Doman()
+            kopplad_domän.begrepp = Begrepp.objects.get(term=form.cleaned_data.get('term_id'))
+            kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
+            kopplad_domän.domän_kontext = form.cleaned_data.get('kontext')
+            
+            #SomeModel.objects.filter(id=id).delete()
+            kopplad_domän.save()
 
-    else:
-        form = BekräftaTermForm()
+            return HttpResponse('Tack! Begrepp definitionen bekräftades')        
     
-    return render(request, 'bekrafta_term.html', {'bekräfta': form})
+    else:
+        return render(request, 'bekrafta_term.html', {'bekräfta': form})

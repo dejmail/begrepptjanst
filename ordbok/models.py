@@ -1,20 +1,20 @@
 from django.contrib import admin
 from django.db import models
 
+DEFAULT_STATUS = "Ny"
+
+STATUS_VAL = (('Avråds', "Avråds"),
+              ('Definiera ej', 'Definiera ej'), 
+              ('Inte definierad', 'Inte definierad'), 
+              ('Klar', 'Klar'), 
+              ('Pågår', 'Pågår'), 
+              ('Publicera ej', 'Publicera ej'),
+              (DEFAULT_STATUS, DEFAULT_STATUS))
+
 class Begrepp(models.Model):
 
     class Meta:
         verbose_name_plural = "Begrepp"
-
-    DEFAULT_STATUS = 'Ny'
-
-    STATUS_VAL = (('Avråds', "Avråds"),
-                  ('Definiera ej', 'Definiera ej'), 
-                  ('Inte definierad', 'Inte definierad'), 
-                  ('Klar', 'Klar'), 
-                  ('Pågår', 'Pågår'), 
-                  ('Publicera ej', 'Publicera ej'),
-                  (DEFAULT_STATUS, DEFAULT_STATUS))
 
     begrepp_kontext = models.TextField()
     begrepp_version_nummer = models.DateTimeField()
@@ -66,3 +66,16 @@ class Synonym(models.Model):
 
     def __str__(self):
         return self.synonym
+
+class OpponeraBegreppDefinition(models.Model):
+
+    class Meta:
+        verbose_name_plural = 'Ifrågasatt Begrepp Definitioner'
+    
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
+    begrepp_kontext = models.TextField()
+    datum = models.DateTimeField()
+    epost = models.EmailField()
+    namn = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, choices=STATUS_VAL, default=DEFAULT_STATUS)
+    telefon = models.CharField(max_length=13)
