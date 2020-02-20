@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ordbok.apps.OrdbokConfig',
-    'rest_framework',
     'crispy_forms',
 ]
 
