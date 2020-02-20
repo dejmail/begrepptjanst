@@ -59,7 +59,7 @@ ROOT_URLCONF = 'begrepptjanst.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(os.path.realpath(os.path.dirname(__file__)), 'ordbok'),],
+        'DIRS': ['templates/ordbok'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

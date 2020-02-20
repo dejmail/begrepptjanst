@@ -17,7 +17,7 @@
 {% endfor %}
 <tr>
     <td><button id="opponera_button">Opponera</button></td>
-    <td><button id="bekärfta_button">Bekräfta</button></td>
+    <td><button id="bekräfta_button">Bekräfta</button></td>
 </tr>
     </tbody>
 </table> 
@@ -36,11 +36,11 @@
 
 <script>
 
-function get_form_function(url, div_to_replace){
+function get_form_function(url, div_to_replace, type_method){
         
         $.ajax({
             url : url,
-            type : 'GET',
+            type : type_method,
             success: function(response){
                 $(div_to_replace).html(response);
             }
@@ -49,9 +49,15 @@ function get_form_function(url, div_to_replace){
     
 $(document).ready(function(){
     $("#opponera_button").click(function(){
-        get_form_function("{% url 'opponera_term' %}", "#opponera_bekräfta");});
+        
+        get_form_function(url="{% url 'opponera_term' %}?q={{begrepp.term}}", 
+                          div_to_replace="#opponera_bekräfta",
+                          type_method="GET");});
+                          
     $("#bekräfta_button").click(function(){
-        get_form_function("{% url 'bekräfta_term' %}", "#opponera_bekräfta");});
+        get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp.term}}", 
+                          div_to_replace="#opponera_bekräfta"),
+                          type_method="GET";});
   });
 
 </script>

@@ -1,0 +1,1 @@
+https://books.agiliq.com/projects/django-admin-cookbook/en/latest/action_buttons.html
