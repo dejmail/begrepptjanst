@@ -1,11 +1,11 @@
 {% load static %}
 {% if begrepp %}
-
     <ul>
+        <h5>Ordval</h5>
         {% for term in begrepp %}
             {% if term|truncatewords:30 %}
             <div class="list-group">                    
-                <a button type="button" class="list-group-item list-group-item-action" href="javascript:visa_mening({{term.id}})" id={{term.term}} >{{ term.term }}</a>
+                <a button type="button" class="list-group-item list-group-item-action .btn-sm" href="javascript:visa_mening({{term.id}})" id={{term.term}} >{{ term.term }}</a>
             </div>
             {% endif %}
         {% endfor %}
