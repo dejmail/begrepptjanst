@@ -1,5 +1,5 @@
 from django import forms
-from .models import Doman
+from .models import Doman, Begrepp
 
 workstream_choices = [('Ordination & Beställningar','Ordination & Beställningar'),
                         ('Akutsjukvård','Akutsjukvård'),
@@ -44,10 +44,11 @@ class OpponeraTermForm(forms.Form):
     epost = forms.EmailField()
     telefon = forms.CharField(max_length=20)
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Varför vill du opponera?')
+    term = forms.CharField(widget=forms.HiddenInput())  
 
 class BekräftaTermForm(forms.Form):
 
-    term_id = forms.CharField(widget=forms.HiddenInput())  
+    term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
     kontext = forms.CharField(label='WDPW Acitivity ID / Dokument Kontext')
     workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
