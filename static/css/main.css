@@ -16,6 +16,8 @@ nav {
     animation-direction: alternate;
   }
 
+  .top-buffer-10 { margin-top:10px; }
+
   .top-buffer-20 { margin-top:20px; }
 
   .top-buffer-30 { margin-top:30px; }
