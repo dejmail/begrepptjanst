@@ -1,7 +1,6 @@
 
 from django.urls import include, path
 from . import views
-from .views import autocompleteModel
 from ordbok import views as ordbok_views
 
 urlpatterns = [
