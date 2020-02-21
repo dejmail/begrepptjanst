@@ -13,6 +13,8 @@ from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 import re
 import logging
+from bs4 import BeautifulSoup
+
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +64,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
     clean_statement = re.sub(re_pattern, ' ', sql_statement)
     cursor.execute(clean_statement)
     result = cursor.fetchall()
-    #set_trace()
+    
     #column_names = [i[0] for i in result.description]
     #retur_records = result.fetchall()
     
@@ -181,8 +183,10 @@ def bekräfta_term(request):
             kopplad_domän.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
             kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
             kopplad_domän.domän_kontext = form.cleaned_data.get('kontext')
+
             # We need to clean out the "Inte definierad" once the domän has been given a real one
             #SomeModel.objects.filter(id=id).delete()
+ 
             kopplad_domän.save()
             return HttpResponse('Tack! Användingen av begreppet i arbetsströmen bekräftades')
     else:

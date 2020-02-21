@@ -1,11 +1,15 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}	
 <div class="row">
 	<div class="col-12 text-center mt-3">
-		<h5>Begrepp Service</h5>
+		<h5>Termos Begrepp Service</h5>
 	</div>
 </div>
+
+
+<img  href="{% static '/images/favicon.gif' %}">
+
 
 <div class="row mt-5">
 	<div class="col-4"></div>
@@ -18,8 +22,9 @@
 	</div>	
 	<div class="col-4"></div>
 </div>
-<div class="row mt-10"></div>
-<div class="row mt-10">
+
+<div class="row mt-10 top-buffer-20">
+	
 	<div id="replaceable-content" class="col-4 text-left">
 		{% include 'term-results-partial.html' %}
 	</div>
