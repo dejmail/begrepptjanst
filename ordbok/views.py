@@ -14,9 +14,6 @@ from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, Opponer
 import re
 import logging
 
-from . import help_tools
-
-
 logger = logging.getLogger(__name__)
 
 
