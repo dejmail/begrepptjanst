@@ -178,7 +178,6 @@ def bekräfta_term(request):
         form = BekräftaTermForm(initial={'term' : inkommande_term})
 
     if request.method == 'POST':
-        set_trace()
         form = BekräftaTermForm(request.POST)
         if form.is_valid():
             kopplad_domän = Doman()
@@ -188,7 +187,6 @@ def bekräfta_term(request):
             # We need to clean out the "Inte definierad" once the domän has been given a real one
             #SomeModel.objects.filter(id=id).delete()
             kopplad_domän.save()
-            return HttpResponse('Tack! Användingen av begreppet i arbetsströmen bekräftades')        
-    
+            return HttpResponse('Tack! Användingen av begreppet i arbetsströmen bekräftades')
     else:
         return render(request, 'bekrafta_term.html', {'bekräfta': form})
