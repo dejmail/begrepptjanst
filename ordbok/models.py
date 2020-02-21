@@ -63,7 +63,7 @@ class Synonym(models.Model):
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     synonym = models.CharField(max_length=255)
-    status = models.CharField(max_length=255, choices=STATUS_VAL, default='Klar')
+    synonym_status = models.CharField(max_length=255, choices=STATUS_VAL, default='Klar')
 
     def __str__(self):
         return self.synonym
