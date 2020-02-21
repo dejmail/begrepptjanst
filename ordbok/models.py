@@ -49,7 +49,7 @@ class Doman(models.Model):
         verbose_name_plural = "Domäner"
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
-    domän_id = models.IntegerField(primary_key=True)
+    domän_id = models.AutoField(primary_key=True)
     domän_kontext = models.TextField()
     domän_namn = models.CharField(max_length=255)       
 
@@ -63,6 +63,7 @@ class Synonym(models.Model):
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     synonym = models.CharField(max_length=255)
+    status = models.CharField(max_length=255, choices=STATUS_VAL, default='Klar')
 
     def __str__(self):
         return self.synonym
