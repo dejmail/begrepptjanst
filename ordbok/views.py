@@ -8,26 +8,19 @@ from django.template.loader import render_to_string
 from datetime import datetime
 from django.db import connection, transaction
 from django.core.mail import EmailMessage
-from ordbok.models import Begrepp, Bestallare, Doman, Synonym
-from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm
+from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
+from ordbok import models
+from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 import re
+import logging
+
+from . import help_tools
+
+
+logger = logging.getLogger(__name__)
+
 
 re_pattern = re.compile(r'\s+')
-
-def autocompleteModel(request):
-    if request.is_ajax():
-        q = request.GET.get('txtSearch', '')
-        search_qs = Begrepp.objects.filter(term__icontains=q)
-        print('length of search result', len(search_qs))
-        results = []
-        for r in search_qs:
-            #print(r)
-            results.append(r.term)
-        data = json.dumps(results)
-    else:
-        data = 'fail'
-    mimetype = 'application/json'
-    return HttpResponse(data, mimetype)
 
 def retur_komplett_förklaring_custom_sql(url_parameter):
     
@@ -81,8 +74,8 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
 def begrepp_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
+    logger.error('Test')
     if url_parameter:
- 
         begrepp = Begrepp.objects.filter(term__icontains=url_parameter)
     else:
         begrepp = Begrepp.objects.all()
@@ -151,14 +144,28 @@ def hantera_request_term(request):
 
 def opponera_term(request):
 
+    url_parameter = request.GET.get("q")
+
+    if request.method == 'GET':
+        inkommande_term = Begrepp(term=url_parameter)
+        form = OpponeraTermForm(initial={'term' : inkommande_term})
+
     if request.method == 'POST':
         form = OpponeraTermForm(request.POST)
         if form.is_valid():
-            pass
-        return HttpResponse('Tack! Dina synpunkter har skickats in för granskning')
+            
+            opponera_term = OpponeraBegreppDefinition()
+            opponera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
+            opponera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
+            opponera_term.epost = form.cleaned_data.get('epost')
+            opponera_term.namn = form.cleaned_data.get('namn')
+            opponera_term.status = models.DEFAULT_STATUS
+            opponera_term.telefon = form.cleaned_data.get('telefon')
+            # entries with doublets cause a problem, so we take the first one
+            opponera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
+            opponera_term.save()
 
-    else:
-        form = OpponeraTermForm()
+            return HttpResponse('Tack! Dina synpunkter har skickats in')
     
     return render(request, 'opponera_term.html', {'opponera': form})
 
@@ -168,21 +175,20 @@ def bekräfta_term(request):
 
     if request.method == 'GET':
         inkommande_term = Begrepp(term=url_parameter)
-        form = BekräftaTermForm(initial={'term_id' : inkommande_term})
+        form = BekräftaTermForm(initial={'term' : inkommande_term})
 
     if request.method == 'POST':
-    
+        set_trace()
         form = BekräftaTermForm(request.POST)
         if form.is_valid():
             kopplad_domän = Doman()
-            kopplad_domän.begrepp = Begrepp.objects.get(term=form.cleaned_data.get('term_id'))
+            kopplad_domän.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
             kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
             kopplad_domän.domän_kontext = form.cleaned_data.get('kontext')
-            
+            # We need to clean out the "Inte definierad" once the domän has been given a real one
             #SomeModel.objects.filter(id=id).delete()
             kopplad_domän.save()
-
-            return HttpResponse('Tack! Begrepp definitionen bekräftades')        
+            return HttpResponse('Tack! Användingen av begreppet i arbetsströmen bekräftades')        
     
     else:
         return render(request, 'bekrafta_term.html', {'bekräfta': form})
