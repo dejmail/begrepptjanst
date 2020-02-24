@@ -13,7 +13,6 @@ from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 import re
 import logging
-from bs4 import BeautifulSoup
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +34,8 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             utländsk_definition,\
                             utländsk_term,\
                             vgr_id,\
-                            synonym,\
+                            synonym,
+                            synonym_status,\
                             domän_namn\
                             FROM\
                                 ordbok_begrepp\
@@ -76,6 +76,7 @@ def begrepp_view(request):
     logger.error('Test')
     if url_parameter:
         begrepp = Begrepp.objects.filter(term__icontains=url_parameter)
+
     else:
         begrepp = Begrepp.objects.all()
 
@@ -83,7 +84,7 @@ def begrepp_view(request):
     if request.is_ajax():
 
         html = render_to_string(
-            template_name="term-results-partial.html", context={"begrepp": begrepp}
+            template_name="term-results-partial.html", context={'begrepp': begrepp}
         )
         data_dict = {"html_from_view": html}
         return JsonResponse(data=data_dict, safe=False)
@@ -96,11 +97,15 @@ def begrepp_förklaring_view(request):
     
     if url_parameter:
         exact_term = retur_komplett_förklaring_custom_sql(url_parameter)
+        synonymer = Synonym.objects.filter(term__icontains=url_parameter)
+        definitioner = Begrepp.objects.filter(definition__icontains=url_parameter)
     else:
         term_json = 'Error - Record not found'
     
     if request.is_ajax():
-        html = render_to_string(template_name="term_forklaring.html", context={"begrepp": exact_term})
+        html = render_to_string(template_name="term_forklaring.html", context={'definitioner' : definitioner,
+                                                                               'synonymer' : synonymer,
+                                                                               'begrepp': exact_term})
         data_dict = {"html_from_view": html}
         
         return HttpResponse(json.dumps(data_dict), content_type="application/json")
