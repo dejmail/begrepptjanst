@@ -97,7 +97,7 @@ def begrepp_förklaring_view(request):
     
     if url_parameter:
         exact_term = retur_komplett_förklaring_custom_sql(url_parameter)
-        synonymer = Synonym.objects.filter(term__icontains=url_parameter)
+        synonymer = Synonym.objects.filter(begrepp_id__exact=url_parameter)
         definitioner = Begrepp.objects.filter(definition__icontains=url_parameter)
     else:
         term_json = 'Error - Record not found'
