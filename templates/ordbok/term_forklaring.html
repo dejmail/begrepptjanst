@@ -2,30 +2,49 @@
 {% block förklaring %}
 
 <div id="förklaring" class="förklaring">
-{% if begrepp %}
+{% if begrepp_full %}
 
 <div class="searchTable">
-<h5>Term Förklaring</h5>
 
 <table id="term_förklaring_tabell" class="table table-bordered">
     <tbody>
-{% for attribut,values in begrepp.items %}
-<tr>
-    <td>{{attribut}}</td>
-    <td>{{values}}</td>
-</tr>
-{% endfor %}
-<tr>
-    <td><button id="opponera_button">Opponera</button></td>
-    <td><button id="bekräfta_button">Bekräfta</button></td>
-</tr>
+        {% for attribut,values in begrepp_full.items %}
+        <tr>
+            <td>{{attribut}}</td>
+            <td>{{values}}</td>
+        </tr>
+        {% endfor %}
+
+        <tr>
+            <td>synonym</td>
+            <td>
+                {% for list_item in synonym_full %}
+                    {{list_item.synonym}} ({{list_item.synonym_status}})<br>
+                {% endfor %}
+            </td>        
+        </tr>        
+
+        
+        <tr>
+            <td>domän</td>
+            <td>
+                {% for list_item in domän_full %}
+                    {{list_item.domän_namn}}<br>
+                {% endfor %}
+            </td>
+        </tr>
+
+        <tr>
+            <td><button id="opponera_button">Kommentera</button></td>
+            <td><button id="bekräfta_button">Verifiera användning</button></td>
+        </tr>
     </tbody>
 </table> 
 </div>
 
-    {% else %}
-                <p>No terms found.</p>
-            {% endif %}
+{% else %}
+        <p>Ingen definition hittades...</p>
+{% endif %}
 
 
 </div>

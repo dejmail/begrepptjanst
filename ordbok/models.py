@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db import models
 
-DEFAULT_STATUS = "Ny"
+DEFAULT_STATUS = "Ej Påbörjad"
 
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Definiera ej', 'Definiera ej'), 
@@ -63,7 +63,7 @@ class Synonym(models.Model):
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     synonym = models.CharField(max_length=255)
-    synonym_status = models.CharField(max_length=255, choices=STATUS_VAL, default='Klar')
+    synonym_status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
 
     def __str__(self):
         return self.synonym

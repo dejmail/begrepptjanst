@@ -43,7 +43,7 @@ class OpponeraTermForm(forms.Form):
     namn = forms.CharField()
     epost = forms.EmailField()
     telefon = forms.CharField(max_length=20)
-    resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Varför vill du opponera?')
+    resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())  
 
 class BekräftaTermForm(forms.Form):
