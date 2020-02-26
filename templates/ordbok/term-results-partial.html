@@ -1,15 +1,38 @@
 {% load static %}
+
 {% if begrepp %}
-    <ul>
-        <h5>Ordval</h5>
-        {% for term in begrepp %}
-            {% if term|truncatewords:30 %}
-            <div class="list-group">                    
-                <a button type="button" class="list-group-item list-group-item-action .btn-sm" href="javascript:visa_mening({{term.id}})" id={{term.term}} >{{ term.term }}</a>
-            </div>
-            {% endif %}
-        {% endfor %}
-    </ul>
+
+<div class="row mt-5 top-buffer-15">
+    <table class="table table-bordered table-striped" id="definition_table">
+        <thead>
+          <tr>
+            <th>Begrepp</th>
+            <th>Definition</th>
+            <th>Synonym (Status)</th>
+          </tr>
+        </thead>
+        <tbody id="myTable">
+            {% for begrepp in begrepp %}
+          <tr>
+            <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})">{{begrepp.term}}</a></td>
+            <td>{{begrepp.definition}}</td>
+                
+            <td>
+                {% for syn in synonym %}
+                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                        {{syn.synonym}} ({{syn.synonym_status}})<br>
+                    {% endifequal %}
+                {% endfor %}
+                
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+
+</div>
+
+
+
 {% else %}
 
 <script>
