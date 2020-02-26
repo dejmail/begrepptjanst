@@ -1,21 +1,20 @@
 const user_input = $("#user-input")
 const search_icon = $('#search-icon')
 const begrepp_div = $('#replaceable-content')
-const endpoint = '/'
+const endpoint = ''
 const delay_by_in_ms = 750
-let scheduled_function = false
+let scheduled_function = true
 
 
-user_input.keydown(function () {
+user_input.keyup(function () {
 
 	const request_parameters = {
 		
 		q: $(this).val() // value of user_input: the HTML element with ID user-input
 	}
-
-	if (request_parameters.q.length > 1) {
 	
 	var ajax_call = function (endpoint, request_parameters) {
+		$("#term_förklaring_tabell").remove();
 		$.getJSON(endpoint, request_parameters)
 			.done(response => {
 				// fade out the begrepp_div, then:
@@ -29,7 +28,7 @@ user_input.keydown(function () {
 				})
 			})
 	}
-}
+
 
 	// start animating the search icon with the CSS class
 	search_icon.addClass('blink')
@@ -43,5 +42,3 @@ user_input.keydown(function () {
 	scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
 
 })
-
-
