@@ -56,10 +56,12 @@ function visa_mening(term_id)
       success: function(data) {
         var display_html = data.html_from_view;
         $('#mitten-span').html(display_html);
-      },
+      },      
       error: function() {
         $('#mitten-span').html("Error - Hoppsan! Jag får ingen definition från server...finns ett problem");
       },
+    }).done(function( data, textStatus, jqXHR) {
+        $("#definition_table").remove();
     });
     
 }

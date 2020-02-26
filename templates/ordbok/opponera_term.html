@@ -1,7 +1,7 @@
 {% load crispy_forms_filters %}
 <div id="opponera_bekräfta" class="md-5">
-    <h5>Opponera Term</h5>
-    <p>Skriva vad du inte håller med om</p>
+    <h5>Kommentera Begrepp</h5>
+    <p>Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet. Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.</p>
     <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='POST'>{% csrf_token %}
         {{ opponera|crispy }}
 

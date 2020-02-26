@@ -12,22 +12,22 @@
   </div>
 
 <div class="row mt-5">
-	<div class="col-4"></div>
+	<div class="col-2"></div>
 	
-	<div class="col-4">
+	<div class="col-8 mx-auto">
 		<form class="form-inline">
 		<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-		<input id="user-input" class="form-control form-control-sm ml-3 w-75" type="text" placeholder="Search" aria-label="Search">
+		<input id="user-input" class="form-control form-control-sm col-md-11" type="text" placeholder="Sök" aria-label="Sök">
 		</form>
 	</div>	
-	<div class="col-4"></div>
+	<div class="col-2"></div>
 </div>
 
-<div class="row mt-10 top-buffer-20">
-	
-	<div id="replaceable-content" class="col-4 text-left">
-		{% include 'term-results-partial.html' %}
-	</div>
+<div class="row mt-10">
+	<div class="col-2"></div>
+	<div class="col-8"><div id="replaceable-content" class="text-left top-buffer-15"></div></div>
+	<div class="col-2"></div>
+</div>
 	
 	<div class="col-8">
 		{% block mitten_span %}

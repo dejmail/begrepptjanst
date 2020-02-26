@@ -20,10 +20,91 @@ logger = logging.getLogger(__name__)
 
 re_pattern = re.compile(r'\s+')
 
+def extract_columns_from_query_and_return_set(search_result, start, stop):
+
+    reduced_list = []
+    for record in search_result:
+        if start==0:
+            reduced_list.append(record[:stop])
+        elif stop==0:
+            reduced_list.append(record[start:])
+        else:
+            reduced_list.append(record[start:stop])
+    reduced_set = set([tuple(i) for i in reduced_list])
+    return  reduced_set
+
+def extract_id_synonym_status_columns_from_general_query_and_return_set(search_result):
+
+    reduced_list = []
+    for record in search_result:
+        reduced_list.append([record[0], record[11], record[12]])
+    reduced_set = set([tuple(i) for i in reduced_list])
+    return  reduced_set
+
+def extract_id_definition_term_columns_from_general_query_and_return_set(search_result):
+
+    reduced_list = []
+    for record in search_result:
+        reduced_list.append([record[0], record[3], record[7]])
+    reduced_set = set([tuple(i) for i in reduced_list])
+    return  reduced_set
+
+def retur_general_sök(url_parameter):
+    cursor = connection.cursor()
+    ''' need to reduce the number of fields being returned, we are not using all of them,
+    but this also affects the parsing as it is position based, so need to be careful'''
+    sql_statement = f'''SELECT ordbok_begrepp.id,\
+                              begrepp_kontext,\
+                              begrepp_version_nummer,\
+                              definition,\
+                              externt_id,\
+                              externt_register,\
+                              status,\
+                              term,\
+                              utländsk_definition,\
+                              utländsk_term,\
+                              vgr_id,\
+                              synonym,\
+                              synonym_status,\
+                              domän_namn\
+                        FROM ordbok_begrepp\
+                            LEFT JOIN ordbok_synonym\
+                                ON ordbok_begrepp.id = ordbok_synonym.begrepp_id\
+                            LEFT JOIN ordbok_doman\
+                                ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
+                        WHERE ordbok_begrepp.term LIKE "%{url_parameter}%"\
+                        OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
+                        OR ordbok_synonym.synonym LIKE "%{url_parameter}%";'''
+
+
+    column_names = ['begrepp_id',
+                    'begrepp_kontext',
+                    'begrepp_version_nummer',
+                    'definition',
+                    'externt_id',
+                    'externt_register',
+                    'status',
+                    'term',
+                    'utländsk_definition',
+                    'utländsk_term',
+                    'vgr_id',
+                    'synonym',
+                    'synonym_status',
+                    'domän_namn']
+
+    clean_statement = re.sub(re_pattern, ' ', sql_statement)
+    
+    cursor.execute(clean_statement)
+    result = cursor.fetchall()
+
+    return result
+    
+
 def retur_komplett_förklaring_custom_sql(url_parameter):
     
     cursor = connection.cursor()
     sql_statement = f'''SELECT\
+                            ordbok_begrepp.id AS begrepp_id,\
                             begrepp_kontext,\
                             begrepp_version_nummer,\
                             definition,\
@@ -34,8 +115,10 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             utländsk_definition,\
                             utländsk_term,\
                             vgr_id,\
+                            ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                             synonym,
                             synonym_status,\
+                            ordbok_doman.begrepp_id AS domän_begrepp_id,\
                             domän_namn\
                             FROM\
                                 ordbok_begrepp\
@@ -47,65 +130,107 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
                             WHERE\
                                 ordbok_begrepp.id = {url_parameter};'''
-    
-    column_names = ['begrepp_kontext',
-                   'begrepp_version_nummer',
-                   'definition',
-                   'externt_id',
-                   'externt_register',
-                   'status',
-                   'term',
-                   'utländsk_definition',
-                   'utländsk_term',
-                   'vgr_id',
-                   'synonym',
-                   'domän_namn']
 
     clean_statement = re.sub(re_pattern, ' ', sql_statement)
     cursor.execute(clean_statement)
     result = cursor.fetchall()
     
-    #column_names = [i[0] for i in result.description]
-    #retur_records = result.fetchall()
-    
-    return dict(zip(column_names, result[0]))
+    return result
+
+def run_sql_statement(sql_statement):
+
+        cursor = connection.cursor()
+        clean_statement = re.sub(re_pattern, ' ', sql_statement)
+        cursor.execute(clean_statement)
+        result = cursor.fetchall()
+
+        return result
 
 def begrepp_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
-    logger.error('Test')
-    if url_parameter:
-        begrepp = Begrepp.objects.filter(term__icontains=url_parameter)
 
-    else:
-        begrepp = Begrepp.objects.all()
-
-    ctx["begrepp"] = begrepp
     if request.is_ajax():
+        search_request = retur_general_sök(url_parameter)
 
+        begrepp = extract_id_definition_term_columns_from_general_query_and_return_set(search_result=search_request)
+        synonym = extract_id_synonym_status_columns_from_general_query_and_return_set(search_result=search_request)
+    
+        begrepp_column_names = ['begrepp_id', 'definition', 'term']
+    
+        return_list_dict = []
+        for return_result in begrepp:
+            return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
+
+        synonym_column_names = ['begrepp_id', 'synonym', 'synonym_status']
+
+        return_synonym_list_dict = []
+        for return_result in synonym:
+            return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
+        
         html = render_to_string(
-            template_name="term-results-partial.html", context={'begrepp': begrepp}
+            template_name="term-results-partial.html", context={'begrepp': return_list_dict,
+                                                                'synonym' : return_synonym_list_dict}
         )
         data_dict = {"html_from_view": html}
         return JsonResponse(data=data_dict, safe=False)
+    
+    else:
+        begrepp = Begrepp.objects.none()
 
-    return render(request, "term.html", context=ctx)
+    return render(request, "term.html", context={'begrepp': begrepp})
 
 def begrepp_förklaring_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
     
     if url_parameter:
-        exact_term = retur_komplett_förklaring_custom_sql(url_parameter)
-        synonymer = Synonym.objects.filter(term__icontains=url_parameter)
-        definitioner = Begrepp.objects.filter(definition__icontains=url_parameter)
+        exact_term_request = retur_komplett_förklaring_custom_sql(url_parameter)
+        begrepp_full = extract_columns_from_query_and_return_set(exact_term_request, 0, -5)
+        synonym_full = extract_columns_from_query_and_return_set(exact_term_request, -5, -2)
+        domän_full = extract_columns_from_query_and_return_set(exact_term_request, -2, 0)
+
+        result_column_names = ['begrepp_id',
+                               'begrepp_kontext',
+                               'begrepp_version_nummer',
+                               'definition',
+                               'externt_id',
+                               'externt_register',
+                               'status',
+                               'term',
+                               'utländsk_definition',
+                               'utländsk_term',
+                               'vgr_id',
+                               'synonym_begrepp_id',
+                               'synonym',
+                               'synonym_status',
+                               'domän_begrepp_id',
+                               'domän_namn']
+
+        begrepp_column_names = result_column_names[:-5]
+        return_list_dict = []
+        for return_result in begrepp_full:
+            return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
+
+        synonym_column_names = result_column_names[-5:-2]
+        return_synonym_list_dict = []
+        for return_result in synonym_full:
+            return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
+        
+
+        domän_column_names = result_column_names[-2:]
+        return_domän_list_dict = []
+        for return_result in domän_full:
+            return_domän_list_dict.append(dict(zip(domän_column_names, return_result)))
+        
     else:
-        term_json = 'Error - Record not found'
+        term_json = Begrepp.objects.none()
     
     if request.is_ajax():
-        html = render_to_string(template_name="term_forklaring.html", context={'definitioner' : definitioner,
-                                                                               'synonymer' : synonymer,
-                                                                               'begrepp': exact_term})
+        #set_trace()
+        html = render_to_string(template_name="term_forklaring.html", context={'begrepp_full': return_list_dict[0],
+                                                                               'synonym_full' : return_synonym_list_dict,
+                                                                               'domän_full' : return_domän_list_dict})
         data_dict = {"html_from_view": html}
         
         return HttpResponse(json.dumps(data_dict), content_type="application/json")
