@@ -50,5 +50,5 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    kontext = forms.CharField(label='WDPW Acitivity ID / Dokument Kontext')
+    kontext = forms.CharField(label='WDPW Activitet ID / Dokument Kontext')
     workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
