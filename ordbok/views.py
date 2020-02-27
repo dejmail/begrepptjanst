@@ -264,7 +264,9 @@ def hantera_request_term(request):
             inkommande_domän.begrepp = ny_term
             inkommande_domän.save()
 
-            return HttpResponse('Tack! Begrepp skickades in för granskning')
+            return HttpResponse('''<div class="alert alert-success">
+                                   Tack! Begrepp skickades in för granskning.
+                                   </div>''')
 
     else:
         form = TermRequestForm()
@@ -294,7 +296,9 @@ def opponera_term(request):
             opponera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
             opponera_term.save()
 
-            return HttpResponse('Tack! Dina synpunkter har skickats in')
+            return HttpResponse('''<div class="alert alert-success">
+                                   Tack för dina synpunkter.
+                                   </div>''')
     
     return render(request, 'opponera_term.html', {'opponera': form})
 
@@ -318,6 +322,8 @@ def bekräfta_term(request):
             #SomeModel.objects.filter(id=id).delete()
  
             kopplad_domän.save()
-            return HttpResponse('Tack! Användingen av begreppet i arbetsströmen bekräftades')
+            return HttpResponse('''<div class="alert alert-success">
+                                   Tack för verifiering av domänen.
+                                   </div>''')
     else:
         return render(request, 'bekrafta_term.html', {'bekräfta': form})

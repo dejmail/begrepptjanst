@@ -5,6 +5,26 @@
     <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='POST'>{% csrf_token %}
         {{ opponera|crispy }}
 
-    <input type="submit" value="Submit">
+    <input type="submit" value="Verkställ" id="opponera_button">
     </form>
 </div>
+
+
+<script>$("#opponera_term_form").submit(function(event){
+	event.preventDefault(); //prevent default action 
+	var post_url = $(this).attr("action"); //get form action url
+	var request_method = $(this).attr("method"); //get form GET/POST method
+	var form_data = $(this).serialize(); //Encode form elements for submission
+	
+	$.ajax({
+		url : post_url,
+		type: request_method,
+		data : form_data
+	}).done(function(response){ 
+        $("#mitten-span").html(response);
+        setTimeout(function(){
+            $("#mitten-span").html('<div id="mitten-span"></div>')}, 2500);
+	});
+});
+
+</script>
