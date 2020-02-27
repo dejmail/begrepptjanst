@@ -36,34 +36,10 @@
 {% else %}
 
 <script>
-    function populate_request_form()
-    {    
-    $.ajax({
-        type: "GET",
-        dataType: "html",
-        url: "{% url 'hantera_term_request' %}",
-        success: function(data) {
-            var display_html = data.html_from_view;
-            $('#mitten-span').html(data);
-        },
-        error: function() {
-            $('#mitten-span').html("Loaded");
-        },
-        });
-    }
+
     </script>
 
 <div id="nyTermForm">
     <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}" onload=populate_request_form()>
 </div>
 {% endif %}
-
-
-<script>
-$("#valtterm").on('click', function() {
-    event.preventDefault();
-    document.getElementById("valtterm").style.flexGrow = "5";
-    window.location = "";
-});
-
-</script>

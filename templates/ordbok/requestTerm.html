@@ -21,6 +21,7 @@
 
 
 <script>
+
     $("#beställ_form").submit(function(event){
 	event.preventDefault(); //prevent default action 
 	var post_url = $(this).attr("action"); //get form action url
@@ -32,7 +33,9 @@
 		type: request_method,
 		data : form_data
 	}).done(function(response){ 
-		$("#mitten-span").html(response);
+        $("#mitten-span").html(response);
+        setTimeout(function(){
+            $("#mitten-span").html('<div id="mitten-span"></div>')}, 2500);
 	});
 });
 

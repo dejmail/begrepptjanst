@@ -47,23 +47,19 @@
 
 <script>
 
-function visa_mening(term_id)
+function populate_request_form()
 {    
-  $.ajax({
-      type: "GET",
-      dataType: "json",
-      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
-      success: function(data) {
-        var display_html = data.html_from_view;
-        $('#mitten-span').html(display_html);
-      },      
-      error: function() {
-        $('#mitten-span').html("Error - Hoppsan! Jag får ingen definition från server...finns ett problem");
-      },
-    }).done(function( data, textStatus, jqXHR) {
-        $("#definition_table").remove();
-    });
-    
+$.ajax({
+	type: "GET",
+	dataType: "html",
+	url: "{% url 'hantera_term_request' %}",
+	success: function(data) {
+		var display_html = data.html_from_view;
+		$('#mitten-span').html(data);
+	},
+	error: function() {
+		$('#mitten-span').html("Loaded");
+	},
+	});
 }
-
 </script>
