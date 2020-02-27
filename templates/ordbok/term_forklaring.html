@@ -102,14 +102,17 @@ function get_form_function(url, div_to_replace, type_method){
 $(document).ready(function(){
     $("#opponera_button").click(function(){
         
-        get_form_function(url="{% url 'opponera_term' %}?q={{begrepp.term}}", 
+        get_form_function(url="{% url 'opponera_term' %}?q={{begrepp_full.term}}", 
                           div_to_replace="#opponera_bekräfta",
-                          type_method="GET");});
+                          type_method="GET");
+        
+        });
                           
     $("#bekräfta_button").click(function(){
-        get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp.term}}", 
+        get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp_full.term}}", 
                           div_to_replace="#opponera_bekräfta"),
-                          type_method="GET";});
+                          type_method="GET";
+                        });    
   });
 
 </script>
