@@ -12,7 +12,8 @@ user_input.keyup(function () {
 		
 		q: $(this).val() // value of user_input: the HTML element with ID user-input
 	}
-	
+	if (request_parameters.q.length > 1) {
+
 	var ajax_call = function (endpoint, request_parameters) {
 		$("#term_förklaring_tabell").remove();
 		$("#mitten-span").html('<div id="mitten-span"></div>');
@@ -29,8 +30,7 @@ user_input.keyup(function () {
 				})
 			})
 	}
-
-
+} 
 	// start animating the search icon with the CSS class
 	search_icon.addClass('blink')
 
