@@ -15,6 +15,7 @@ user_input.keyup(function () {
 	
 	var ajax_call = function (endpoint, request_parameters) {
 		$("#term_förklaring_tabell").remove();
+		$("#mitten-span").html('<div id="mitten-span"></div>');
 		$.getJSON(endpoint, request_parameters)
 			.done(response => {
 				// fade out the begrepp_div, then:
