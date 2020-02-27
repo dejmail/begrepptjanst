@@ -106,14 +106,14 @@ $(document).ready(function(){
                           div_to_replace="#opponera_bekräfta",
                           type_method="GET");
         
-        });
+                        });
                           
     $("#bekräfta_button").click(function(){
         get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp_full.term}}", 
                           div_to_replace="#opponera_bekräfta"),
                           type_method="GET";
                         });    
-  });
+                    });
 
 </script>
 
