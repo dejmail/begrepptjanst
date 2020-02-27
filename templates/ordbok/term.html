@@ -17,7 +17,7 @@
 	<div class="col-8 mx-auto">
 		<form class="form-inline" onsubmit="return false;">
 		<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-		<input id="user-input" class="form-control form-control-sm col-md-11" type="text" placeholder="Sök" aria-label="Sök">
+		<input id="user-input" class="form-control form-control-md col-md-11" type="text" placeholder="Sök" aria-label="Sök">
 		</form>
 	</div>	
 	<div class="col-2"></div>
@@ -39,5 +39,28 @@
 	</div>
 	<div class="col-2"></div>
 </div>
+
+<script>
+function visa_mening(term_id)
+{    
+  $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
+      success: function(data) {
+        var display_html = data.html_from_view;
+        $('#mitten-span').html(display_html);
+      },      
+      error: function() {
+        $('#mitten-span').html("Error - Hoppsan! Jag får ingen definition från server...finns ett problem");
+      },
+    }).done(function( data, textStatus, jqXHR) {
+        $("#definition_table").remove();
+    });
+    
+}
+
+
+</script>
 
 {% endblock %}
