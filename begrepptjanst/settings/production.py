@@ -1,6 +1,6 @@
 from begrepptjanst.settings.base import *
 
-DEBUG=True
+DEBUG=False
 
 DATABASES = {
     'default': {
