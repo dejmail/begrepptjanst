@@ -27,6 +27,8 @@ class Begrepp(models.Model):
     utländsk_definition = models.TextField(default='Inte definierad')
     utländsk_term = models.CharField(default='Inte definierad', max_length=255)
     vgr_id = models.CharField(max_length=255, null=True)
+    anmärkningar = models.TextField()
+    kommentar_handläggning = models.TextField()
 
 
     def __str__(self):
