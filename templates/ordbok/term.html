@@ -52,7 +52,7 @@ function visa_mening(term_id)
         $('#mitten-span').html(display_html);
       },      
       error: function() {
-        $('#mitten-span').html("Error - Hoppsan! Jag får ingen definition från server...finns ett problem");
+        $('#mitten-span').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
       },
     }).done(function( data, textStatus, jqXHR) {
         $("#definition_table").remove();
