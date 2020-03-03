@@ -13,7 +13,8 @@ workstream_choices = [('Ordination & Beställningar','Ordination & Beställninga
                         ('PAS','PAS'),
                         ('Primärvård','Primärvård'),
                         ('Psykiatri','Psykiatri'),
-                        ('Rapporter','Rapporter')]
+                        ('Rapporter','Rapporter'),
+                        ('Masterdata', 'Masterdata')]
 
 class TermRequestForm(forms.Form):
 
