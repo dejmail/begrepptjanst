@@ -16,19 +16,19 @@ class Begrepp(models.Model):
     class Meta:
         verbose_name_plural = "Begrepp"
 
-    begrepp_kontext = models.TextField()
+    begrepp_kontext = models.TextField(default='Inte definierad')
     begrepp_version_nummer = models.DateTimeField()
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
-    externt_id = models.CharField(max_length=255, null=True)
-    externt_register = models.CharField(max_length=255, null=True)
+    externt_id = models.CharField(max_length=255, null=True, default='Inte definierad')
+    externt_register = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255)
     utländsk_definition = models.TextField(default='Inte definierad')
     utländsk_term = models.CharField(default='Inte definierad', max_length=255)
     vgr_id = models.CharField(max_length=255, null=True)
-    anmärkningar = models.TextField()
-    kommentar_handläggning = models.TextField()
+    anmärkningar = models.TextField(null=True, default='Inte definierad')
+    kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
 
 
     def __str__(self):
