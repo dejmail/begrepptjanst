@@ -30,43 +30,22 @@ def extract_columns_from_query_and_return_set(search_result, start, stop):
             reduced_list.append(record[start:])
         else:
             reduced_list.append(record[start:stop])
+    
     reduced_set = set([tuple(i) for i in reduced_list])
     return  reduced_set
 
-def extract_id_synonym_status_columns_from_general_query_and_return_set(search_result):
-
-    reduced_list = []
-    for record in search_result:
-        reduced_list.append([record[0], record[11], record[12]])
-    reduced_set = set([tuple(i) for i in reduced_list])
-    return  reduced_set
-
-def extract_id_definition_term_columns_from_general_query_and_return_set(search_result):
-
-    reduced_list = []
-    for record in search_result:
-        reduced_list.append([record[0], record[3], record[7]])
-    reduced_set = set([tuple(i) for i in reduced_list])
-    return  reduced_set
 
 def retur_general_sök(url_parameter):
     cursor = connection.cursor()
     ''' need to reduce the number of fields being returned, we are not using all of them,
     but this also affects the parsing as it is position based, so need to be careful'''
     sql_statement = f'''SELECT ordbok_begrepp.id,\
-                              begrepp_kontext,\
-                              begrepp_version_nummer,\
                               definition,\
-                              externt_id,\
-                              externt_register,\
-                              status,\
                               term,\
-                              utländsk_definition,\
-                              utländsk_term,\
-                              vgr_id,\
+                              ordbok_begrepp.status,\
+                              ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                               synonym,\
-                              synonym_status,\
-                              domän_namn\
+                              synonym_status\
                         FROM ordbok_begrepp\
                             LEFT JOIN ordbok_synonym\
                                 ON ordbok_begrepp.id = ordbok_synonym.begrepp_id\
@@ -76,27 +55,18 @@ def retur_general_sök(url_parameter):
                         OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
                         OR ordbok_synonym.synonym LIKE "%{url_parameter}%";'''
 
-
     column_names = ['begrepp_id',
-                    'begrepp_kontext',
-                    'begrepp_version_nummer',
                     'definition',
-                    'externt_id',
-                    'externt_register',
-                    'status',
                     'term',
-                    'utländsk_definition',
-                    'utländsk_term',
-                    'vgr_id',
+                    'begrepp_id',                    
                     'synonym',
-                    'synonym_status',
-                    'domän_namn']
+                    'synonym_status']
 
     clean_statement = re.sub(re_pattern, ' ', sql_statement)
     
     cursor.execute(clean_statement)
     result = cursor.fetchall()
-
+    
     return result
     
 
@@ -153,9 +123,9 @@ def begrepp_view(request):
     if request.is_ajax():
         search_request = retur_general_sök(url_parameter)
 
-        begrepp = extract_id_definition_term_columns_from_general_query_and_return_set(search_result=search_request)
-        synonym = extract_id_synonym_status_columns_from_general_query_and_return_set(search_result=search_request)
-    
+        begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=3)
+        synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=4, stop=7)
+
         begrepp_column_names = ['begrepp_id', 'definition', 'term']
     
         return_list_dict = []
