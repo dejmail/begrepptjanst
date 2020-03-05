@@ -1,5 +1,5 @@
 from django.contrib import admin
-from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition
+from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
 
 admin.site.site_header = "BegreppTjänst Admin"
 admin.site.site_title = "BegpreppTjänst Admin Portal"
@@ -46,8 +46,16 @@ class DomanAdmin(admin.ModelAdmin):
                     'begrepp',)
 
     list_filter = ("domän_namn",)
+    search_fields = ('begrepp__term',)
 
-    #search_fields = ('begrepp',)
+class SynonymAdmin(admin.ModelAdmin):
+
+    list_display = ('begrepp',
+                    'synonym',
+                    'synonym_status')
+
+    list_filter = ("synonym_status",)
+    search_fields = ("begrepp__term",)
 
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
@@ -62,4 +70,5 @@ class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
+admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
