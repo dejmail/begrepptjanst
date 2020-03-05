@@ -82,3 +82,20 @@ class OpponeraBegreppDefinition(models.Model):
     namn = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_VAL, default=DEFAULT_STATUS)
     telefon = models.CharField(max_length=13)
+
+class SökData(models.Model):
+
+    class Meta:
+        verbose_name_plural = 'Sök data'
+
+    sök_term = models.CharField(max_length=255)
+    ip_adress = models.GenericIPAddressField()
+    sök_timestamp = models.DateTimeField(auto_now_add=True)
+    records_returned = models.TextField()
+
+class SökFörklaring(models.Model):
+
+    sök_term = models.CharField(max_length=255)
+    ip_adress = models.GenericIPAddressField()
+    sök_timestamp = models.DateTimeField(auto_now_add=True)
+    
