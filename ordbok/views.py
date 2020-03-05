@@ -11,6 +11,7 @@ from django.core.mail import EmailMessage
 from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
 from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
+from .functions import mäta_sök_träff, mäta_förklaring_träff
 import re
 import logging
 
@@ -137,12 +138,16 @@ def begrepp_view(request):
         return_synonym_list_dict = []
         for return_result in synonym:
             return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
-        
+    
+
         html = render_to_string(
             template_name="term-results-partial.html", context={'begrepp': return_list_dict,
                                                                 'synonym' : return_synonym_list_dict}
         )
         data_dict = {"html_from_view": html}
+        
+        mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
+
         return JsonResponse(data=data_dict, safe=False)
     
     else:
@@ -192,6 +197,8 @@ def begrepp_förklaring_view(request):
         return_domän_list_dict = []
         for return_result in domän_full:
             return_domän_list_dict.append(dict(zip(domän_column_names, return_result)))
+
+        mäta_förklaring_träff(sök_term=url_parameter, request=request)
         
     else:
         term_json = Begrepp.objects.none()
