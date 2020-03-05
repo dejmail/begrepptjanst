@@ -5,6 +5,7 @@ workstream_choices = [('Ordination & Beställningar','Ordination & Beställninga
                         ('Akutsjukvård','Akutsjukvård'),
                         ('Dokumentation Vårdproffesion','Dokumentation Vårdproffesion'),
                         ('Kärnfunktioner','Kärnfunktioner'),
+                        ('Läkemedel','Läkemedel'),
                         ('Materiallogistik','Materiallogistik'),
                         ('Medicinsk Dokumentation','Medicinsk Dokumentation'),
                         ('Mödravård Obstetrik','Mödravård Obstetrik'),
