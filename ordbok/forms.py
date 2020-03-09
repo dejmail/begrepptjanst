@@ -1,21 +1,23 @@
 from django import forms
 from .models import Doman, Begrepp
 
-workstream_choices = [('Ordination & Beställningar','Ordination & Beställningar'),
-                        ('Akutsjukvård','Akutsjukvård'),
-                        ('Dokumentation Vårdproffesion','Dokumentation Vårdproffesion'),
-                        ('Kärnfunktioner','Kärnfunktioner'),
-                        ('Läkemedel','Läkemedel'),
-                        ('Materiallogistik','Materiallogistik'),
-                        ('Medicinsk Dokumentation','Medicinsk Dokumentation'),
-                        ('Mödravård Obstetrik','Mödravård Obstetrik'),
-                        ('Onkologi','Onkologi'),
-                        ('Operation','Operation'),
-                        ('PAS','PAS'),
-                        ('Primärvård','Primärvård'),
-                        ('Psykiatri','Psykiatri'),
-                        ('Rapporter','Rapporter'),
-                        ('Masterdata', 'Masterdata')]
+workstream_choices = [('Akutsjukvård','Akutsjukvård'),
+('DokumentationVårdproffesion','DokumentationVårdproffesion'),
+('FacilityManagement','FacilityManagement'),
+('Kärnfunktioner','Kärnfunktioner'),
+('Läkemedel','Läkemedel'),
+('Masterdata','Masterdata'),
+('Materiallogistik','Materiallogistik'),
+('MedicinskDokumentation','MedicinskDokumentation'),
+('MödravårdObstetrik','MödravårdObstetrik'),
+('Onkologi','Onkologi'),
+('Operation','Operation'),
+('Ordination&Beställningar','Ordination&Beställningar'),
+('PAS','PAS'),
+('Primärvård','Primärvård'),
+('Psykiatri','Psykiatri'),
+('Rapporter','Rapporter')]
+
 
 class TermRequestForm(forms.Form):
 
