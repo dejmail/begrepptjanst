@@ -3,7 +3,7 @@ from .models import Doman, Begrepp
 
 workstream_choices = [('Akutsjukvård','Akutsjukvård'),
 ('DokumentationVårdproffesion','DokumentationVårdproffesion'),
-('FacilityManagement','FacilityManagement'),
+('Resursstyrning','Resursstyrning'),
 ('Kärnfunktioner','Kärnfunktioner'),
 ('Läkemedel','Läkemedel'),
 ('Masterdata','Masterdata'),
