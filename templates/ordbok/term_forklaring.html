@@ -93,7 +93,6 @@ var MutationObserver = window.MutationObserver || window.WebKitMutationObserver 
 var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === 'childList') {
-            console.log("Captured the loading of the new form")
             scrollSmoothToBottom();
     }
     });
@@ -136,8 +135,7 @@ $(document).ready(function(){
 
 function scrollSmoothToBottom() {
     var div = document.getElementById("opponera_bekräfta");
-    console.log(div.scrollHeight, div.clientHeight)
-    div.scrollIntoView();
+    div.scrollIntoView({behavior : 'smooth'});
 };
 
 
