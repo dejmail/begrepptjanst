@@ -10,7 +10,9 @@
 </div>
 
 
-<script>$("#opponera_term_form").submit(function(event){
+<script>
+	
+$("#opponera_term_form").submit(function(event){
 	event.preventDefault(); //prevent default action 
 	var post_url = $(this).attr("action"); //get form action url
 	var request_method = $(this).attr("method"); //get form GET/POST method

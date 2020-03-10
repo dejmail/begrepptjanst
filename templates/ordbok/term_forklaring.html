@@ -88,6 +88,25 @@
 
 <script>
 
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+// create an observer instance
+var observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+            console.log("Captured the loading of the new form")
+            scrollSmoothToBottom();
+    }
+    });
+});
+ 
+// configuration of the observer:
+var config = {childList: true}
+ 
+var target = document.querySelector('#opponera_bekräfta');
+// pass in the target node, as well as the observer options
+observer.observe(target, config);
+ 
+
 function get_form_function(url, div_to_replace, type_method){
         
         $.ajax({
@@ -97,6 +116,7 @@ function get_form_function(url, div_to_replace, type_method){
                 $(div_to_replace).html(response);
             }
         });
+
     }
     
 $(document).ready(function(){
@@ -105,15 +125,21 @@ $(document).ready(function(){
         get_form_function(url="{% url 'opponera_term' %}?q={{begrepp_full.term}}", 
                           div_to_replace="#opponera_bekräfta",
                           type_method="GET");
-        
                         });
                           
     $("#bekräfta_button").click(function(){
         get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp_full.term}}", 
-                          div_to_replace="#opponera_bekräfta"),
-                          type_method="GET";
-                        });    
-                    });
+                          div_to_replace="#opponera_bekräfta",
+                          type_method="GET"); 
+                        });
+    });
+
+function scrollSmoothToBottom() {
+    var div = document.getElementById("opponera_bekräfta");
+    console.log(div.scrollHeight, div.clientHeight)
+    div.scrollIntoView();
+};
+
 
 </script>
 
