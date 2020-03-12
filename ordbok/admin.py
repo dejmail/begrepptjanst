@@ -1,11 +1,24 @@
+from pdb import set_trace
+from django.urls import reverse
+from django.db.models.functions import Lower
+
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
 
-admin.site.site_header = "BegreppTjänst Admin"
-admin.site.site_title = "BegpreppTjänst Admin Portal"
-admin.site.index_title = "Välkommen till BegreppTjänst Portalen"
+admin.site.site_header = "OLLI Begreppstjänst Admin"
+admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
+admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
+
+class SynonymInline(admin.StackedInline):
+    model = Synonym
+    max_num = 1
 
 class BegreppAdmin(admin.ModelAdmin):
+
+
+
+    inlines = [SynonymInline]
+
     list_display = ('term',
                     'definition',
                     'begrepp_kontext',    
@@ -14,7 +27,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'utländsk_definition',
                     'utländsk_term',
                     'begrepp_version_nummer',
-                    'status',)
+                    'status')
 
     list_filter = ("begrepp_version_nummer", "status",)
 
@@ -31,6 +44,7 @@ class BegreppAdmin(admin.ModelAdmin):
     date_hierarchy = 'begrepp_version_nummer'
 
 
+
 class BestallareAdmin(admin.ModelAdmin):
 
     list_display = ('beställare_namn',
@@ -45,17 +59,32 @@ class DomanAdmin(admin.ModelAdmin):
                     'domän_kontext',
                     'begrepp',)
 
+    list_select_related = (
+        'begrepp',
+    )
+
     list_filter = ("domän_namn",)
     search_fields = ('begrepp__term',)
 
+
+
 class SynonymAdmin(admin.ModelAdmin):
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "begrepp":
+            kwargs["queryset"] = Begrepp.objects.filter().order_by(Lower('term'))
+        return super(SynonymAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    ordering = ['begrepp__term']
     list_display = ('begrepp',
                     'synonym',
                     'synonym_status')
 
+    list_select_related = (
+        'begrepp',
+    )
     list_filter = ("synonym_status",)
-    search_fields = ("begrepp__term",)
+    search_fields = ("begrepp__term",)    
 
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
