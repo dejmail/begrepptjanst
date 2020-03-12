@@ -9,62 +9,65 @@
 <table id="term_förklaring_tabell" class="table table-bordered table-striped">
     <tbody>
         <tr>
-            <td>Beskrivning</td>
-            <td>{{begrepp_full.begrepp_kontext}}</td>
-        </tr>        
-
-
-        <tr>
-            <td>Version</td>
-            <td>{{begrepp_full.begrepp_version_nummer}}</td>
+            <td>Term</td>
+            <td>{{begrepp_full.term}}</td>
         </tr>
+        <tr>
+            <td>Synonym</td>
+            <td>
+                {% if synonym_full.synonym is not None %}
+                    {% for list_item in synonym_full %}
+                        {{list_item.synonym}} ({{list_item.synonym_status}})<br>
+                    {% endfor %}
+                {% else %}
+                -
+                {% endif %}
+
+            </td>        
+        </tr>        
         <tr>
             <td>Definition</td>
             <td>{{begrepp_full.definition}}</td>
         </tr>
         <tr>
-            <td>Externt ID</td>
-            <td>{{begrepp_full.externt_id}}</td>
-        </tr>
+            <td>Anmärkning</td>
+            <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
+        </tr>        
         <tr>
-            <td>Externt Register</td>
-            <td>{{begrepp_full.externt_register}}</td>
-        </tr>
-        <tr>
-            <td>Status</td>
-            <td>{{begrepp_full.externt_register}}</td>
-        </tr>
-        <tr>
-            <td>Term</td>
-            <td>{{begrepp_full.term}}</td>
-        </tr>
-        <tr>
-            <td>Icke Svensk Term</td>
+            <td>Term på annat språk</td>
             <td>{{begrepp_full.utländsk_term}}</td>
         </tr>
         <tr>
-            <td>Icke Svensk Definition</td>
+            <td>Definition på annat språk</td>
             <td>{{begrepp_full.utländsk_definition}}</td>
+        </tr>
+        <tr>
+            <td>Status</td>
+            <td>{{begrepp_full.status}}</td>
         </tr>
         <tr>
             <td>VGR ID</td>
             <td>{{begrepp_full.vgr_id}}</td>
         </tr>
         <tr>
-            <td>Synonym</td>
-            <td>
-                {% for list_item in synonym_full %}
-                    {{list_item.synonym}} ({{list_item.synonym_status}})<br>
-                {% endfor %}
-            </td>        
-        </tr>        
+            <td>Externt ID</td>
+            <td>{{begrepp_full.externt_id}}</td>
+        </tr>
         <tr>
-            <td>Domän</td>
+            <td>Externt register</td>
+            <td>{{begrepp_full.externt_register}}</td>
+        </tr>
+        <tr>
+            <td>Kontext</td>
             <td>
                 {% for list_item in domän_full %}
                     {{list_item.domän_namn}}<br>
                 {% endfor %}
             </td>
+        </tr>
+        <tr>
+            <td>Kontext beskrivning</td>
+            <td>{{begrepp_full.begrepp_kontext}}</td>
         </tr>
 
         <tr>
