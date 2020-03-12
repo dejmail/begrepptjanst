@@ -20,14 +20,14 @@ class BegreppAdmin(admin.ModelAdmin):
     inlines = [SynonymInline]
 
     list_display = ('term',
+                    'synonym',
                     'definition',
+                    'utländsk_term',
+                    'utländsk_definition',
+                    'status',
                     'begrepp_kontext',    
                     'externt_register',
-                    'utländsk_definition',
-                    'utländsk_term',
-                    'begrepp_version_nummer',
-                    'status',
-                    'synonym')
+                    'begrepp_version_nummer')
 
     list_filter = ("begrepp_version_nummer", "status",)
 
@@ -43,6 +43,8 @@ class BegreppAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
+
+
     def synonym(self, obj):
         
         display_text = ", ".join([
@@ -55,7 +57,6 @@ class BegreppAdmin(admin.ModelAdmin):
         if display_text:
             return mark_safe(display_text)
         return "-"
-        
 
 class BestallareAdmin(admin.ModelAdmin):
 
@@ -96,7 +97,7 @@ class SynonymAdmin(admin.ModelAdmin):
         'begrepp',
     )
     list_filter = ("synonym_status",)
-    search_fields = ("begrepp__term",)    
+    search_fields = ("begrepp__term", "synonym")    
 
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
