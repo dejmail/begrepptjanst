@@ -86,6 +86,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             utländsk_definition,\
                             utländsk_term,\
                             vgr_id,\
+                            anmärkningar,\
                             ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                             synonym,
                             synonym_status,\
@@ -176,6 +177,7 @@ def begrepp_förklaring_view(request):
                                'utländsk_definition',
                                'utländsk_term',
                                'vgr_id',
+                               'anmärkningar',
                                'synonym_begrepp_id',
                                'synonym',
                                'synonym_status',
