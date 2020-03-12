@@ -73,7 +73,7 @@ class Synonym(models.Model):
 class OpponeraBegreppDefinition(models.Model):
 
     class Meta:
-        verbose_name_plural = 'Ifrågasatt Begrepp Definitioner'
+        verbose_name_plural = 'Kommenterade Begrepp'
     
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     begrepp_kontext = models.TextField()
