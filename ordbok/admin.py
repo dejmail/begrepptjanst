@@ -1,6 +1,8 @@
 from pdb import set_trace
 from django.urls import reverse
 from django.db.models.functions import Lower
+from django.utils.safestring import mark_safe
+
 
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
@@ -15,19 +17,17 @@ class SynonymInline(admin.StackedInline):
 
 class BegreppAdmin(admin.ModelAdmin):
 
-
-
     inlines = [SynonymInline]
 
     list_display = ('term',
                     'definition',
                     'begrepp_kontext',    
                     'externt_register',
-                    'term',
                     'utländsk_definition',
                     'utländsk_term',
                     'begrepp_version_nummer',
-                    'status')
+                    'status',
+                    'synonym')
 
     list_filter = ("begrepp_version_nummer", "status",)
 
@@ -43,7 +43,19 @@ class BegreppAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
-
+    def synonym(self, obj):
+        
+        display_text = ", ".join([
+            "<a href={}>{}</a>".format(
+                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[1].name),
+                    args=(synonym.id,)),
+                synonym.synonym)
+             for synonym in obj.synonym_set.all()
+        ])
+        if display_text:
+            return mark_safe(display_text)
+        return "-"
+        
 
 class BestallareAdmin(admin.ModelAdmin):
 
