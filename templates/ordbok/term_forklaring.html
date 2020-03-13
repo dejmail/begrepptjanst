@@ -14,15 +14,18 @@
         </tr>
         <tr>
             <td>Synonym</td>
-            <td>
-                {% if synonym_full.synonym is not None %}
+            <td>    
                     {% for list_item in synonym_full %}
-                        {{list_item.synonym}} ({{list_item.synonym_status}})<br>
+                        {% if list_item.synonym is not None %}
+                            {% if list_item.synonym_status == "Avråds" %}
+                            <strike>{{list_item.synonym}}</strike> ({{list_item.synonym_status}})<br>
+                            {% else %}
+                                {{list_item.synonym}} ({{list_item.synonym_status}})<br>
+                            {% endif %}                            
+                        {% else %}
+                            -
+                        {% endif %}
                     {% endfor %}
-                {% else %}
-                -
-                {% endif %}
-
             </td>        
         </tr>        
         <tr>
@@ -97,6 +100,11 @@ var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === 'childList') {
             scrollSmoothToBottom();
+            if ($('input[name=namn]').length > 0) {
+                $('input[name=namn]').focus();
+            } else {
+                $('input[name=epost]').focus();
+            }
     }
     });
 });
