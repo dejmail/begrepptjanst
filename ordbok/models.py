@@ -11,6 +11,8 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Publicera ej', 'Publicera ej'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
+            
+
 class Begrepp(models.Model):
 
     class Meta:
@@ -60,12 +62,17 @@ class Doman(models.Model):
 
 class Synonym(models.Model):
 
+    SYNONYM_STATUS =  (('Avråds', "Avråds"),
+                       ('Tillåten', "Tillåten"),
+                       ('Rekommenderad', "Rekommenderad"),
+                       ('Inte angiven','Inte angiven'))
+
     class Meta:
         verbose_name_plural = "Synonymer"
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
-    synonym = models.CharField(max_length=255)
-    synonym_status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
+    synonym = models.CharField(max_length=255, blank=True, null=True)
+    synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
 
     def __str__(self):
         return self.synonym
