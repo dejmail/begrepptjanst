@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -49,8 +50,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'begrepptjanst.urls'
-
-
 
 TEMPLATES = [
     {
@@ -100,7 +99,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Stockholm'
 
 USE_I18N = True
 
