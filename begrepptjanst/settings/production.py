@@ -20,3 +20,11 @@ DATABASES = {
 STATIC_ROOT = '/home/vgrinfor/public_html/begrepptjanst/static'
 STATICFILES_DIRS = ['/home/vgrinfor/begrepptjanst/static',]
 STATIC_URL = '/begrepptjanst/static/'
+
+# Email settings
+
+EMAIL_HOST = 'mail.vgrinformatik.se'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'info@vgrinformatik.se'
+EMAIL_HOST_PASSWORD = 'XrT5bsRq@[ks'
+EMAIL_USE_TLS = True
