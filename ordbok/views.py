@@ -295,7 +295,11 @@ def bekräfta_term(request):
             kopplad_domän = Doman()
             kopplad_domän.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
             kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
-            kopplad_domän.domän_kontext = form.cleaned_data.get('kontext')
+            if kopplad_domän.domän_namn == 'Inte relevant':
+                kopplad_domän.domän_namn = form.cleaned_data.get('kontext')
+                kopplad_domän.domän_kontext = '-'
+            else:
+                kopplad_domän.domän_namn = form.cleaned_data.get('kontext')
 
             # We need to clean out the "Inte definierad" once the domän has been given a real one
             #SomeModel.objects.filter(id=id).delete()
