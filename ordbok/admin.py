@@ -6,6 +6,7 @@ from django.utils.safestring import mark_safe
 
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
+from .functions import skicka_epost_till_beställaren
 
 admin.site.site_header = "OLLI Begreppstjänst Admin"
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
@@ -43,7 +44,13 @@ class BegreppAdmin(admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
+    actions = ['skicka_epost_till_beställaren',]
 
+    def skicka_epost_till_beställaren(self, request, queryset):
+
+        skicka_epost_till_beställaren(queryset)
+
+    skicka_epost_till_beställaren.short_description = "Skicka epost till beställaren"
 
     def synonym(self, obj):
         
@@ -57,6 +64,8 @@ class BegreppAdmin(admin.ModelAdmin):
         if display_text:
             return mark_safe(display_text)
         return "-"
+
+        
 
 class BestallareAdmin(admin.ModelAdmin):
 
