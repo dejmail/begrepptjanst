@@ -1,7 +1,8 @@
 from django import forms
 from .models import Doman, Begrepp
 
-workstream_choices = [('Akutsjukvård','Akutsjukvård'),
+workstream_choices = [('Inte relevant','Inte relevant'),
+('Akutsjukvård','Akutsjukvård'),
 ('DokumentationVårdproffesion','DokumentationVårdproffesion'),
 ('Resursstyrning','Resursstyrning'),
 ('Kärnfunktioner','Kärnfunktioner'),
@@ -54,5 +55,5 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    kontext = forms.CharField(label='WDPW Activitet ID / Dokument Kontext')
     workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
+    kontext = forms.CharField(label='Annan kontext')
