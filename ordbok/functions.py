@@ -41,7 +41,12 @@ def skicka_epost_till_beställaren(queryset):
     for enskilda_term in queryset.select_related():
         beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Uppdatering av term status', 'info@vgrinformatik.se', beställare.beställare_email
-        text_content = f'Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>'
+        text_content = f'''Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
+        <p>Om du vill läsa mer detaljer, vänligen navigera till OLLI och söka på termen.</p>
+
+        <p><a href="http://vgrinformatik.se/begreppstjanst">OLLI Begreppstjanst</a></p>
+
+        '''
         html_content = f'<p>{text_content}</p>'
         msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
         msg.attach_alternative(html_content, "text/html")
