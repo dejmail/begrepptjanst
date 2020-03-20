@@ -27,7 +27,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'utländsk_definition',
                     'status',
                     'begrepp_kontext',    
-                    'externt_register',
+                    #'externt_register',
                     'begrepp_version_nummer')
 
     list_filter = ("begrepp_version_nummer", "status",)
