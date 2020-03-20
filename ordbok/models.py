@@ -23,6 +23,7 @@ class Begrepp(models.Model):
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     externt_id = models.CharField(max_length=255, null=True, default='Inte definierad')
+    källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     externt_register = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255)
