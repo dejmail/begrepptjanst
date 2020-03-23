@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import models
+from pdb import set_trace
 
 DEFAULT_STATUS = "Ej Påbörjad"
 
@@ -22,6 +23,7 @@ class Begrepp(models.Model):
     begrepp_version_nummer = models.DateTimeField()
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
+    alternativ_definition = models.TextField(null=True)
     externt_id = models.CharField(max_length=255, null=True, default='Inte definierad')
     källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     externt_register = models.CharField(max_length=255, null=True, default='Inte definierad')
