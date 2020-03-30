@@ -8,13 +8,14 @@ from django.template.loader import render_to_string
 from datetime import datetime
 from django.db import connection, transaction
 from django.core.mail import EmailMessage
+
 from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
 from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 from .functions import mäta_sök_träff, mäta_förklaring_träff
 import re
 import logging
-
+from begrepptjanst.logs import setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             term,\
                             utländsk_definition,\
                             utländsk_term,\
-                            vgr_id,\
+                            id_vgr,\
                             anmärkningar,\
                             ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                             synonym,
@@ -175,7 +176,7 @@ def begrepp_förklaring_view(request):
                                'term',
                                'utländsk_definition',
                                'utländsk_term',
-                               'vgr_id',
+                               'id_vgr',
                                'anmärkningar',
                                'synonym_begrepp_id',
                                'synonym',
@@ -205,7 +206,6 @@ def begrepp_förklaring_view(request):
         term_json = Begrepp.objects.none()
     
     if request.is_ajax():
-        #set_trace()
         html = render_to_string(template_name="term_forklaring.html", context={'begrepp_full': return_list_dict[0],
                                                                                'synonym_full' : return_synonym_list_dict,
                                                                                'domän_full' : return_domän_list_dict})
