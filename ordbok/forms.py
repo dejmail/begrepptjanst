@@ -38,7 +38,6 @@ class TermRequestForm(forms.Form):
     epost =  forms.EmailField(max_length=254)
     mobil_telefon = forms.IntegerField()
     begrepp = forms.CharField(max_length=254)    
-    #workstream = forms.ModelChoiceField(queryset=Doman.objects.all().order_by('domän_namn').values_list('domän_namn', flat=True).distinct())
     workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
     kontext = forms.CharField(widget=forms.Textarea)
     workflow_namn = forms.CharField(max_length=254)
@@ -55,5 +54,5 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
-    kontext = forms.CharField(label='Annan kontext')
+    workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
+    kontext = forms.CharField(label='Verifierad användning')
