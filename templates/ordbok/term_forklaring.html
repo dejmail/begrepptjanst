@@ -1,5 +1,5 @@
 {% load crispy_forms_filters %}
-{% block förklaring %}
+{% block mitten-span %}
 
 <div id="förklaring" class="förklaring">
 {% if begrepp_full %}
@@ -18,7 +18,7 @@
                     {% for list_item in synonym_full %}
                         {% if list_item.synonym is not None %}
                             {% if list_item.synonym_status == "Avråds" %}
-                            <strike>{{list_item.synonym}}</strike> ({{list_item.synonym_status}})<br>
+                            <button type="button" class="btn-sm btn-avrådd"><strike class="test-white"> {{list_item.synonym}} </strike>{{list_item.synonym_status}}</button><br>
                             {% else %}
                                 {{list_item.synonym}} ({{list_item.synonym_status}})<br>
                             {% endif %}                            
@@ -32,6 +32,11 @@
             <td>Definition</td>
             <td>{{begrepp_full.definition}}</td>
         </tr>
+        <tr>
+            <td>Alternativ definition</td>
+            <td>{{begrepp_full.alternativ_definition}}</td>
+        </tr>
+        
         <tr>
             <td>Anmärkning</td>
             <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
@@ -50,7 +55,7 @@
         </tr>
         <tr>
             <td>VGR ID</td>
-            <td>{{begrepp_full.vgr_id}}</td>
+            <td>{{begrepp_full.id_vgr}}</td>
         </tr>
         <tr>
             <td>Externt ID</td>

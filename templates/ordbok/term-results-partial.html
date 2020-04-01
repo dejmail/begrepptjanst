@@ -1,6 +1,8 @@
 {% load static %}
+{% block mitten-span %}
 
 {% if begrepp %}
+
 
 <div class="row mt-5 top-buffer-15">
     <table class="table table-bordered table-striped" id="definition_table">
@@ -19,11 +21,15 @@
                 
             <td>
                 {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                  {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                      {% if syn.synonym_status == "Avråds" %}
+                      <button class="btn-xs btn-avrådd"> {{syn.synonym}} - {{syn.synonym_status}}</button><br>
+                      {% else %}
                         {{syn.synonym}} ({{syn.synonym_status}})<br>
-                    {% endifequal %}
+                      {% endif %}
+                  {% endifequal %}
                 {% endfor %}
-                
+
             </td>
           </tr>
           {% endfor %}
@@ -35,11 +41,8 @@
 
 {% else %}
 
-<script>
-
-    </script>
-
 <div id="nyTermForm">
     <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}" onload=populate_request_form()>
 </div>
 {% endif %}
+{% endblock %}

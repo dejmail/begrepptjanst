@@ -2,7 +2,7 @@ from pdb import set_trace
 from django.urls import reverse
 from django.db.models.functions import Lower
 from django.utils.safestring import mark_safe
-
+from django.conf import settings
 
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
@@ -17,7 +17,12 @@ class SynonymInline(admin.StackedInline):
     max_num = 1
 
 class BegreppAdmin(admin.ModelAdmin):
-
+    
+    class Media:
+        css = {
+        'all': (f'{settings.STATIC_URL}css/main.css',)
+         }
+    
     inlines = [SynonymInline]
 
     list_display = ('term',
@@ -25,7 +30,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'definition',
                     'utländsk_term',
                     'utländsk_definition',
-                    'status',
+                    'status_button',
                     'begrepp_kontext',    
                     'externt_register',
                     'begrepp_version_nummer')
@@ -65,7 +70,19 @@ class BegreppAdmin(admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
-        
+    def status_button(self, obj):
+
+        if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
+            display_text = f'<button class="btn-xs btn-avrådd">{obj.status}</button>'
+        elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
+            display_text = f'<button class="btn-xs btn-oklart">{obj.status}</button>'
+        else:
+            display_text = f'<button class="btn-xs btn-okej">{obj.status}</button>'
+        return mark_safe(display_text)
+
+    status_button.short_description = 'Status'
+
+
 
 class BestallareAdmin(admin.ModelAdmin):
 
