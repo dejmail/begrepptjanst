@@ -10,7 +10,7 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Klar', 'Klar'), 
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
-              ('Preliminär', 'Preliminär')
+              ('Preliminär', 'Preliminär'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
             
