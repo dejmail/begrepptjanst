@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.db.models.functions import Lower
 from django.utils.safestring import mark_safe
 from django.conf import settings
+from django.utils.html import format_html
 
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
@@ -81,7 +82,6 @@ class BegreppAdmin(admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
-
     def status_button(self, obj):
 
         if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
@@ -94,7 +94,17 @@ class BegreppAdmin(admin.ModelAdmin):
 
     status_button.short_description = 'Status'
 
+    # def begrepp_kontext(self, obj):
+        
+    #     display_text = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"     
+    #     if display_text:
+    #         return mark_safe(display_text)
+    #     return "-"
 
+    # def save_model(self, request, obj, form, change):
+    #     if "http" in obj.begrepp_kontext:
+    #         obj.begrepp_kontext = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"           
+    #     super().save_model(request, obj, form, change)
 
 class BestallareAdmin(admin.ModelAdmin):
 
