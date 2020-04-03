@@ -16,6 +16,7 @@ from .functions import mäta_sök_träff, mäta_förklaring_träff
 import re
 import logging
 from begrepptjanst.logs import setup_logging
+from django.utils.html import format_html
 
 logger = logging.getLogger(__name__)
 
@@ -309,3 +310,9 @@ def bekräfta_term(request):
                                    </div>''')
     else:
         return render(request, 'bekrafta_term.html', {'bekräfta': form})
+
+def youRealise(http_link):
+    if "http" in http_link:
+        return format_html(http_link)
+    else:
+        return http_link        
