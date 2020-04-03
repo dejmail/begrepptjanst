@@ -2,8 +2,8 @@ from pdb import set_trace
 from django.urls import reverse
 from django.db.models.functions import Lower
 from django.utils.safestring import mark_safe
+from django.conf import settings
 from django.utils.html import format_html
-
 
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
@@ -13,12 +13,28 @@ admin.site.site_header = "OLLI Begreppstjänst Admin"
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
+def fill_out_status(status_item):
+
+    length = len(status_item)
+    length_to_add = 12 - length
+    for x in range(length_to_add):
+        if x % 2 == 0:
+            status_item += '&nbsp;'
+        else:
+            status_item = '&nbsp;' + status_item
+    return mark_safe(status_item)
+
 class SynonymInline(admin.StackedInline):
     model = Synonym
     max_num = 1
 
 class BegreppAdmin(admin.ModelAdmin):
-
+    
+    class Media:
+        css = {
+        'all': (f'{settings.STATIC_URL}css/main.css',)
+         }
+    
     inlines = [SynonymInline]
 
     list_display = ('term',
@@ -26,7 +42,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'definition',
                     'utländsk_term',
                     'utländsk_definition',
-                    'status',
+                    'status_button',
                     'begrepp_kontext',    
                     'externt_register',
                     'begrepp_version_nummer')
@@ -66,6 +82,18 @@ class BegreppAdmin(admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
+    def status_button(self, obj):
+
+        if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
+            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{fill_out_status(obj.status)}</button>'
+        elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
+            display_text = f'<button class="btn-xs btn-oklart text-monospace">{fill_out_status(obj.status)}</button>'
+        else:
+            display_text = f'<button class="btn-xs btn-okej text-monospace">{fill_out_status(obj.status)}</button>'
+        return mark_safe(display_text)
+
+    status_button.short_description = 'Status'
+
     # def begrepp_kontext(self, obj):
         
     #     display_text = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"     
@@ -77,7 +105,6 @@ class BegreppAdmin(admin.ModelAdmin):
     #     if "http" in obj.begrepp_kontext:
     #         obj.begrepp_kontext = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"           
     #     super().save_model(request, obj, form, change)
-        
 
 class BestallareAdmin(admin.ModelAdmin):
 
