@@ -12,6 +12,17 @@ admin.site.site_header = "OLLI Begreppstjänst Admin"
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
+def fill_out_status(status_item):
+
+    length = len(status_item)
+    length_to_add = 12 - length
+    for x in range(length_to_add):
+        if x % 2 == 0:
+            status_item += '&nbsp;'
+        else:
+            status_item = '&nbsp;' + status_item
+    return mark_safe(status_item)
+
 class SynonymInline(admin.StackedInline):
     model = Synonym
     max_num = 1
@@ -70,14 +81,15 @@ class BegreppAdmin(admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
+
     def status_button(self, obj):
 
         if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
-            display_text = f'<button class="btn-xs btn-avrådd">{obj.status}</button>'
+            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{fill_out_status(obj.status)}</button>'
         elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
-            display_text = f'<button class="btn-xs btn-oklart">{obj.status}</button>'
+            display_text = f'<button class="btn-xs btn-oklart text-monospace">{fill_out_status(obj.status)}</button>'
         else:
-            display_text = f'<button class="btn-xs btn-okej">{obj.status}</button>'
+            display_text = f'<button class="btn-xs btn-okej text-monospace">{fill_out_status(obj.status)}</button>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
