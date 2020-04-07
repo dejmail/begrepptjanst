@@ -95,17 +95,13 @@ class BegreppAdmin(admin.ModelAdmin):
     def status_button(self, obj):
 
         if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
-            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{add_non_breaking_space_to_status}
-        (obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
-            display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status}
-        (obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         elif (obj.status == 'Preliminär'):
-            display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status}
-        (obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         else:
-            display_text = f'<button class="btn-xs btn-okej text-monospace">{add_non_breaking_space_to_status}
-        (obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-okej text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
