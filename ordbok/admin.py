@@ -13,7 +13,7 @@ admin.site.site_header = "OLLI Begreppstjänst Admin"
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
-def fill_out_status(status_item):
+def add_non_breaking_space_to_status(status_item):
 
     length = len(status_item)
     length_to_add = 12 - length
@@ -36,6 +36,8 @@ class BegreppAdmin(admin.ModelAdmin):
          }
     
     inlines = [SynonymInline]
+
+    save_on_top = True
 
     list_display = ('term',
                     'synonym',
@@ -70,7 +72,6 @@ class BegreppAdmin(admin.ModelAdmin):
     skicka_epost_till_beställaren.short_description = "Skicka epost till beställaren"
 
     def synonym(self, obj):
-        
         display_text = ", ".join([
             "<a href={}>{}</a>".format(
                     reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[1].name),
@@ -82,24 +83,32 @@ class BegreppAdmin(admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
+    def begrepp_kontext(self, obj):
+        set_trace()
+        display_text = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"     
+        if display_text:
+            return mark_safe(display_text)
+        return "-"
+
+    begrepp_kontext.short_description = 'begrepp_kontext'
+    
     def status_button(self, obj):
 
         if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
-            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{fill_out_status(obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{add_non_breaking_space_to_status
+        (obj.status)}</button>'
         elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
-            display_text = f'<button class="btn-xs btn-oklart text-monospace">{fill_out_status(obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status
+        (obj.status)}</button>'
+        elif (obj.status == 'Preliminär'):
+            display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status
+        (obj.status)}</button>'
         else:
-            display_text = f'<button class="btn-xs btn-okej text-monospace">{fill_out_status(obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-okej text-monospace">{add_non_breaking_space_to_status
+        (obj.status)}</button>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
-
-    # def begrepp_kontext(self, obj):
-        
-    #     display_text = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"     
-    #     if display_text:
-    #         return mark_safe(display_text)
-    #     return "-"
 
     # def save_model(self, request, obj, form, change):
     #     if "http" in obj.begrepp_kontext:
@@ -126,8 +135,6 @@ class DomanAdmin(admin.ModelAdmin):
 
     list_filter = ("domän_namn",)
     search_fields = ('begrepp__term',)
-
-
 
 class SynonymAdmin(admin.ModelAdmin):
 

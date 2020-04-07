@@ -66,4 +66,9 @@ nav {
       border-radius: 4px;
     }
 
- 
+  .btn-gul {
+      border-color: rgb(240, 209, 35);
+      background-color: rgb(240, 209, 35);
+      color: black;
+      border-radius: 4px;
+    }
