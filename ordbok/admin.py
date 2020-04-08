@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.html import format_html
 
 from django.contrib import admin
-from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym, BegreppBeställdeAvAnvändare
+from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
 from .functions import skicka_epost_till_beställaren
 
 admin.site.site_header = "OLLI Begreppstjänst Admin"
@@ -163,22 +163,10 @@ class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
                     'status',
                     'telefon')
 
-class BegreppBeställdeAvAnvändareAdmin(BegreppAdmin):
-
-    title = 'Begrepp Beställde av användare'
-    #parameter_name = 'user'
-
-    list_display = ('term',
-                    'definition',
-                    'status_button')
-
-    def queryset(self, request):
-        qs = super(BegreppBeställdeAvAnvändareAdmin, self).get_queryset(request) 
-        return qs.filter(created_by=request.user)
 
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
-admin.site.register(BegreppBeställdeAvAnvändare, BegreppBeställdeAvAnvändareAdmin)
+
