@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.html import format_html
 
 from django.contrib import admin
-from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
+from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym, BegreppBeställdeAvAnvändare
 from .functions import skicka_epost_till_beställaren
 
 admin.site.site_header = "OLLI Begreppstjänst Admin"
@@ -86,7 +86,9 @@ class BegreppAdmin(admin.ModelAdmin):
     def visa_html_i_begrepp_kontext(self, obj):
         
         if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
-            display_text = f"<a href={obj.begrepp_kontext}>{obj.begrepp_kontext.split('|')[0]}</a>" 
+            description, url = obj.begrepp_kontext.split('|')
+            display_text = f"<a href={url}>{description}</a>"
+            print(display_text)
             return mark_safe(display_text)
         else:
             return obj.begrepp_kontext
@@ -161,8 +163,22 @@ class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
                     'status',
                     'telefon')
 
+class BegreppBeställdeAvAnvändareAdmin(BegreppAdmin):
+
+    title = 'Begrepp Beställde av användare'
+    #parameter_name = 'user'
+
+    list_display = ('term',
+                    'definition',
+                    'status_button')
+
+    def queryset(self, request):
+        qs = super(BegreppBeställdeAvAnvändareAdmin, self).get_queryset(request) 
+        return qs.filter(created_by=request.user)
+
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
+admin.site.register(BegreppBeställdeAvAnvändare, BegreppBeställdeAvAnvändareAdmin)
