@@ -81,6 +81,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             begrepp_kontext,\
                             begrepp_version_nummer,\
                             definition,\
+                            källa,\
                             externt_id,\
                             externt_register,\
                             status,\
@@ -172,6 +173,7 @@ def begrepp_förklaring_view(request):
                                'begrepp_kontext',
                                'begrepp_version_nummer',
                                'definition',
+                               'källa',
                                'externt_id',
                                'externt_register',
                                'status',
