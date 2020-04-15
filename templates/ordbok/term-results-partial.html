@@ -16,7 +16,7 @@
           {% for begrepp in begrepp %}
             {% if begrepp.begrepp_status == "Klar" %}
             <tr class="table-success">
-              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}} - {{begrepp.begrepp_status}}</a></td>
+              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
