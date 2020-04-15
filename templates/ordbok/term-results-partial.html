@@ -15,8 +15,25 @@
         <tbody id="myTable">
           {% for begrepp in begrepp %}
             {% if begrepp.begrepp_status == "Klar" %}
-            <tr class="info">
-              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}} - {{begrepp.}}</a></td>
+            <tr class="bg-success">
+              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}} - {{begrepp.begrepp_status}}</a></td>
+              <td>{{begrepp.definition}}</td>   
+              <td>
+                  {% for syn in synonym %}
+                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                        {% if syn.synonym_status == "Avråds" %}
+                          <strike class="test-white">{{syn.synonym}}</strike>
+                        {% else %}
+                          {{syn.synonym}}
+                        {% endif %}
+                    {% endifequal %}
+                  {% endfor %}
+
+              </td>
+            </tr>
+            {% elif begrepp.begrepp_status == "Preliminär" %}
+            <tr class="bg-warning">
+              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
