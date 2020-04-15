@@ -81,14 +81,3 @@
 {% endif %}
 {% endblock %}
 
-{% block javascript %}
-<script>
-$(document).ready(function() {
-  $('tbody').on('click', 'a', function() {
-	debugger;
-    var value = $(this).closest('tr').find('td').first().text();
-    alert(value);
-  });
-});
-</script>
-{% endblock %}
