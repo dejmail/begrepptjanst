@@ -15,14 +15,14 @@
         <tbody id="myTable">
           {% for begrepp in begrepp %}
             {% if begrepp.begrepp_status == "Klar" %}
-            <tr class="bg-success">
+            <tr class="table-success">
               <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}} - {{begrepp.begrepp_status}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <strike class="test-white">{{syn.synonym}}</strike>
+                          <del class="text-danger">{{syn.synonym}}</del>
                         {% else %}
                           {{syn.synonym}}
                         {% endif %}
@@ -32,14 +32,14 @@
               </td>
             </tr>
             {% elif begrepp.begrepp_status == "Preliminär" %}
-            <tr class="bg-warning">
+            <tr class="table-warning">
               <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <strike class="test-white">{{syn.synonym}}</strike>
+                          <del class="text-danger">{{syn.synonym}}</del>
                         {% else %}
                           {{syn.synonym}}
                         {% endif %}
@@ -56,7 +56,7 @@
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <strike class="test-white">{{syn.synonym}}</strike>
+                          <del class="text-danger">{{syn.synonym}}</del>
                         {% else %}
                           {{syn.synonym}}
                         {% endif %}
