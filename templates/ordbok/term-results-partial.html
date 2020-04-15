@@ -48,7 +48,23 @@
 
               </td>
             </tr>
-            {% else %}
+            {% elif begrepp.begrepp_status == "Avråds" %}
+            <tr>
+              <td><a id={{begrepp.begrepp_id}} ><del class="text-danger">{{begrepp.term}}</del></a></td>
+              <td>{{begrepp.definition}}</td>   
+              <td>
+                  {% for syn in synonym %}
+                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                        {% if syn.synonym_status == "Avråds" %}
+                          <del class="text-danger">{{syn.synonym}}</del>
+                        {% else %}
+                          {{syn.synonym}}
+                        {% endif %}
+                    {% endifequal %}
+                  {% endfor %}
+
+              </td>
+            </tr>
             <tr>
               <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
