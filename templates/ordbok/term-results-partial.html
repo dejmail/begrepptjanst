@@ -3,35 +3,52 @@
 
 {% if begrepp %}
 
-
 <div class="row mt-5 top-buffer-15">
-    <table class="table table-bordered table-striped" id="definition_table">
+    <table class="table table-bordered" id="definition_table">
         <thead>
           <tr>
             <th>Begrepp</th>
             <th>Definition</th>
-            <th>Synonym (Status)</th>
+            <th>Synonym</th>
           </tr>
         </thead>
         <tbody id="myTable">
-            {% for begrepp in begrepp %}
-          <tr>
-            <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})">{{begrepp.term}}</a></td>
-            <td>{{begrepp.definition}}</td>
-                
-            <td>
-                {% for syn in synonym %}
-                  {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                      {% if syn.synonym_status == "Avråds" %}
-                      <button class="btn-xs btn-avrådd"><strike class="test-white">{{syn.synonym}}</strike> - {{syn.synonym_status}}</button><br>
-                      {% else %}
-                        {{syn.synonym}} ({{syn.synonym_status}})<br>
-                      {% endif %}
-                  {% endifequal %}
-                {% endfor %}
+          {% for begrepp in begrepp %}
+            {% if begrepp.begrepp_status == "Klar" %}
+            <tr class="info">
+              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}} - {{begrepp.}}</a></td>
+              <td>{{begrepp.definition}}</td>   
+              <td>
+                  {% for syn in synonym %}
+                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                        {% if syn.synonym_status == "Avråds" %}
+                          <strike class="test-white">{{syn.synonym}}</strike>
+                        {% else %}
+                          {{syn.synonym}}
+                        {% endif %}
+                    {% endifequal %}
+                  {% endfor %}
 
-            </td>
-          </tr>
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
+              <td>{{begrepp.definition}}</td>   
+              <td>
+                  {% for syn in synonym %}
+                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                        {% if syn.synonym_status == "Avråds" %}
+                          <strike class="test-white">{{syn.synonym}}</strike>
+                        {% else %}
+                          {{syn.synonym}}
+                        {% endif %}
+                    {% endifequal %}
+                  {% endfor %}
+
+              </td>
+            </tr>
+          {% endif %}
           {% endfor %}
           </tbody>
 
@@ -45,4 +62,16 @@
     <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}" onload=populate_request_form()>
 </div>
 {% endif %}
+{% endblock %}
+
+{% block javascript %}
+<script>
+$(document).ready(function() {
+  $('tbody').on('click', 'a', function() {
+	debugger;
+    var value = $(this).closest('tr').find('td').first().text();
+    alert(value);
+  });
+});
+</script>
 {% endblock %}
