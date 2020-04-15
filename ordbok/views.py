@@ -35,7 +35,7 @@ def extract_columns_from_query_and_return_set(search_result, start, stop):
             reduced_list.append(record[start:stop])
     
     reduced_set = set([tuple(i) for i in reduced_list])
-    return  reduced_set
+    return reduced_set
 
 
 def retur_general_sök(url_parameter):
@@ -45,7 +45,7 @@ def retur_general_sök(url_parameter):
     sql_statement = f'''SELECT ordbok_begrepp.id,\
                               definition,\
                               term,\
-                              ordbok_begrepp.status,\
+                              ordbok_begrepp.status AS begrepp_status,\
                               ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                               synonym,\
                               synonym_status\
@@ -62,7 +62,8 @@ def retur_general_sök(url_parameter):
     column_names = ['begrepp_id',
                     'definition',
                     'term',
-                    'begrepp_id',                    
+                    'begrepp_status', 
+                    'synonym_begrepp_id',
                     'synonym',
                     'synonym_status']
 
@@ -128,10 +129,10 @@ def begrepp_view(request):
     if request.is_ajax():
         search_request = retur_general_sök(url_parameter)
 
-        begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=3)
+        begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=4)
         synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=4, stop=7)
-
-        begrepp_column_names = ['begrepp_id', 'definition', 'term']
+        
+        begrepp_column_names = ['begrepp_id', 'definition', 'term', 'begrepp_status']
     
         return_list_dict = []
         for return_result in begrepp:
