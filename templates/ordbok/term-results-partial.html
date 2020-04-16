@@ -16,13 +16,13 @@
           {% for begrepp in begrepp %}
             {% if begrepp.begrepp_status == "Klar" %}
             <tr class="table-success">
-              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
+              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <del class="text-danger">{{syn.synonym}}</del>
+                          <s class="text-danger">{{syn.synonym}}</s>
                         {% else %}
                           {{syn.synonym}}
                         {% endif %}
@@ -33,13 +33,13 @@
             </tr>
             {% elif begrepp.begrepp_status == "Preliminär" %}
             <tr class="table-warning">
-              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
+              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <del class="text-danger">{{syn.synonym}}</del>
+                          <s class="text-danger">{{syn.synonym}}</s>
                         {% else %}
                           {{syn.synonym}}
                         {% endif %}
@@ -50,15 +50,13 @@
             </tr>
             {% elif begrepp.begrepp_status == "Avråds" %}
             <tr>
-              <td><a id={{begrepp.begrepp_id}} ><del class="text-danger">{{begrepp.term}}</del></a></td>
+              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}} ><s class="text-danger">{{begrepp.term}}</s></a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <del class="text-danger">{{syn.synonym}}</del>
-                        {% else %}
-                          {{syn.synonym}}
+                          <s class="text-danger">{{syn.synonym}}</s>
                         {% endif %}
                     {% endifequal %}
                   {% endfor %}
@@ -67,13 +65,13 @@
             </tr>
             {% else %}
             <tr>
-              <td><a id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
+              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <del class="text-danger">{{syn.synonym}}</del>
+                          <s class="text-danger">{{syn.synonym}}</s>
                         {% else %}
                           {{syn.synonym}}
                         {% endif %}
