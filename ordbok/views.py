@@ -23,6 +23,14 @@ logger = logging.getLogger(__name__)
 
 re_pattern = re.compile(r'\s+')
 
+färg_status_dict = {'Avråds' : 'table-danger',
+                    'Klar': 'table-success',
+                    'Pågår': 'table-warning',
+                    'Preliminär': 'table-success-light',
+                    'Ej Påbörjad': 'table-warning',
+                    'Definieras ej': 'table-warning-light',
+                    'Publiceras ej' : 'table-info'}
+
 def extract_columns_from_query_and_return_set(search_result, start, stop):
 
     reduced_list = []
@@ -122,6 +130,8 @@ def run_sql_statement(sql_statement):
 
         return result
 
+
+
 def begrepp_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
@@ -207,13 +217,16 @@ def begrepp_förklaring_view(request):
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
         
+        status_färg_dict = {'begrepp' :färg_status_dict.get(return_list_dict[0].get('status')),
+                            'synonym' : färg_status_dict.get(return_synonym_list_dict[0].get('status'))}
+
     else:
         term_json = Begrepp.objects.none()
-    
     if request.is_ajax():
         html = render_to_string(template_name="term_forklaring.html", context={'begrepp_full': return_list_dict[0],
                                                                                'synonym_full' : return_synonym_list_dict,
-                                                                               'domän_full' : return_domän_list_dict})
+                                                                               'domän_full' : return_domän_list_dict,
+                                                                               'färg_status' : status_färg_dict})
         data_dict = {"html_from_view": html}
         
         return HttpResponse(json.dumps(data_dict), content_type="application/json")

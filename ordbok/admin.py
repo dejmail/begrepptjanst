@@ -104,7 +104,7 @@ class BegreppAdmin(admin.ModelAdmin):
         elif (obj.status == 'Preliminär'):
             display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         else:
-            display_text = f'<button class="btn-xs btn-okej text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-xs btn-grön text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'

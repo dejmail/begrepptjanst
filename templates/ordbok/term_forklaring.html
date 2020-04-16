@@ -6,11 +6,20 @@
 
 <div class="searchTable">
 
-<table id="term_förklaring_tabell" class="table table-bordered table-striped">
+<table id="term_förklaring_tabell" class="table table-bordered">
     <tbody>
-        <tr>
+        <tr class="{{färg_status.begrepp}}">
+            <td>Status</td>
+            <td>{{begrepp_full.status}}</td>
+        </tr>
+
+        <tr class="{{färg_status.begrepp}}">
             <td>Term</td>
-            <td>{{begrepp_full.term}}</td>
+            {% if begrepp_full.status == "Avråds" %}
+                <td><s class="text-danger">{{begrepp_full.term}}</s></td>
+            {% else %}
+                <td>{{begrepp_full.term}}</td>
+            {% endif %}
         </tr>
         <tr>
             <td>Synonym</td>
@@ -18,33 +27,35 @@
                     {% for list_item in synonym_full %}
                         {% if list_item.synonym is not None %}
                             {% if list_item.synonym_status == "Avråds" %}
-                            <button type="button" class="btn-sm btn-avrådd"><strike class="test-white"> {{list_item.synonym}} </strike>{{list_item.synonym_status}}</button><br>
+                            <button type="button" class="btn-sm btn-avrådd"><s>{{list_item.synonym}}</s></button>
+                            <br>
                             {% else %}
-                                {{list_item.synonym}} ({{list_item.synonym_status}})<br>
+                                {{list_item.synonym_status}}<br>
                             {% endif %}                            
                         {% else %}
                             -
                         {% endif %}
                     {% endfor %}
             </td>        
-        </tr>        
-        <tr>
+        </tr>
+
+        <tr class="{{färg_status.begrepp}}">
             <td>Definition</td>
-            <td>{{begrepp_full.definition}}</td>
+            {% if begrepp_full.status == "Avråds" %}
+                <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
+            {% else %}
+                <td>{{begrepp_full.definition}}</td>
+            {% endif %}
         </tr>
-        <tr>
-            <td>Alternativ definition</td>
-            <td>{{begrepp_full.alternativ_definition}}</td>
-        </tr>
-        <tr>
-            <td>Källa</td>
-            <td>{{begrepp_full.källa}}</td>
-        </tr>
-        <tr>
+        <tr class="{{färg_status.begrepp}}">
             <td>Anmärkning</td>
-            <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
-        </tr>        
-        <tr>
+            {% if begrepp_full.status == "Avråds" %}
+                <td><s class="text-danger">{{begrepp_full.anmärkningar|default_if_none:'-'}}</s></td>
+            {% else %}
+                <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
+            {% endif %}
+        </tr>  
+        <tr class="{{färg_status.begrepp}}">
             <td>Term på annat språk</td>
             <td>{{begrepp_full.utländsk_term}}</td>
         </tr>
@@ -53,32 +64,20 @@
             <td>{{begrepp_full.utländsk_definition}}</td>
         </tr>
         <tr>
-            <td>Status</td>
-            <td>{{begrepp_full.status}}</td>
+            <td>Kontext beskrivning</td>
+            <td>{{begrepp_full.begrepp_kontext | urlize }}</td>
         </tr>
         <tr>
             <td>ID VGR</td>
             <td>{{begrepp_full.id_vgr}}</td>
         </tr>
         <tr>
-            <td>Externt ID</td>
-            <td>{{begrepp_full.externt_id}}</td>
-        </tr>
-        <tr>
             <td>Externt register</td>
             <td>{{begrepp_full.externt_register}}</td>
         </tr>
         <tr>
-            <td>Kontext</td>
-            <td>
-                {% for list_item in domän_full %}
-                    {{list_item.domän_namn}}<br>
-                {% endfor %}
-            </td>
-        </tr>
-        <tr>
-            <td>Kontext beskrivning</td>
-            <td>{{begrepp_full.begrepp_kontext | urlize }}</td>
+            <td>Externt ID</td>
+            <td>{{begrepp_full.externt_id}}</td>
         </tr>
 
         <tr>
@@ -139,14 +138,14 @@ function get_form_function(url, div_to_replace, type_method){
     
 $(document).ready(function(){
     $("#opponera_button").click(function(){
-        
         get_form_function(url="{% url 'opponera_term' %}?q={{begrepp_full.term}}", 
                           div_to_replace="#opponera_bekräfta",
                           type_method="GET");
                         });
                           
-    $("#bekräfta_button").click(function(){
-        get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp_full.term}}", 
+    $("#bekräfta_button").click(function(){    
+    
+        get_form_function(url="{% url 'bekräfta_term' %}?q={{begrepp_full.term}}",
                           div_to_replace="#opponera_bekräfta",
                           type_method="GET"); 
                         });
