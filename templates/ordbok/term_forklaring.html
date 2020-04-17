@@ -27,10 +27,10 @@
                     {% for list_item in synonym_full %}
                         {% if list_item.synonym is not None %}
                             {% if list_item.synonym_status == "Avråds" %}
-                            <button type="button" class="btn-sm btn-avrådd"><s>{{list_item.synonym}}</s></button>
+                            - <button type="button" class="btn-sm btn-avrådd"><s>{{list_item.synonym}}</s></button>
                             <br>
                             {% else %}
-                                {{list_item.synonym_status}}<br>
+                                - {{list_item.synonym}}<br>
                             {% endif %}                            
                         {% else %}
                             -
