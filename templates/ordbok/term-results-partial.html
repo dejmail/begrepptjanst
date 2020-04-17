@@ -22,13 +22,15 @@
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <s class="text-danger">{{syn.synonym}}</s>
+                          <s class="text-danger">- {{syn.synonym}}</s>
                         {% else %}
-                          {{syn.synonym}}
-                        {% endif %}
+                        <div class="tooltip">- {{syn.synonym}}
+                          <span class="tooltiptext">{{syn.synonym_status}}</span>
+                        </div><br>
+                        {% endif %} 
                     {% endifequal %}
                   {% endfor %}
-
+                
               </td>
             </tr>
             {% elif begrepp.begrepp_status == "Preliminär" %}
@@ -36,16 +38,21 @@
               <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
+                
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                        {% if syn.synonym_status == "Avråds" %}
-                          <s class="text-danger">{{syn.synonym}}</s>
+               
+                      {% if syn.synonym_status == "Avråds" %}
+                        - <s class="text-danger">{{syn.synonym}}</s>                        
                         {% else %}
-                          {{syn.synonym}}
+                        <div class="tooltip">- {{syn.synonym}}
+                          <span class="tooltiptext">{{syn.synonym_status}}</span>
+                        </div>
                         {% endif %}
+                 
                     {% endifequal %}
                   {% endfor %}
-
+                
               </td>
             </tr>
             {% elif begrepp.begrepp_status == "Avråds" %}
@@ -53,14 +60,20 @@
               <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}} ><s class="text-danger">{{begrepp.term}}</s></a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
+                
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                          <s class="text-danger">{{syn.synonym}}</s>
+                          - <s class="text-danger">{{syn.synonym}}</s>
+                        {% else %}
+                        <div class="tooltip">- {{syn.synonym}}
+                          <span class="tooltiptext">{{syn.synonym_status}}</span>
+                        </div>
                         {% endif %}
+                    
                     {% endifequal %}
                   {% endfor %}
-
+                
               </td>
             </tr>
             {% else %}
@@ -68,16 +81,21 @@
               <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
+                
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                        {% if syn.synonym_status == "Avråds" %}
-                          <s class="text-danger">{{syn.synonym}}</s>
+                    
+                      {% if syn.synonym_status == "Avråds" %}
+                        - <s class="text-danger">{{syn.synonym}}</s>        
                         {% else %}
-                          {{syn.synonym}}
+                        <div class="tooltip">- {{syn.synonym}}
+                        <span class="tooltiptext">{{syn.synonym_status}}</span>
+                        </div>
                         {% endif %}
+                    
                     {% endifequal %}
                   {% endfor %}
-
+                
               </td>
             </tr>
           {% endif %}
