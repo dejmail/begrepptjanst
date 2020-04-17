@@ -130,7 +130,11 @@ def run_sql_statement(sql_statement):
 
         return result
 
+def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
+    for idx, begrepp in enumerate(begrepp_dict_list):
+        begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+    return begrepp_dict_list
 
 def begrepp_view(request):
     ctx = {}
@@ -154,6 +158,7 @@ def begrepp_view(request):
         for return_result in synonym:
             return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
     
+        return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
 
         html = render_to_string(
             template_name="term-results-partial.html", context={'begrepp': return_list_dict,
