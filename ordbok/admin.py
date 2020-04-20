@@ -37,6 +37,28 @@ class BegreppAdmin(admin.ModelAdmin):
     
     inlines = [SynonymInline]
 
+    fieldsets = [
+        ['Main', {
+        'fields': [('status', 'id_vgr')],
+        }],
+        [None, {
+        #'classes': ['collapse'],
+        'fields' : [#'synonym',
+                    'definition',
+                    'källa',
+                    'alternativ_definition',
+                    'anmärkningar',
+                    'utländsk_term',
+                    'utländsk_definition',
+                    'begrepp_kontext',
+                    'beställare',
+                    #'domän',
+                    'begrepp_version_nummer',
+                    'kommentar_handläggning']
+        }]
+    ]
+
+
     save_on_top = True
 
     list_display = ('term',
@@ -88,7 +110,6 @@ class BegreppAdmin(admin.ModelAdmin):
         if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
             description, url = obj.begrepp_kontext.split('|')
             display_text = f"<a href={url}>{description}</a>"
-            print(display_text)
             return mark_safe(display_text)
         else:
             return obj.begrepp_kontext
@@ -97,8 +118,10 @@ class BegreppAdmin(admin.ModelAdmin):
     
     def status_button(self, obj):
 
-        if (obj.status == 'Avråds') or (obj.status == 'Publicera ej'):
+        if (obj.status == 'Avråds') or (obj.status == 'Avrådd'):
             display_text = f'<button class="btn-xs btn-avrådd text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+        elif (obj.status == 'Publicera ej'):
+            display_text = f'<button class="btn-xs btn-light-blue text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
             display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         elif (obj.status == 'Preliminär'):
