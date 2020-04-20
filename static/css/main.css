@@ -111,8 +111,8 @@ nav {
   .tooltip .tooltiptext {
     visibility: hidden;
     width: 120px;
-    background-color: black;
     color: #fff;
+    background-color: black;
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
@@ -121,8 +121,8 @@ nav {
     z-index: 1;
   }
 
-.red {
-  background-color: red;
+#tooltiptext span.red{
+  background-color: red !important;
 }
   
   .tooltip:hover .tooltiptext {
