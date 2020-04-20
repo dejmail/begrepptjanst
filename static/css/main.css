@@ -72,6 +72,14 @@ nav {
       color: black;
       border-radius: 4px;
     }
+
+    .btn-light-blue{
+      border-color: rgb(222,234,246);
+      background-color: rgb(222,234,246);
+      color: black;
+      border-radius: 4px;
+    }
+  
   
   .text-warning-light{
     background-color: rgb(241, 241, 131);
@@ -83,6 +91,10 @@ nav {
 
   .text-danger-light{
     background-color: rgb(238, 129, 129);
+  }
+
+  .table-light_blue{
+    background-color: rgb(222,234,246);
   }
 
   ul:nth-of-type(1) {
@@ -104,11 +116,14 @@ nav {
     text-align: center;
     border-radius: 6px;
     padding: 5px 0;
-  
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
   }
+
+.red {
+  background-color: red;
+}
   
   .tooltip:hover .tooltiptext {
     visibility: visible;
