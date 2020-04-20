@@ -7,7 +7,7 @@
     <table class="table table-bordered" id="definition_table">
         <thead>
           <tr>
-            <th>Term Begrepp</th>
+            <th>Term</th>
             <th>Definition</th>
             <th>Synonym</th>
           </tr>
@@ -23,8 +23,8 @@
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
                         <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                      </div>
+                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                      </div><br>
                         {% else %}
                         <div class="tooltip">- {{syn.synonym}}
                           <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
@@ -46,12 +46,12 @@
                
                       {% if syn.synonym_status == "Avråds" %}
                       <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                        <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                    </div>
+                        <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                    </div><br>
                         {% else %}
                         <div class="tooltip">- {{syn.synonym}}
                           <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div>
+                        </div><br>
                         {% endif %}
                  
                     {% endifequal %}
@@ -69,12 +69,12 @@
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
                         <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                      </div>
+                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                      </div><br>
                         {% else %}
                         <div class="tooltip">- {{syn.synonym}}
                           <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div>
+                        </div><br>
                         {% endif %}
                     
                     {% endifequal %}
@@ -93,8 +93,8 @@
                     
                       {% if syn.synonym_status == "Avråds" %}
                       <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                        <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                    </div>
+                        <span class="tooltiptext " style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                    </div><br>
                         {% else %}
                         <div class="tooltip">- {{syn.synonym}}
                         <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
