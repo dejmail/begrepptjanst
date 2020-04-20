@@ -29,7 +29,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Preliminär': 'table-success-light',
                     'Ej Påbörjad': 'table-warning',
                     'Definieras ej': 'table-warning-light',
-                    'Publiceras ej' : 'table-info'}
+                    'Publiceras ej' : 'table-light-blue'}
 
 def extract_columns_from_query_and_return_set(search_result, start, stop):
 
@@ -130,6 +130,15 @@ def run_sql_statement(sql_statement):
 
         return result
 
+
+def sort_returned_sql_search_according_to_search_term_position(lines, delim, position=1):
+    
+    '''
+    Returns a sorted list based on "column" from list-of-dictionaries data.
+    '''
+
+    return sorted(lines, key=lambda x: x.get('term').split(delim)[int(position) - 1])
+
 def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
     for idx, begrepp in enumerate(begrepp_dict_list):
@@ -159,7 +168,9 @@ def begrepp_view(request):
             return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
     
         return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
-
+        
+        return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
+        
         html = render_to_string(
             template_name="term-results-partial.html", context={'begrepp': return_list_dict,
                                                                 'synonym' : return_synonym_list_dict}
