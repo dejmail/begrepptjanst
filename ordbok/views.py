@@ -26,7 +26,7 @@ re_pattern = re.compile(r'\s+')
 färg_status_dict = {'Avråds' : 'table-danger',
                     'Klar': 'table-success',
                     'Pågår': 'table-warning',
-                    'Preliminär': 'table-success-light',
+                    'Preliminär': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
                     'Definieras ej': 'table-warning-light',
                     'Publiceras ej' : 'table-light-blue'}
