@@ -44,6 +44,7 @@ class BegreppAdmin(admin.ModelAdmin):
         [None, {
         #'classes': ['collapse'],
         'fields' : [#'synonym',
+                    'term',
                     'definition',
                     'källa',
                     'alternativ_definition',
