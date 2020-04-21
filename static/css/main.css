@@ -52,7 +52,7 @@ nav {
       border-radius: 4px;
     }
 
-.btn-okej {
+.btn-grön {
       border-color: rgb(105, 189, 27);
       background-color: rgb(105, 189, 27);
       color: rgb(0, 0, 0);
@@ -72,3 +72,62 @@ nav {
       color: black;
       border-radius: 4px;
     }
+
+    .btn-light-blue{
+      border-color: rgb(222,234,246);
+      background-color: rgb(222,234,246);
+      color: black;
+      border-radius: 4px;
+    }
+  
+  
+  .text-warning-light{
+    background-color: rgb(241, 241, 131);
+  }
+
+  .table-success-light{
+    background-color: rgb(114, 211, 127);
+  }
+
+  .text-danger-light{
+    background-color: rgb(238, 129, 129);
+  }
+
+  .table-light_blue{
+    background-color: rgb(222,234,246);
+  }
+
+  ul:nth-of-type(1) {
+    list-style-position: inside;
+    padding: 0;
+  }
+  
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    opacity : 1;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, "“Helvetica Neue”", Arial, sans-serif, "“Apple Color Emoji”", "“Segoe UI Emoji”", "“Segoe UI Symbol”"
+  }
+  
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 120px;
+    color: #fff;
+    background-color: rgb(114, 211, 127);
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    /* Position the tooltip */
+    position: absolute;
+    z-index: 1;
+  }
+
+#tooltiptext span.red{
+  background-color: red !important;
+}
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+  
