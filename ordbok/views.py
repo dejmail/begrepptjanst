@@ -23,6 +23,14 @@ logger = logging.getLogger(__name__)
 
 re_pattern = re.compile(r'\s+')
 
+färg_status_dict = {'Avråds' : 'table-danger',
+                    'Klar': 'table-success',
+                    'Pågår': 'table-warning',
+                    'Preliminär': 'table-warning',
+                    'Ej Påbörjad': 'table-warning',
+                    'Definieras ej': 'table-warning-light',
+                    'Publiceras ej' : 'table-light-blue'}
+
 def extract_columns_from_query_and_return_set(search_result, start, stop):
 
     reduced_list = []
@@ -35,7 +43,7 @@ def extract_columns_from_query_and_return_set(search_result, start, stop):
             reduced_list.append(record[start:stop])
     
     reduced_set = set([tuple(i) for i in reduced_list])
-    return  reduced_set
+    return reduced_set
 
 
 def retur_general_sök(url_parameter):
@@ -45,7 +53,7 @@ def retur_general_sök(url_parameter):
     sql_statement = f'''SELECT ordbok_begrepp.id,\
                               definition,\
                               term,\
-                              ordbok_begrepp.status,\
+                              ordbok_begrepp.status AS begrepp_status,\
                               ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                               synonym,\
                               synonym_status\
@@ -62,7 +70,8 @@ def retur_general_sök(url_parameter):
     column_names = ['begrepp_id',
                     'definition',
                     'term',
-                    'begrepp_id',                    
+                    'begrepp_status', 
+                    'synonym_begrepp_id',
                     'synonym',
                     'synonym_status']
 
@@ -121,6 +130,21 @@ def run_sql_statement(sql_statement):
 
         return result
 
+
+def sort_returned_sql_search_according_to_search_term_position(lines, delim, position=1):
+    
+    '''
+    Returns a sorted list based on "column" from list-of-dictionaries data.
+    '''
+
+    return sorted(lines, key=lambda x: x.get('term').split(delim)[int(position) - 1])
+
+def highlight_search_term_i_definition(search_term, begrepp_dict_list):
+
+    for idx, begrepp in enumerate(begrepp_dict_list):
+        begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+    return begrepp_dict_list
+
 def begrepp_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
@@ -128,10 +152,10 @@ def begrepp_view(request):
     if request.is_ajax():
         search_request = retur_general_sök(url_parameter)
 
-        begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=3)
+        begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=4)
         synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=4, stop=7)
-
-        begrepp_column_names = ['begrepp_id', 'definition', 'term']
+        
+        begrepp_column_names = ['begrepp_id', 'definition', 'term', 'begrepp_status']
     
         return_list_dict = []
         for return_result in begrepp:
@@ -143,7 +167,10 @@ def begrepp_view(request):
         for return_result in synonym:
             return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
     
-
+        return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
+        
+        return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
+        
         html = render_to_string(
             template_name="term-results-partial.html", context={'begrepp': return_list_dict,
                                                                 'synonym' : return_synonym_list_dict}
@@ -206,13 +233,16 @@ def begrepp_förklaring_view(request):
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
         
+        status_färg_dict = {'begrepp' :färg_status_dict.get(return_list_dict[0].get('status')),
+                            'synonym' : färg_status_dict.get(return_synonym_list_dict[0].get('status'))}
+
     else:
         term_json = Begrepp.objects.none()
-    
     if request.is_ajax():
         html = render_to_string(template_name="term_forklaring.html", context={'begrepp_full': return_list_dict[0],
                                                                                'synonym_full' : return_synonym_list_dict,
-                                                                               'domän_full' : return_domän_list_dict})
+                                                                               'domän_full' : return_domän_list_dict,
+                                                                               'färg_status' : status_färg_dict})
         data_dict = {"html_from_view": html}
         
         return HttpResponse(json.dumps(data_dict), content_type="application/json")
