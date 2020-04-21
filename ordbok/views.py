@@ -92,7 +92,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             definition,\
                             källa,\
                             externt_id,\
-                            externt_register,\
+                            annan_ordlista,\
                             status,\
                             term,\
                             utländsk_definition,\
