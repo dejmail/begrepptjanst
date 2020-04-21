@@ -6,7 +6,11 @@ import socket
 
 def main():
     if socket.gethostname() == 'suijin.oderland.com':
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        if 'dev' in dir_path:
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.dev')
+        else:
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
     else:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.local')
 
