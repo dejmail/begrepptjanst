@@ -79,6 +79,14 @@
             <td>Kod</td>
             <td>{{begrepp_full.externt_id}}</td>
         </tr>
+        <tr>
+            <td>Verifierad användning</td>
+            
+            <td>{% for domän in domän_full %}
+                - {{domän.domän_namn}}<br>
+                {% endfor %}
+            </td>
+        </tr>
 
         <tr>
             <td><button id="opponera_button">Kommentera</button></td>
