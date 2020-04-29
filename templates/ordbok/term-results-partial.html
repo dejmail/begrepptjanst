@@ -1,4 +1,8 @@
+{% extends 'base.html' %}
 {% load static %}
+
+
+
 {% block mitten-span %}
 
 {% if begrepp %}
@@ -120,5 +124,31 @@
     <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}" onload=populate_request_form()>
 </div>
 {% endif %}
-{% endblock %}
+{% endblock mitten-span %}
 
+{% block extra_javascript %}
+
+<script>
+function visa_mening(term_id)
+{    
+  $.ajax({
+      type: "GET",
+      dataType: "json",
+      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
+      success: function(data) {
+        var display_html = data.html_from_view;
+        $('#mitten-span').html(display_html);
+      },      
+      error: function() {
+        $('#mitten-span').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
+      },
+    }).done(function( data, textStatus, jqXHR) {
+        $("#definition_table").remove();
+    });
+    
+}
+
+
+</script>
+
+{% endblock extra_javascript %}
