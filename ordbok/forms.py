@@ -17,7 +17,8 @@ workstream_choices = [('Inte relevant','Inte relevant'),
 ('PAS','PAS'),
 ('Primärvård','Primärvård'),
 ('Psykiatri','Psykiatri'),
-('Rapporter','Rapporter')]
+('Rapporter','Rapporter'),
+('Övrigt/Annan','Övrigt/Annan')]
 
 
 class TermRequestForm(forms.Form):
@@ -34,11 +35,15 @@ class TermRequestForm(forms.Form):
         telefon = self.cleaned_data.get('mobil_telefon')
         return telefon
 
+    def not_previously_mentionend_in_workstream(self):
+        övrig = self.cleaned_data.get('other')
+
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254)
     mobil_telefon = forms.IntegerField()
     begrepp = forms.CharField(max_length=254)    
     workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
+    other = forms.CharField(max_length=254, label="Om Övright/Annan, kan du specifiera", required=False)
     kontext = forms.CharField(widget=forms.Textarea)
     workflow_namn = forms.CharField(max_length=254)
 

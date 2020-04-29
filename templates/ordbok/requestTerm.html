@@ -1,3 +1,8 @@
+{% extends 'base.html' %}
+
+{% block mitten-span %}
+<div id="mitten-span" >
+
 {% load crispy_forms_filters %}
     {% if form %}
     
@@ -6,7 +11,7 @@
     <form id="beställ_form" action="{% url 'hantera_term_request' %}", method='POST'>{% csrf_token %}
       
     {{ form|crispy }}
-
+        
     {% else %}
         {% for term in begrepp %}
         {{ term.term }}
@@ -18,9 +23,26 @@
 
 </form>
 
+</div>
 
+{% endblock mitten-span %}
 
-<script>
+{% block extra_javascript %}
+<script>    
+    
+  //  function CheckColors(val){
+ //       var element=document.getElementById('beställ_form');
+  //      var value = $("beställ_form :selected").text();
+   //     console.log(value);
+
+//         if(val=='pick a color'||val=='others')
+//    element.style.display='block';
+//  else  
+//    element.style.display='none';
+//}
+    // document.getElementById('').checked) {
+    //     document.getElementById('someotherfield').show();
+    // }
 
     $("#beställ_form").submit(function(event){
 	event.preventDefault(); //prevent default action 
@@ -40,3 +62,4 @@
 });
 
     </script>
+{% endblock extra_javascript %}
