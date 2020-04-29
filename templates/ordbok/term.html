@@ -1,6 +1,7 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-{% block content %}	
+
+{% block header %}
 <div class="row">
 	<div class="col-12 text-center mt-3">
 		<h5>OLLI Begreppstjänst</h5>
@@ -10,18 +11,39 @@
 <div class="text-center top-buffer-10">
 	<img src="{% static '/images/favicon.gif' %}">
   </div>
+{% endblock header %}
 
+{# start of the row containing the search bar #}
+{% block search-bar %}
 <div class="row mt-5">
-	<div class="col-2"></div>
-	
-	<div class="col-8 mx-auto">
-		<form class="form-inline" onsubmit="return false;">
-		<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-		<input id="user-input" class="form-control form-control-md col-md-11" type="text" placeholder="Sök" aria-label="Sök">
-		</form>
-	</div>	
-	<div class="col-2"></div>
-</div>
+
+	{% block search-left-column %}
+    
+		<div class="col-2">
+			
+		</div>
+	{% endblock search-left-column %}
+
+	{% block search-middle-column %}
+		<div class="col-8 mx-auto">
+			<form class="form-inline" onsubmit="return false;">
+			<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
+			<input id="user-input" class="form-control form-control-md col-md-11" type="text" placeholder="Sök" aria-label="Sök">
+			</form>
+		</div>
+	{% endblock search-middle-column %}
+
+	{% block search-right-column %}
+		<div class="col-2">
+
+		</div>
+	{% endblock search-right-column %}
+	</div>
+{% endblock search-bar %}
+
+{# end of the row containing the search bar #}
+
+{% block content %}
 
 <div class="row mt-10">
 	<div class="col-2"></div>
@@ -35,32 +57,10 @@
 		{% block mitten_span %}
 			<div id="mitten-span">
 			</div>
-		{% endblock %}
+		{% endblock mitten_span %}
 	</div>
 	<div class="col-1"></div>
 </div>
 
-<script>
-function visa_mening(term_id)
-{    
-  $.ajax({
-      type: "GET",
-      dataType: "json",
-      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
-      success: function(data) {
-        var display_html = data.html_from_view;
-        $('#mitten-span').html(display_html);
-      },      
-      error: function() {
-        $('#mitten-span').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
-      },
-    }).done(function( data, textStatus, jqXHR) {
-        $("#definition_table").remove();
-    });
-    
-}
+{% endblock content %}
 
-
-</script>
-
-{% endblock %}

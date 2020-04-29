@@ -1,4 +1,13 @@
+{% extends 'term.html' %}
 {% load crispy_forms_filters %}
+
+{# keep these blocks quiet as we do not want them with in this template #}
+{% block header %}{% endblock header %}
+{% block search_bar %}{% endblock search_bar %}
+
+{% block mitten_span %}
+<div id="mitten-span" >
+
 <div id="opponera_bekräfta" class="md-5">
     <h5>Kommentera Begrepp</h5>
     <p>Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet. Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.</p>
@@ -8,7 +17,10 @@
     <input type="submit" value="Verkställ" id="opponera_button">
     </form>
 </div>
+</div>
+{% endblock mitten_span %}
 
+{% block extra_javascript %}
 
 <script>
 	
@@ -30,3 +42,5 @@ $("#opponera_term_form").submit(function(event){
 });
 
 </script>
+
+{% endblock extra_javascript %}

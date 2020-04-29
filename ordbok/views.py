@@ -268,10 +268,14 @@ def hantera_request_term(request):
             ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_term.beställare = ny_beställare
             ny_term.save()
-
+            
             inkommande_domän = Doman()
             
-            inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
+            if form.cleaned_data.get('other') == "Övrigt/Annan":
+                inkommande_domän.domän_namn = form.cleaned_data.get('other')
+            else:
+                inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
+            
             inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
             inkommande_domän.save()

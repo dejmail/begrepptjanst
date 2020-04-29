@@ -1,4 +1,11 @@
+{% extends 'term.html' %}
 {% load crispy_forms_filters %}
+
+{# keep these blocks quiet as we do not want them with in this template #}
+{% block header %}{% endblock header %}
+{% block search_bar %}{% endblock search_bar %}
+
+{% block mitten_span %}
 
 <div id="opponera_bekräfta" class="md-5">
     <h5>Verifiera användning av begreppet</h5>
@@ -9,6 +16,9 @@
     </form>
 </div>
 
+{% endblock mitten_span %}
+
+{% block extra_javascript %}
 <script>
     $("#bekräfta_term_form").submit(function(event){
 	event.preventDefault(); //prevent default action 
@@ -27,3 +37,4 @@
 	});
 });
 </script>
+{% endblock extra_javascript %}
