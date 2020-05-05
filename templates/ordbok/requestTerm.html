@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block mitten-span %}
-<div id="mitten-span" >
+{{ block.super }}
 
 {% load crispy_forms_filters %}
     {% if form %}
@@ -23,26 +23,10 @@
 
 </form>
 
-</div>
-
 {% endblock mitten-span %}
 
 {% block extra_javascript %}
 <script>    
-    
-  //  function CheckColors(val){
- //       var element=document.getElementById('beställ_form');
-  //      var value = $("beställ_form :selected").text();
-   //     console.log(value);
-
-//         if(val=='pick a color'||val=='others')
-//    element.style.display='block';
-//  else  
-//    element.style.display='none';
-//}
-    // document.getElementById('').checked) {
-    //     document.getElementById('someotherfield').show();
-    // }
 
     $("#beställ_form").submit(function(event){
 	event.preventDefault(); //prevent default action 
@@ -56,6 +40,7 @@
 		data : form_data
 	}).done(function(response){ 
         $("#mitten-span").html(response);
+        history.pushState(post_url, '', post_url)
         setTimeout(function(){
             $("#mitten-span").html('<div id="mitten-span"></div>')}, 2500);
 	});
