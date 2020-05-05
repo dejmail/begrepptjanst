@@ -187,7 +187,7 @@ def begrepp_view(request):
     return render(request, "term.html", context={'begrepp': begrepp})
 
 def begrepp_förklaring_view(request):
-    ctx = {}
+
     url_parameter = request.GET.get("q")
     
     if url_parameter:
@@ -232,22 +232,26 @@ def begrepp_förklaring_view(request):
             return_domän_list_dict.append(dict(zip(domän_column_names, return_result)))
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
-        
         status_färg_dict = {'begrepp' :färg_status_dict.get(return_list_dict[0].get('status')),
                             'synonym' : färg_status_dict.get(return_synonym_list_dict[0].get('status'))}
 
+        template_context = {'begrepp_full': return_list_dict[0],
+                            'synonym_full' : return_synonym_list_dict,
+                            'domän_full' : return_domän_list_dict,
+                            'färg_status' : status_färg_dict}
+
+        html = render_to_string(template_name="term_forklaring.html", context=template_context)
+
     else:
         term_json = Begrepp.objects.none()
-    if request.is_ajax():
-        html = render_to_string(template_name="term_forklaring.html", context={'begrepp_full': return_list_dict[0],
-                                                                               'synonym_full' : return_synonym_list_dict,
-                                                                               'domän_full' : return_domän_list_dict,
-                                                                               'färg_status' : status_färg_dict})
-        data_dict = {"html_from_view": html}
-        
-        return HttpResponse(json.dumps(data_dict), content_type="application/json")
 
-    return render(request, "base.html", context=ctx)
+    if request.is_ajax():
+        return HttpResponse(html, content_type="application/html")
+
+    elif request.method=='GET':
+        return render(request, "term_forklaring.html", context=template_context)
+
+    return render(request, "base.html", context={})
 
 def hantera_request_term(request):
     
