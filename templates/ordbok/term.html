@@ -2,15 +2,21 @@
 {% load static %}
 
 {% block header %}
-<div class="row">
-	<div class="col-12 text-center mt-3">
-		<h5>OLLI Begreppstjänst</h5>
+	<div class="row"> 
+		<div class="col-2 mt-3">
+		</div>
+		<div class="col-8 text-center mt-3">
+			<h5>OLLI Begreppstjänst</h5>
+		</div>
+		<div class="col-2">
+			
+		</div>
 	</div>
-</div>
-
-<div class="text-center top-buffer-10">
-	<img src="{% static '/images/favicon.gif' %}">
-  </div>
+	<div class="row">
+		<div class="text-center col-12 top-buffer-10">
+			<img src="{% static '/images/favicon.gif' %}">
+  		</div>
+	</div>
 {% endblock header %}
 
 {# start of the row containing the search bar #}
@@ -18,10 +24,9 @@
 <div class="row mt-5">
 
 	{% block search-left-column %}
-    
-		<div class="col-2">
-			
-		</div>
+	<div class="col-2">
+
+	</div>
 	{% endblock search-left-column %}
 
 	{% block search-middle-column %}
@@ -63,4 +68,3 @@
 </div>
 
 {% endblock content %}
-

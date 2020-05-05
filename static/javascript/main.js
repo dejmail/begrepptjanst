@@ -19,6 +19,7 @@ user_input.keyup(function () {
 		$("#mitten-span").html('<div id="mitten-span"></div>');
 		$.getJSON(endpoint, request_parameters)
 			.done(response => {
+				history.pushState(this.url, '', this.url)
 				// fade out the begrepp_div, then:
 				begrepp_div.fadeTo('fast', 0).promise().then(() => {
 					// replace the HTML contents
