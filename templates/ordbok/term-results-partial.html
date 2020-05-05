@@ -4,7 +4,7 @@
 
 
 {% block mitten-span %}
-
+{{ block.super }}
 {% if begrepp %}
 
 <div class="row mt-5 top-buffer-15">
@@ -133,13 +133,14 @@ function visa_mening(term_id)
 {    
   $.ajax({
       type: "GET",
-      dataType: "json",
+      dataType: "html",
       url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
       success: function(data) {
-        var display_html = data.html_from_view;
-        $('#mitten-span').html(display_html);
+        $('#mitten-span').html(data);
+        history.pushState(this.url, '', this.url)
       },      
-      error: function() {
+      error: function(data) {
+        debugger;
         $('#mitten-span').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
       },
     }).done(function( data, textStatus, jqXHR) {

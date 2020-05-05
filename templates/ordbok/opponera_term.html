@@ -35,7 +35,8 @@ $("#opponera_term_form").submit(function(event){
 		type: request_method,
 		data : form_data
 	}).done(function(response){ 
-        $("#mitten-span").html(response);
+		$("#mitten-span").html(response);
+		history.pushState(post_url, '',post_url)
         setTimeout(function(){
             $("#mitten-span").html('<div id="mitten-span"></div>')}, 2500);
 	});
