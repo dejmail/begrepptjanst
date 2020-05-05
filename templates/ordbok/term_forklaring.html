@@ -1,9 +1,12 @@
-{% extends 'base.html' %}
+{% extends 'term.html' %}
 {% load crispy_forms_filters %}
-{% block mitten-span %}
 
-<div id="förklaring" class="förklaring">
+{% block content %}
+{% block mitten-span %}
+{{ block.super }}
+
 {% if begrepp_full %}
+<div id="förklaring" class="förklaring">
 
 <div class="searchTable">
 
@@ -106,7 +109,8 @@
 <div id="opponera_bekräfta">
 
 </div>
-{% endblock %}
+{% endblock mitten-span %}
+{% endblock content %}
 
 {% block extra_javascript %}
 <script>
@@ -141,6 +145,7 @@ function get_form_function(url, div_to_replace, type_method){
             type : type_method,
             success: function(response){
                 $(div_to_replace).html(response);
+                history.pushState(url, '',url)
             }
         });
 
