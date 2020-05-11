@@ -1,3 +1,4 @@
+{% block preamble %}
 <!doctype html>
 {% load static %}
 <html lang="en">
@@ -7,25 +8,26 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
 
   <link rel="icon" type="image/png" href="{% static '/images/favicon-32x32.png' %}" sizes="32x32" />
   <link rel="icon" type="image/png" href="{% static '/images/favicon-16x16.png' %}" sizes="16x16" />
-
-  <!-- JQuery CDN -->
-
+  {% block base_static %}  
+      <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+      <!-- Bootstrap CDN -->
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">  
+      <!-- FontAwesome CDN -->
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+      <link rel="stylesheet" href="{% static '/css/main.css' %}" media="screen">
+  {% endblock base_static %}
 </head>
-
 <body>
-
+{% endblock preamble %}
   {% load crispy_forms_tags %}
-
   {% block header %}
-  
-  {% endblock header %} 
-
+  {% endblock header %}
   {% block search_bar %}
     {% block search_left_column %}
     {% endblock search_left_column %}
@@ -33,62 +35,44 @@
     {% endblock search_middle_column %}
     {% block search_right_column %}
     {% endblock search_right_column %}
-  {% endblock search_bar %}
-  
-  {% block content %}
-    {% block mitten-span %}
-    <div id="mitten-span" class="top-buffer-10" >
-    </div>
-    {% endblock mitten-span %}
-  {% endblock content %}
-   
+  {% endblock search_bar %}  
+  {% block replaceable-content %}
+  <div class="row mt-10" id="replaceable-content-row">
+    <div class="col-2" id="replaceable-content-left-column"></div>
+    <div class="col-8 text-left top-buffer-15" id="replaceable-content"></div>
+    <div class="col-2" id="replaceable-content-right-column"></div>
+  </div>
+  {% endblock replaceable-content %}  
+  {% block mitten-span %}
+  <div class="row mt-10" id="mitten-span-row">
+    <div class="col-2" id="mitten-span-left-column"></div>
+    <div class="col-8" id="mitten-span-middle-column"></div>
+    <div class="col-2" id="mitten-span-right-column"></div>
+  </div>
+  {% endblock mitten-span %}   
   {% block footer %}
-
   {% endblock footer %}
-
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-
-<!-- Bootstrap CDN -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-
-<!-- FontAwesome CDN -->
-<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
-<link rel="stylesheet" href="{% static '/css/main.css' %}" media="screen">
-
+{% block endbody %}
 </body>
 </html>
-
+{% endblock endbody %}
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
-
 <script>
-
-$(document).ready(function() {
-//Use this inside your document ready jQuery 
-$(window).on('popstate', function() {
-   location.reload(true);
-});
-
-});
-
 function populate_request_form()
-
-{    
-$.ajax({
-	type: "GET",
-	dataType: "html",
-	url: "{% url 'hantera_term_request' %}",
-	success: function(data) {
-		var display_html = data.html_from_view;
-    $('#mitten-span').html(data);
-    history.pushState(this.url, '', this.url)
-	},
-	error: function() {
-    $('#mitten-span').html("Loaded");
-	},
-	});
-}
+    {    
+    $.ajax({
+        type: "GET",
+        dataType: "html",
+        url: "{% url 'hantera_term_request' %}",
+        success: function(data) {
+            var display_html = data.html_from_view;
+        $('#mitten-span-middle-column').html(data);
+        },
+        error: function() {
+        $('#mitten-span-middle-column').html("Loaded");
+        },
+        });
+    }
 </script>
-
 {% endblock extra_javascript %}
