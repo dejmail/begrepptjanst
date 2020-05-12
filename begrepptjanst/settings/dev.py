@@ -1,4 +1,7 @@
 from begrepptjanst.settings.base import *
+from django.urls import include, path  # For django versions from 2.0 and up
+from django.conf import settings
+
 
 DEBUG=True
 
@@ -14,6 +17,9 @@ DATABASES = {
     }
 }
 
+INSTALLED_APPS.append('debug_toolbar')
+
+MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
