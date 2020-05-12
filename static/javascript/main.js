@@ -2,6 +2,14 @@ const user_input = $("#user-input")
 const search_icon = $('#search-icon')
 const begrepp_div = $('#mitten-span-middle-column')
 const endpoint = '/'
+
+if (document.domain == "127.0.0.1"){ 
+	const endpoint = '/';
+}
+else {
+	const endpoint = document.URL;
+}
+
 const delay_by_in_ms = 750
 let scheduled_function = true
 
