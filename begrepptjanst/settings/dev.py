@@ -1,6 +1,6 @@
 from begrepptjanst.settings.base import *
 
-DEBUG=False
+DEBUG=True
 
 DATABASES = {
     'default': {
@@ -21,10 +21,3 @@ STATIC_ROOT = '/home/vgrinfor/public_html/begreppstjanst-dev/static'
 STATICFILES_DIRS = ['/home/vgrinfor/begreppstjanst-dev/static',]
 STATIC_URL = '/begreppstjanst-dev/static/'
 
-# Email settings
-
-EMAIL_HOST = 'mail.vgrinformatik.se'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'info@vgrinformatik.se'
-EMAIL_HOST_PASSWORD = 'XrT5bsRq@[ks'
-EMAIL_USE_TLS = True
