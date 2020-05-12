@@ -1,18 +1,19 @@
-const user_input = $("#user-input")
-const search_icon = $('#search-icon')
-const begrepp_div = $('#mitten-span-middle-column')
-const endpoint = '/'
+const user_input = $("#user-input");
+const search_icon = $('#search-icon');
+const begrepp_div = $('#mitten-span-middle-column');
 
-if (document.domain == "127.0.0.1"){ 
-	const endpoint = '/';
+function endpoint_check() {
+    if (document.domain == "127.0.0.1") { 
+	    const endpoint = '/';
+    } else {
+	    const endpoint = document.URL;
+    }
 }
-else {
-	const endpoint = document.URL;
-}
+
+const endpoint = endpoint_check();
 
 const delay_by_in_ms = 750
 let scheduled_function = true
-
 
 user_input.keyup(function () {
 
@@ -29,7 +30,8 @@ user_input.keyup(function () {
 		var skapad_url = (endpoint + '?' + Object.keys(request_parameters) + '=' + Object.values(request_parameters));
 		$.getJSON(endpoint, request_parameters)
 			.done(response => {
-				//history.pushState(skapad_url, '', skapad_url)
+				console.log("document.URL", document.URL)
+		        console.log("endpoint", endpoint);
 				changeBrowserURL(response, skapad_url);
 				// fade out the begrepp_div, then:
 				begrepp_div.fadeTo('fast', 0).promise().then(() => {
