@@ -36,9 +36,9 @@ INTERNAL_IPS = ['127.0.0.1',]
 #     }
 # }
 
-INSTALLED_APPS.append('debug_toolbar')
+#INSTALLED_APPS.append('debug_toolbar')
 
-MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+#MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
