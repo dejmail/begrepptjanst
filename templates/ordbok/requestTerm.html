@@ -1,13 +1,16 @@
 {% extends 'base.html' %}
 
+{% block preamble %}
+{% endblock preamble %}
+
 {% block mitten-span %}
 {{ block.super }}
 
 {% load crispy_forms_filters %}
     {% if form %}
     
-    Ingen term hittades<br><br>
-    <h5>Beställ en ny term</h5>
+    Sökningen gav ingen träff!<br><br>
+    <h5>Önskemål om nytt begrepp</h5>
     <form id="beställ_form" action="{% url 'hantera_term_request' %}", method='POST'>{% csrf_token %}
       
     {{ form|crispy }}
@@ -16,10 +19,10 @@
         {% for term in begrepp %}
         {{ term.term }}
         {% endfor %}
-    <h5>Ingen term hittades</h5>
+    <h5>Sökningen gav ingen träff!</h5>
     There is no form variable coming in
     {% endif %}
-    <input type="submit" value="Submit">
+    <input type="submit" value="Skicka">
 
 </form>
 
