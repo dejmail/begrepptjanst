@@ -21,6 +21,7 @@ const delay_by_in_ms = 750
 let scheduled_function = true
 
 user_input.keyup(function () {
+	$("#mitten-span-middle-column").empty();
 
 	const request_parameters = {
 		
