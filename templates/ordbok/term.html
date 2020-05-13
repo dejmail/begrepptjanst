@@ -1,10 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block header %}
+<link href="https://fonts.googleapis.com/css2?family=Arvo:ital@1&display=swap" rel="stylesheet"> 
 <div class="row" id="header_row"> 
 	<div class="col-2 mt-3" id="header_left_column"></div>
 	<div class="col-8 text-center mt-3" id="header_center_column">
-		<h5>OLLI Begreppstjänst (beta)</h5>
+		<h2 style="font-family: 'Arvo', serif;">OLLI Begreppstjänst (beta)</h2>
 	</div>
 	<div class="col-2" id="header_left_column"></div>
 </div>
@@ -20,20 +21,47 @@
 <div class="row mt-5" id="search_bar_row">
 
 	{% block search-left-column %}
-	<div class="col-2" id="search-left-column"></div>
+	<div class="col-3" id="search-left-column">
+	<button type="button"   class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Info</button>
+	<div class="modal fade" id="myModal" role="dialog">
+		<div class="modal-dialog">
+		
+		  <!-- Modal content-->
+		  <div class="modal-content">
+			<div class="modal-header">
+			  
+			  <h4 class="modal-title">Instruktioner OLLI</h4>
+			</div>
+			<div class="modal-body">
+			  <p style="font-family: Frutiger;">OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, allt från rent klinisk terminologi till olika administrativa och tekniska begrepp.
+				OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i regionen och olika verksamheter samt personal med administrativa uppgifter och andra stödfunktioner.
+				</p>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		  </div>
+		  
+		</div>
+	  </div>
+	</div>
+
+	
+
+
 	{% endblock search-left-column %}
 
 	{% block search-middle-column %}
 		<div class="col-8 mx-auto" id="search-middle-column">
 			<form class="form-inline" onsubmit="return false;">
 			<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-			<input id="user-input" class="form-control form-control-md col-md-11" type="text" placeholder="Sök" aria-label="Sök">
+			<input id="user-input" class="form-control form-control-md col-md-8" type="text" placeholder="Sök" aria-label="Sök">
 			</form>
 		</div>
 	{% endblock search-middle-column %}
 
 	{% block search-right-column %}
-		<div class="col-2" id="search-right-column"></div>
+		<div class="col-3" id="search-right-column"></div>
 	{% endblock search-right-column %}
 	</div>
 {% endblock search_bar %}
