@@ -46,13 +46,25 @@
                     {% endif %}
                 </tr>
                 <tr class="{{färg_status.begrepp}}">
+                    <td>Källa</td>
+                    {% if begrepp_full.status == "Avråds" %}
+                        <td><s class="text-danger">{{begrepp_full.källa}}</s></td>
+                    {% else %}
+                        <td>{{begrepp_full.källa}}</td>
+                    {% endif %}
+                </tr>
+                <tr class="{{färg_status.begrepp}}">
                     <td>Anmärkning</td>
                     {% if begrepp_full.status == "Avråds" %}
                         <td><s class="text-danger">{{begrepp_full.anmärkningar|default_if_none:'-'}}</s></td>
                     {% else %}
                         <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
                     {% endif %}
-                </tr>  
+                </tr>
+                <tr class="{{färg_status.begrepp}}">
+                    <td>ID VGR</td>
+                    <td>{{begrepp_full.id_vgr}}</td>
+                </tr>
                 <tr class="{{färg_status.begrepp}}">
                     <td>Term på annat språk</td>
                     <td>{{begrepp_full.utländsk_term}}</td>
@@ -62,15 +74,7 @@
                     <td>{{begrepp_full.utländsk_definition}}</td>
                 </tr>
                 <tr>
-                    <td>Kontext beskrivning</td>
-                    <td>{{begrepp_full.begrepp_kontext | urlize }}</td>
-                </tr>
-                <tr>
-                    <td>ID VGR</td>
-                    <td>{{begrepp_full.id_vgr}}</td>
-                </tr>
-                <tr>
-                    <td>Annan ordlista</td>
+                    <td>Annan referens</td>
                     <td>{{begrepp_full.annan_ordlista}}</td>
                 </tr>
                 <tr>
