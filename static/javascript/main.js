@@ -3,14 +3,19 @@ const search_icon = $('#search-icon');
 const begrepp_div = $('#mitten-span-middle-column');
 
 function endpoint_check() {
+
     if (document.domain == "127.0.0.1") { 
-	    const endpoint = '/';
+		const endpoint = '/';
+		return endpoint
     } else {
-	    const endpoint = document.URL;
-    }
+		const endpoint = document.URL;
+		return endpoint
+	}
+
 }
 
 const endpoint = endpoint_check();
+
 
 const delay_by_in_ms = 750
 let scheduled_function = true
@@ -37,7 +42,6 @@ user_input.keyup(function () {
 				begrepp_div.fadeTo('fast', 0).promise().then(() => {
 					// replace the HTML contents
 					begrepp_div.html(response);
-					//document.write(response['html_from_view']);
 					// fade-in the div with new contents
 					begrepp_div.fadeTo('fast', 1);
 					// stop animating search icon
@@ -68,7 +72,6 @@ document.body.addEventListener("click", function(e) {
     // Stop the browser redirecting to  the HREF value.
     event.preventDefault();    
     console.log("sending", e.target.id, "ID to URL", e.target.href);
-    //visa_mening(e.target.id);
     // Attach event listeners for browser history and hash changes.
     
     //changeBrowserURL(null, e.target.href);            
@@ -76,7 +79,6 @@ document.body.addEventListener("click", function(e) {
 	//debugger;
 	getPage(e.target.href);
 	popStateHandler();
-
 	}
 });
 
