@@ -39,12 +39,12 @@ class TermRequestForm(forms.Form):
         övrig = self.cleaned_data.get('other')
 
     namn = forms.CharField(max_length=100)
-    epost =  forms.EmailField(max_length=254)
-    mobil_telefon = forms.IntegerField()
-    begrepp = forms.CharField(max_length=254)    
+    epost =  forms.EmailField(max_length=254, label="E-post")
+    telefon = forms.IntegerField()
+    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
     workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övright/Annan, kan du specifiera", required=False)
-    kontext = forms.CharField(widget=forms.Textarea)
+    kontext = forms.CharField(widget=forms.Textarea, label="Begreppskontext")
     workflow_namn = forms.CharField(max_length=254)
 
 class OpponeraTermForm(forms.Form):
