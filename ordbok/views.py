@@ -262,7 +262,7 @@ def begrepp_förklaring_view(request):
         return HttpResponse(html, content_type="html")
 
     elif request.method=='GET':
-        return render(request, "term.html", context={'begrepp': return_list_dict[0]})
+        return render(request, "term_forklaring.html", context=template_context)
 
     return render(request, "base.html", context={})
 
