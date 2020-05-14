@@ -40,9 +40,9 @@ class TermRequestForm(forms.Form):
 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.IntegerField()
+    telefon = forms.CharField(max_length=20, label="telefon")
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
-    workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
+    workstream = forms.CharField(label='Välj workstream', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övright/Annan, kan du specifiera", required=False)
     kontext = forms.CharField(widget=forms.Textarea, label="Begreppskontext")
     workflow_namn = forms.CharField(max_length=254)
@@ -51,7 +51,7 @@ class OpponeraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20)
+    telefon = forms.CharField(max_length=20, label="telefon")
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())  
 
@@ -59,5 +59,6 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
+    telefon = forms.CharField(max_length=20, label="telefon")
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
     kontext = forms.CharField(label='Verifierad användning')
