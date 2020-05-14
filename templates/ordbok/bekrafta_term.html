@@ -2,7 +2,33 @@
 
 {% block mitten_span %}
 <div id="opponera_bekräfta" class="md-5">
-    <h5>Verifiera användning av begreppet</h5>
+    <h5>Verifiera användning av begreppet&nbsp;<button type="button"   class="btn btn-info btn-lg" data-toggle="modal" data-target="#verify">Verifiera?</button></h5>
+    <div class="modal fade" id="verify" role="dialog">
+		<div class="modal-dialog">		  
+		  <!-- Modal content-->
+		  <div class="modal-content">
+			<div class="modal-header">				
+			  <h4 class="modal-title">Kommentera begrepp</h4>
+			</div>
+			<div class="modal-body">
+			  <p style="font-family: Frutiger;">Verifiera användning
+                Funktionen Verifiera användning ska användas för att visa information om var i verksamheten ett begrepp används. Det är således viktigt att de som söker och använder ett begrepp verifierar detta med denna funktion. Gör så här:
+               <ul><li> 1.	När du sökt och funnit ett begrepp som motsvarar ert behov tryck på knappen Verifiera användning</li>
+                <li>2.	Fyll i E-postadress</li>
+                <li>3.	Välj ett användningsområde i listan Verifierar att begreppet används i.</li>
+                <li>3.1.	Finns inte det avsedda användningsområdet i listan, välj Annan.</li>
+                <li>3.2.	 Skriv sedan i ett nytt användningsområde i fältet Om annat.</li>
+                <li>4.	Tryck på Skicka</li></ul>
+                
+				
+				</p>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		  </div>			
+		</div>
+	  </div>
     <p>Bekräfta att begreppet används inom en kontext som du arbetar med. Fyll i e-postadress och ange den kontexten.</p>
     <form id="bekräfta_term_form" action="{% url 'bekräfta_term' %}", method='POST'>{% csrf_token %}
         {{ bekräfta|crispy }}
