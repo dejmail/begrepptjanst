@@ -32,7 +32,7 @@ class TermRequestForm(forms.Form):
         return epost
     
     def clean_telefon(self):
-        telefon = self.cleaned_data.get('mobil_telefon')
+        telefon = self.cleaned_data.get('telefon')
         return telefon
 
     def not_previously_mentionend_in_workstream(self):
@@ -40,7 +40,7 @@ class TermRequestForm(forms.Form):
 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=20, label="Telefon")
+    telefon = forms.CharField(max_length=20, label="telefon")
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
     workstream = forms.CharField(label='Välj workstream', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
@@ -51,7 +51,7 @@ class OpponeraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20, label="telefon")
+    telefon = forms.CharField(max_length=20, label="Telefon")
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())  
 
@@ -59,6 +59,6 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20, label="telefon")
+    telefon = forms.CharField(max_length=20, label="Telefon")
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
-    kontext = forms.CharField(label='Verifierad användning')
+    kontext = forms.CharField(label='Begreppet används hos oss med Id: (dcw/wf/etc)')
