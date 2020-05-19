@@ -40,10 +40,10 @@ class TermRequestForm(forms.Form):
 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=20, label="telefon")
+    telefon = forms.CharField(max_length=20, label="Telefon")
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
     workstream = forms.CharField(label='Välj workstream', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övright/Annan, kan du specifiera", required=False)
+    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
     kontext = forms.CharField(widget=forms.Textarea, label="Begreppskontext")
     workflow_namn = forms.CharField(max_length=254)
 
