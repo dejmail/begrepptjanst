@@ -61,4 +61,4 @@ class BekräftaTermForm(forms.Form):
     epost = forms.EmailField()
     telefon = forms.CharField(max_length=20, label="Telefon")
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
-    kontext = forms.CharField(label='Begreppet används hos oss med Id: (dcw/wf/etc)')
+    kontext = forms.CharField(label='Hänvisa till kontext (dcw/wf/etc)')
