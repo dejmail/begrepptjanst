@@ -2,12 +2,12 @@
 
 {% block mitten_span %}
 <div id="opponera_bekräfta" class="md-5">
-    <h5>Verifiera användning av begreppet</h5>
+    <h5 style="font-family: frutiger;">Verifiera användning av begreppet</h5>
     	</div>
 		  </div>			
 		</div>
 	  </div>
-    <p>Bekräfta att begreppet används inom en kontext som du arbetar med. Fyll i e-postadress och ange den kontexten.</p>
+    <p style="font-family:garamond;font-size: 18px;">Bekräfta att begreppet används inom en kontext som du arbetar med. Fyll i e-postadress och ange den kontexten.</p>
     <form id="bekräfta_term_form" action="{% url 'bekräfta_term' %}", method='POST'>{% csrf_token %}
         {{ bekräfta|crispy }}
     <input type="submit" value="Skicka" id="bekräfta_button">
