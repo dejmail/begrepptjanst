@@ -25,7 +25,7 @@
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                        <div class="tooltip">  - <p class="text-danger">{{syn.synonym}}</p>
                           <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
                       </div><br>
                         {% else %}
@@ -48,7 +48,7 @@
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                
                       {% if syn.synonym_status == "Avråds" %}
-                      <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                      <div class="tooltip">  - <p class="text-danger">{{syn.synonym}}</p>
                         <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
                     </div><br>
                         {% else %}
@@ -64,14 +64,14 @@
             </tr>
             {% elif begrepp.begrepp_status == "Avråds" %}
             <tr>
-              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} ><s class="text-danger">{{begrepp.term}}</s></a></td>
+              <td><a STYLE="Color: red;text-decoration: line-through" href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</p></a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                 
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                        <div class="tooltip">  - <p class="text-danger">{{syn.synonym}}</p>
                           <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
                       </div><br>
                         {% else %}
@@ -129,23 +129,24 @@
 
 {% block extra_javascript %}
 
-<script>
 
-//function visa_mening(term_id) {
+
+<!-- //function visa_mening(term_id) {
   
-  // $.ajax({
-  //     type: "GET",
-  //     dataType: "html",
-  //     url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
+//   $.ajax({
+//       type: "GET",
+//       dataType: "html",
+//       url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
 
-  //   }).done(function(data, textStatus, jqXHR) {
-  //       $("#definition_table").remove();
-  //       //debugger;
-  //       var data = data.replace('\n','').replace('  ', '').replace("\\&quot;", "");
-  //       $('#mitten-span-middle-column').html(data);
-  //   });
-  // };
-</script>
+//     }).done(function(data, textStatus, jqXHR) {
+//         $("#definition_table").remove();
+//         //debugger;
+//         var data = data.replace('\n','').replace('  ', '').replace("\\&quot;", "");
+//         $('#mitten-span-middle-column').html(data);
+//     });
+//   };
+//  -->
+
 
 {% endblock extra_javascript %}
 
