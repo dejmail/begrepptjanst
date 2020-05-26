@@ -1,4 +1,6 @@
 from begrepptjanst.settings.base import *
+from django.conf import settings
+from django.urls import include, path
 import os 
 import ordbok
 import logging
@@ -19,6 +21,8 @@ DATABASES = {
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+INTERNAL_IPS = ['127.0.0.1',]
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql', 
@@ -31,6 +35,10 @@ DEBUG = True
         
 #     }
 # }
+
+#INSTALLED_APPS.append('debug_toolbar')
+
+#MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
@@ -49,5 +57,5 @@ STATIC_URL = '/static/'
 EMAIL_HOST = 'mail.vgrinformatik.se'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'info@vgrinformatik.se'
-EMAIL_HOST_PASSWORD = 'XrT5bsRq@[ks'
+EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_TLS = True
