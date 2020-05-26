@@ -1,9 +1,13 @@
 {% load static %}
+
 {% block mitten-span %}
+{% spaceless %}
 
 {% if begrepp %}
 
-<div class="row mt-5 top-buffer-15">
+<div class="top-buffer-10">
+  <div class="table-responsive-md">
+    <div class="mitten-span"><h5 style="text-align: center;font-family: frutiger; border-radius:10px; border-style: solid; border-color: #006298; padding: 2%;"><b>Färgkodning för status:</b> Grön = <b>Beslutad</b>, Gul = <b>Preliminärt beslutad</b> och Vit = <b>Inte definierad av VGR</b></h5><br></div>
     <table class="table table-bordered" id="definition_table">
         <thead>
           <tr>
@@ -16,13 +20,13 @@
           {% for begrepp in begrepp %}
             {% if begrepp.begrepp_status == "Klar" %}
             <tr class="table-success">
-              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
+              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
               <td>{{begrepp.definition}}</td>   
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                        <div class="tooltip">  - <p class="text-danger">{{syn.synonym}}</p>
                           <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
                       </div><br>
                         {% else %}
@@ -37,7 +41,7 @@
             </tr>
             {% elif begrepp.begrepp_status == "Preliminär" %}
             <tr class="table-warning">
-              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>
+              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                 
@@ -45,7 +49,7 @@
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                
                       {% if syn.synonym_status == "Avråds" %}
-                      <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                      <div class="tooltip">  - <p class="text-danger">{{syn.synonym}}</p>
                         <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
                     </div><br>
                         {% else %}
@@ -61,14 +65,14 @@
             </tr>
             {% elif begrepp.begrepp_status == "Avråds" %}
             <tr>
-              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}} ><s class="text-danger">{{begrepp.term}}</s></a></td>
+              <td><a STYLE="Color: red;text-decoration: line-through" href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</p></a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                 
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
                         {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                        <div class="tooltip">  - <p class="text-danger">{{syn.synonym}}</p>
                           <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
                       </div><br>
                         {% else %}
@@ -84,7 +88,7 @@
             </tr>
             {% else %}
             <tr>
-              <td><a href="javascript:visa_mening({{begrepp.begrepp_id}})" id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
+              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
               <td>{{begrepp.definition}}</td>   
               <td>
                 
@@ -109,16 +113,41 @@
           {% endif %}
           {% endfor %}
           </tbody>
-
+          </table>
+        </div>
 </div>
-
-
 
 {% else %}
 
 <div id="nyTermForm">
-    <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}" onload=populate_request_form()>
+    <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}">
+<script> populate_request_form()</script>
 </div>
 {% endif %}
-{% endblock %}
+{% endspaceless %}
+
+{% endblock mitten-span %}
+
+{% block extra_javascript %}
+
+
+
+<!-- //function visa_mening(term_id) {
+  
+//   $.ajax({
+//       type: "GET",
+//       dataType: "html",
+//       url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
+
+//     }).done(function(data, textStatus, jqXHR) {
+//         $("#definition_table").remove();
+//         //debugger;
+//         var data = data.replace('\n','').replace('  ', '').replace("\\&quot;", "");
+//         $('#mitten-span-middle-column').html(data);
+//     });
+//   };
+//  -->
+
+
+{% endblock extra_javascript %}
 

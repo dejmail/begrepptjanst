@@ -4,6 +4,7 @@ from django.db.models.functions import Lower
 from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.utils.html import format_html
+import django.utils.encoding
 
 from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
@@ -44,12 +45,14 @@ class BegreppAdmin(admin.ModelAdmin):
         [None, {
         #'classes': ['collapse'],
         'fields' : [#'synonym',
+                    'term',
                     'definition',
                     'källa',
                     'alternativ_definition',
                     'anmärkningar',
                     'utländsk_term',
                     'utländsk_definition',
+                    ('annan_ordlista', 'externt_id'),
                     'begrepp_kontext',
                     'beställare',
                     #'domän',
@@ -68,7 +71,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'utländsk_definition',
                     'status_button',
                     'visa_html_i_begrepp_kontext',    
-                    'externt_register',
+                    'annan_ordlista',
                     'begrepp_version_nummer')
 
     list_filter = ("begrepp_version_nummer", "status",)
@@ -76,7 +79,7 @@ class BegreppAdmin(admin.ModelAdmin):
     search_fields = ('term',
                     'definition',
                     'begrepp_kontext',    
-                    'externt_register',
+                    'annan_ordlista',
                     'term',
                     'utländsk_definition',
                     'utländsk_term',
@@ -192,4 +195,6 @@ admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
+
+
 

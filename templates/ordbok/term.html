@@ -1,66 +1,93 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
+<<<<<<< HEAD
 {% block content %}	
 <div class="row">
 	<div class="col-12 text-center mt-3">
 		<h5>OLLI Begreppstjänst (beta)</h5>
+=======
+{% block header %}
+<link href="https://fonts.googleapis.com/css2?family=Arvo:ital@1&display=swap" rel="stylesheet"> 
+<div class="row" id="header_row"> 
+	<div class="col-2 mt-3" id="header_left_column"></div>
+	<div class="col-8 text-center mt-3" id="header_center_column">
+		<h2 style="font-family: frutiger;">OLLI Begreppstjänst (beta)</h2>
+>>>>>>> bak_knapp
+	</div>
+	<div class="col-2" id="header_left_column"></div>
+</div>
+<div class="row" id="thermos_flask_icon_row">
+	<div class="text-center col-12 top-buffer-10">
+		<img src="{% static '/images/favicon.gif' %}">
 	</div>
 </div>
+{% endblock header %}
 
-<div class="text-center top-buffer-10">
-	<img src="{% static '/images/favicon.gif' %}">
-  </div>
+{# start of the row containing the search bar #}
+{% block search_bar %}
+<div class="row mt-5" id="search_bar_row">
 
-<div class="row mt-5">
-	<div class="col-2"></div>
-	
-	<div class="col-8 mx-auto">
-		<form class="form-inline" onsubmit="return false;">
-		<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-		<input id="user-input" class="form-control form-control-md col-md-11" type="text" placeholder="Sök" aria-label="Sök">
-		</form>
-	</div>	
-	<div class="col-2"></div>
-</div>
-
-<div class="row mt-10">
-	<div class="col-2"></div>
-	<div class="col-8"><div id="replaceable-content" class="text-left top-buffer-15"></div></div>
-	<div class="col-2"></div>
-</div>
-	
-<div class="row mt-10">
-	<div class="col-1"></div>
-	<div class="col-10">
-		{% block mitten_span %}
-			<div id="mitten-span">
+	{% block search-left-column %}
+	<div class="col-3" id="search-left-column">
+	<button type="button"  style="font-family: frutiger; margin-left:1%; background-color:#006298;" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal">Instruktion OLLI begreppstjänst</button>
+	<div class="modal fade" id="myModal" role="dialog">
+		<div class="modal-dialog">		
+		  <!-- Modal content-->
+		  <div class="modal-content">
+			<div class="modal-header">
+			  
+			  <h4 class="modal-title">Instruktioner OLLI</h4>
 			</div>
-		{% endblock %}
+			<div class="modal-body">
+			  <p style="font-family: CALIBRI;">OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, allt från rent klinisk terminologi till olika administrativa och tekniska begrepp.
+				OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i regionen och olika verksamheter samt personal med administrativa uppgifter och andra stödfunktioner.
+				</p>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-default" data-dismiss="modal">stäng</button>
+			</div>
+		  </div>		  
+		</div>
+	  </div>
+<br><br>
+	  <button type="button" style="font-family: frutiger; margin-left: 1%; background-color:#006298;"  class="btn btn-info btn-lg" data-toggle="modal" data-target="#komIgang">Använd OLLI</button>
+	  <div class="modal fade" id="komIgang" role="dialog">
+		  <div class="modal-dialog">		  
+			<!-- Modal content-->
+			<div class="modal-content">
+			  <div class="modal-header">				
+				<h4 class="modal-title">Kom igång!</h4>
+			  </div>
+			  <div class="modal-body">
+				<p style="font-family: Calibri;">Skriv in början på den textsträng du söker i sökfältet. En lista med begrepp som innehåller strängen visas under sökfältet. När ett begrepp dyker upp kan man se begreppets term, en definition och eventuella synonymer i listan.<br><br>
+					När man söker i OLLI görs sökningen på hela begreppet, det vill säga inte bara på begreppets term utan även på eventuell term på annat språk och synonymer. Sökfunktionen kontrollerar också om den textsträng du söker finns i definitionen, den svenska eller annat språk. Sökresultatet kan därför visa begrepp där söksträngen inte syns i listan som visas automatiskt. Man får då klicka in sig på begreppet för att se mer information om begreppet och den sträng som är eftersökt.
+				  </p>
+			  </div>
+			  <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">stäng</button>
+			  </div>
+			</div>			
+		  </div>
+		</div>
 	</div>
-	<div class="col-1"></div>
-</div>
 
-<script>
-function visa_mening(term_id)
-{    
-  $.ajax({
-      type: "GET",
-      dataType: "json",
-      url: "{% url 'begrepp_förklaring' %}" + "?q=" + term_id,
-      success: function(data) {
-        var display_html = data.html_from_view;
-        $('#mitten-span').html(display_html);
-      },      
-      error: function() {
-        $('#mitten-span').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
-      },
-    }).done(function( data, textStatus, jqXHR) {
-        $("#definition_table").remove();
-    });
-    
-}
+	
 
 
-</script>
+	{% endblock search-left-column %}
 
-{% endblock %}
+	{% block search-middle-column %}
+		<div class="col-8 mx-auto" id="search-middle-column">
+			<form class="form-inline" onsubmit="return false;">
+			<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
+			<input id="user-input" class="form-control form-control-md col-md-8" type="text" placeholder="Sök" aria-label="Sök">
+			</form>
+		</div>
+	{% endblock search-middle-column %}
+
+	{% block search-right-column %}
+		<div class="col-3" id="search-right-column"></div>
+	{% endblock search-right-column %}
+	</div>
+{% endblock search_bar %}
+{# end of the row containing the search bar #}
