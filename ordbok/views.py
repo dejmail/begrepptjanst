@@ -92,7 +92,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             definition,\
                             källa,\
                             externt_id,\
-                            externt_register,\
+                            annan_ordlista,\
                             status,\
                             term,\
                             utländsk_definition,\
@@ -145,41 +145,53 @@ def highlight_search_term_i_definition(search_term, begrepp_dict_list):
         begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
     return begrepp_dict_list
 
+def hämta_data_till_begrepp_view(url_parameter):
+    search_request = retur_general_sök(url_parameter)
+
+    begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=4)
+    synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=4, stop=7)
+    
+    begrepp_column_names = ['begrepp_id', 'definition', 'term', 'begrepp_status']
+
+    return_list_dict = []
+    for return_result in begrepp:
+        return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
+
+    synonym_column_names = ['begrepp_id', 'synonym', 'synonym_status']
+
+    return_synonym_list_dict = []
+    for return_result in synonym:
+        return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
+
+    return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
+    
+    return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
+    
+    html = render_to_string(
+        template_name="term-results-partial.html", context={'begrepp': return_list_dict,
+                                                            'synonym' : return_synonym_list_dict}
+    )
+    #html = re.sub('\n', '', html)
+
+    return html, return_list_dict
+
+
 def begrepp_view(request):
     ctx = {}
     url_parameter = request.GET.get("q")
-
+    
+    #set_trace()
     if request.is_ajax():
-        search_request = retur_general_sök(url_parameter)
-
-        begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=4)
-        synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=4, stop=7)
-        
-        begrepp_column_names = ['begrepp_id', 'definition', 'term', 'begrepp_status']
-    
-        return_list_dict = []
-        for return_result in begrepp:
-            return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
-
-        synonym_column_names = ['begrepp_id', 'synonym', 'synonym_status']
-
-        return_synonym_list_dict = []
-        for return_result in synonym:
-            return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
-    
-        return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
-        
-        return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
-        
-        html = render_to_string(
-            template_name="term-results-partial.html", context={'begrepp': return_list_dict,
-                                                                'synonym' : return_synonym_list_dict}
-        )
-        data_dict = {"html_from_view": html}
-        
+        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)        
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
-
         return JsonResponse(data=data_dict, safe=False)
+
+    # elif request.method == 'GET':
+    #     data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
+    #     return render(request, "term-results-partial.html", context=data_dict)
+
+    # elif request.method=='GET':
+    #     return render(request, "term_forklaring.html", context=template_context)
     
     else:
         begrepp = Begrepp.objects.none()
@@ -187,7 +199,7 @@ def begrepp_view(request):
     return render(request, "term.html", context={'begrepp': begrepp})
 
 def begrepp_förklaring_view(request):
-    ctx = {}
+
     url_parameter = request.GET.get("q")
     
     if url_parameter:
@@ -232,22 +244,27 @@ def begrepp_förklaring_view(request):
             return_domän_list_dict.append(dict(zip(domän_column_names, return_result)))
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
-        
         status_färg_dict = {'begrepp' :färg_status_dict.get(return_list_dict[0].get('status')),
                             'synonym' : färg_status_dict.get(return_synonym_list_dict[0].get('status'))}
 
+        template_context = {'begrepp_full': return_list_dict[0],
+                            'synonym_full' : return_synonym_list_dict,
+                            'domän_full' : return_domän_list_dict,
+                            'färg_status' : status_färg_dict}
+        
+        html = render_to_string(template_name="term_forklaring.html", context=template_context)
+        #html = re.sub('\n', '', html)
     else:
         term_json = Begrepp.objects.none()
-    if request.is_ajax():
-        html = render_to_string(template_name="term_forklaring.html", context={'begrepp_full': return_list_dict[0],
-                                                                               'synonym_full' : return_synonym_list_dict,
-                                                                               'domän_full' : return_domän_list_dict,
-                                                                               'färg_status' : status_färg_dict})
-        data_dict = {"html_from_view": html}
-        
-        return HttpResponse(json.dumps(data_dict), content_type="application/json")
 
-    return render(request, "base.html", context=ctx)
+    if request.is_ajax():
+        #set_trace()
+        return HttpResponse(html, content_type="html")
+
+    elif request.method=='GET':
+        return render(request, "term_forklaring.html", context=template_context)
+
+    return render(request, "base.html", context={})
 
 def hantera_request_term(request):
     
@@ -268,10 +285,14 @@ def hantera_request_term(request):
             ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_term.beställare = ny_beställare
             ny_term.save()
-
+            
             inkommande_domän = Doman()
             
-            inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
+            if form.cleaned_data.get('other') == "Övrigt/Annan":
+                inkommande_domän.domän_namn = form.cleaned_data.get('other')
+            else:
+                inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
+            
             inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
             inkommande_domän.save()
@@ -288,12 +309,13 @@ def hantera_request_term(request):
 def opponera_term(request):
 
     url_parameter = request.GET.get("q")
-
+    
     if request.method == 'GET':
         inkommande_term = Begrepp(term=url_parameter)
         form = OpponeraTermForm(initial={'term' : inkommande_term})
+        return render(request, 'opponera_term.html', {'opponera': form})
 
-    if request.method == 'POST':
+    elif request.method == 'POST':
         form = OpponeraTermForm(request.POST)
         if form.is_valid():
             
@@ -312,8 +334,6 @@ def opponera_term(request):
                                    Tack för dina synpunkter.
                                    </div>''')
     
-    return render(request, 'opponera_term.html', {'opponera': form})
-
 def bekräfta_term(request):
 
     url_parameter = request.GET.get("q")

@@ -17,7 +17,8 @@ workstream_choices = [('Inte relevant','Inte relevant'),
 ('PAS','PAS'),
 ('Primärvård','Primärvård'),
 ('Psykiatri','Psykiatri'),
-('Rapporter','Rapporter')]
+('Rapporter','Rapporter'),
+('Övrigt/Annan','Övrigt/Annan')]
 
 
 class TermRequestForm(forms.Form):
@@ -31,22 +32,26 @@ class TermRequestForm(forms.Form):
         return epost
     
     def clean_telefon(self):
-        telefon = self.cleaned_data.get('mobil_telefon')
+        telefon = self.cleaned_data.get('telefon')
         return telefon
 
+    def not_previously_mentionend_in_workstream(self):
+        övrig = self.cleaned_data.get('other')
+
     namn = forms.CharField(max_length=100)
-    epost =  forms.EmailField(max_length=254)
-    mobil_telefon = forms.IntegerField()
-    begrepp = forms.CharField(max_length=254)    
-    workstream = forms.CharField(label='Välja arbetsström', widget=forms.Select(choices=workstream_choices))
-    kontext = forms.CharField(widget=forms.Textarea)
+    epost =  forms.EmailField(max_length=254, label="E-post")
+    telefon = forms.CharField(max_length=20, label="telefon")
+    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
+    workstream = forms.CharField(label='Välj workstream', widget=forms.Select(choices=workstream_choices))
+    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
+    kontext = forms.CharField(widget=forms.Textarea, label="Begreppskontext")
     workflow_namn = forms.CharField(max_length=254)
 
 class OpponeraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20)
+    telefon = forms.CharField(max_length=20, label="Telefon")
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())  
 
@@ -54,5 +59,6 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
+    telefon = forms.CharField(max_length=20, label="Telefon")
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
-    kontext = forms.CharField(label='Verifierad användning')
+    kontext = forms.CharField(label='Hänvisa till kontext (dcw/wf/etc)')
