@@ -1,32 +1,37 @@
 {% load crispy_forms_filters %}
+
+{% block mitten_span %}
+
 <div id="opponera_bekräfta" class="md-5">
-    <h5>Kommentera Begrepp</h5>
-    <p>Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet. Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.</p>
+	<h5>Kommentera Begrepp</h5>
+  
+	
+	
+    <p style="font-family:garamond;font-size: 18px;">Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet. Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.</p>
     <form id="opponera_term_form" action="{% url 'opponera_term' %}", method='POST'>{% csrf_token %}
         {{ opponera|crispy }}
-
-    <input type="submit" value="Verkställ" id="opponera_button">
+    <input type="submit" value="Skicka" id="opponera_button">
     </form>
 </div>
+{% endblock mitten_span %}
 
-
-<script>
-	
-$("#opponera_term_form").submit(function(event){
-	event.preventDefault(); //prevent default action 
-	var post_url = $(this).attr("action"); //get form action url
-	var request_method = $(this).attr("method"); //get form GET/POST method
-	var form_data = $(this).serialize(); //Encode form elements for submission
-	
-	$.ajax({
-		url : post_url,
-		type: request_method,
-		data : form_data
-	}).done(function(response){ 
-        $("#mitten-span").html(response);
-        setTimeout(function(){
-            $("#mitten-span").html('<div id="mitten-span"></div>')}, 2500);
+{% block extra_javascript %}
+<script>	
+	$("#opponera_term_form").submit(function(event){
+		event.preventDefault(); //prevent default action 
+		var post_url = $(this).attr("action"); //get form action url
+		var request_method = $(this).attr("method"); //get form GET/POST method
+		var form_data = $(this).serialize(); //Encode form elements for submission
+		
+		$.ajax({
+			url : post_url,
+			type: request_method,
+			data : form_data
+		}).done(function(response){ 
+			$("#mitten-span-middle-column").html(response);
+			setTimeout(function(){
+				$("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
+		});
 	});
-});
-
 </script>
+{% endblock extra_javascript %}
