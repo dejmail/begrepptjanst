@@ -37,15 +37,16 @@ class TermRequestForm(forms.Form):
 
     def not_previously_mentionend_in_workstream(self):
         övrig = self.cleaned_data.get('other')
-
+    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
+    kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
+    workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
+    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)    
+    # workflow_namn = forms.CharField(max_length=254)
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=20, label="telefon")
-    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet")
-    workstream = forms.CharField(label='Välj workstream', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
-    kontext = forms.CharField(widget=forms.Textarea, label="Begreppskontext")
-    workflow_namn = forms.CharField(max_length=254)
+    telefon = forms.CharField(max_length=20, label="Telefon")
+    
+
 
 class OpponeraTermForm(forms.Form):
 
@@ -61,4 +62,4 @@ class BekräftaTermForm(forms.Form):
     epost = forms.EmailField()
     telefon = forms.CharField(max_length=20, label="Telefon")
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
-    kontext = forms.CharField(label='Hänvisa till kontext (dcw/wf/etc)')
+    kontext = forms.CharField(label='Specificera var begreppet används')
