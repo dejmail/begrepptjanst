@@ -293,7 +293,7 @@ def hantera_request_term(request):
             else:
                 inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
             
-            inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
+            #inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
             inkommande_domän.save()
 
