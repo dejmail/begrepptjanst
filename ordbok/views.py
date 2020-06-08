@@ -298,7 +298,7 @@ def hantera_request_term(request):
             #set_trace()
             if Begrepp.objects.filter(term=ny_term.term).exists():
                     
-                    return HttpResponse('''<div class="alert alert-danger">
+                    return HttpResponse('''<div class="alert alert-danger text-center">
                                    Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
                                    </div>''')
             else:
