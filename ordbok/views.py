@@ -304,7 +304,7 @@ def hantera_request_term(request):
             else:
                 inkommande_domän.save()
                 ny_term.save()
-                return HttpResponse('''<div class="alert alert-success">
+                return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
 
