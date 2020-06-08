@@ -284,7 +284,7 @@ def hantera_request_term(request):
             ny_term.begrepp_kontext = request.POST.get('kontext')
             ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_term.beställare = ny_beställare
-            ny_term.save()
+            
             
             inkommande_domän = Doman()
             
@@ -295,9 +295,16 @@ def hantera_request_term(request):
             
             #inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
-            inkommande_domän.save()
-
-            return HttpResponse('''<div class="alert alert-success">
+            #set_trace()
+            if Begrepp.objects.filter(term=ny_term.term).exists():
+                    
+                    return HttpResponse('''<div class="alert alert-danger">
+                                   Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
+                                   </div>''')
+            else:
+                inkommande_domän.save()
+                ny_term.save()
+                return HttpResponse('''<div class="alert alert-success">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
 
