@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 re_pattern = re.compile(r'\s+')
 
 färg_status_dict = {'Avråds' : 'table-danger',
-                    'Klar': 'table-success',
+                    'Beslutad': 'table-success',
                     'Pågår': 'table-warning',
                     'Preliminär': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
@@ -63,7 +63,7 @@ def retur_general_sök(url_parameter):
                             LEFT JOIN ordbok_doman\
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
                         WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%" AND NOT ordbok_begrepp.status = 'Publicera ej')
-                        OR (ordbok_begrepp.definition LIKE "%{url_parameter}%"  AND ordbok_begrepp.status NOT LIKE "%Publicera ej%")\
+                        OR ordbok_begrepp.definition LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
                         OR ordbok_synonym.synonym LIKE "%{url_parameter}%";'''
     

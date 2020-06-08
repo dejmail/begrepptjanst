@@ -7,7 +7,7 @@ DEFAULT_STATUS = "Ej Påbörjad"
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Definiera ej', 'Definiera ej'), 
               ('Inte definierad', 'Inte definierad'), 
-              ('Klar', 'Klar'), 
+              ('Beslutad', 'Beslutad'), 
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
               ('Preliminär', 'Preliminär'),
@@ -29,7 +29,7 @@ class Begrepp(models.Model):
     källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     annan_ordlista = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
-    term = models.CharField(max_length=255)
+    term = models.CharField(max_length=255, unique=True)
     utländsk_definition = models.TextField(default='Inte definierad')
     utländsk_term = models.CharField(default='Inte definierad', max_length=255)
     id_vgr = models.CharField(max_length=255, null=True, default='Inte definierad')
@@ -56,7 +56,7 @@ class Doman(models.Model):
     class Meta:     
         verbose_name_plural = "Domäner"
 
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True )
     domän_id = models.AutoField(primary_key=True)
     domän_kontext = models.TextField()
     domän_namn = models.CharField(max_length=255)       
