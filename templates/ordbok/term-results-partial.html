@@ -20,7 +20,7 @@
         </thead>
         <tbody id="myTable">
           {% for begrepp in begrepp %}
-            {% if begrepp.begrepp_status == "Klar" %}
+            {% if begrepp.begrepp_status == "Beslutad" %}
             <tr class="table-success">
               <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
               <td>{{begrepp.definition}}</td>   
