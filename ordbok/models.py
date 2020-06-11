@@ -29,7 +29,7 @@ class Begrepp(models.Model):
     källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     annan_ordlista = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
-    term = models.CharField(max_length=255, unique=True)
+    term = models.CharField(max_length=255)
     utländsk_definition = models.TextField(default='Inte definierad')
     utländsk_term = models.CharField(default='Inte definierad', max_length=255)
     id_vgr = models.CharField(max_length=255, null=True, default='Inte definierad')

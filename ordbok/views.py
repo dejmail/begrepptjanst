@@ -295,19 +295,19 @@ def hantera_request_term(request):
             
             #inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
-            #set_trace()
+            
             if Begrepp.objects.filter(term=ny_term.term).exists():
                     
                     return HttpResponse('''<div class="alert alert-danger text-center">
                                    Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
                                    </div>''')
             else:
-                inkommande_domän.save()
                 ny_term.save()
+                inkommande_domän.save()
+
                 return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
-
     else:
         form = TermRequestForm()
     
