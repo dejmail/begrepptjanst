@@ -62,8 +62,8 @@ def retur_general_sök(url_parameter):
                                 ON ordbok_begrepp.id = ordbok_synonym.begrepp_id\
                             LEFT JOIN ordbok_doman\
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
-                        WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%" AND NOT ordbok_begrepp.status = 'Publicera ej')
-                        OR ordbok_begrepp.definition LIKE "%{url_parameter}%"\
+                        WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%" AND NOT ordbok_begrepp.status = 'Publicera ej')\
+                        OR (ordbok_begrepp.definition LIKE "%{url_parameter}%" AND NOT ordbok_begrepp.status = 'Publicera ej')\
                         OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
                         OR ordbok_synonym.synonym LIKE "%{url_parameter}%";'''
     
