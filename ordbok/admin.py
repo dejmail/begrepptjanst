@@ -10,6 +10,8 @@ from django.contrib import admin
 from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
 from .functions import skicka_epost_till_beställaren
 
+import re
+
 admin.site.site_header = "OLLI Begreppstjänst Admin"
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
@@ -110,12 +112,16 @@ class BegreppAdmin(admin.ModelAdmin):
 
     def visa_html_i_begrepp_kontext(self, obj):
         
-        if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
-            description, url = obj.begrepp_kontext.split('|')
-            display_text = f"<a href={url}>{description}</a>"
-            return mark_safe(display_text)
-        else:
-            return obj.begrepp_kontext
+        #set_trace()
+        #if len(re.findall("|") > 1:
+        # if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
+        #     set_trace()
+        #     description, url = obj.begrepp_kontext.split('|')
+
+        #     display_text = f"<a href={url}>{description}</a>"
+        #     return mark_safe(display_text)
+        # else:
+        return obj.begrepp_kontext
 
     visa_html_i_begrepp_kontext.short_description = "begrepp context"
     
