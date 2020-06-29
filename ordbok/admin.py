@@ -151,7 +151,24 @@ class BestallareAdmin(admin.ModelAdmin):
     list_display = ('beställare_namn',
                     'beställare_email',
                     'beställare_telefon',
-                    'beställare_datum',)
+                    'beställare_datum',
+                    'begrepp')
+    search_fields = ("begrepp__term","beställare_namn", "beställare_email") 
+
+    def begrepp(self, obj):
+        # set_trace()
+        display_text = ", ".join([
+            "<a href={}>{}</a>".format(
+                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[0].name),
+                    args=(begrepp.id,)),
+                begrepp.term)
+             for begrepp in obj.begrepp_set.all()
+        ])
+        if display_text:
+            return mark_safe(display_text)
+        return display_text
+
+    
 
 class DomanAdmin(admin.ModelAdmin):
 
