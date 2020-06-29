@@ -29,7 +29,7 @@ def add_non_breaking_space_to_status(status_item):
 
 class SynonymInline(admin.StackedInline):
     model = Synonym
-    max_num = 1
+    extra = 1
 
 class BegreppAdmin(admin.ModelAdmin):
     
