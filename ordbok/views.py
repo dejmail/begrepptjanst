@@ -139,10 +139,33 @@ def sort_returned_sql_search_according_to_search_term_position(lines, delim, pos
 
     return sorted(lines, key=lambda x: x.get('term').split(delim)[int(position) - 1])
 
-def highlight_search_term_i_definition(search_term, begrepp_dict_list):
+# def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
-    for idx, begrepp in enumerate(begrepp_dict_list):
-        begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+#     for idx, begrepp in enumerate(begrepp_dict_list):
+#         begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+        
+#     return begrepp_dict_list
+
+
+def return_list_of_term_and_definition():
+    cursor = connection.cursor()
+
+    sql_statement = f'''SELECT term, definition FROM ordbok_begrepp;'''
+
+    clean_statement = re.sub(re_pattern, ' ', sql_statement)
+    print(clean_statement)
+    cursor.execute(clean_statement)
+    result = cursor.fetchall()
+    
+    return result
+
+def marking_external_info(begrepp_dict_list, term_def_dict):
+
+    for index, begrepp in enumerate(begrepp_dict_list):
+        begrepp_dict_list[index]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+        #replace begrepp in begrepp_dict_list with bold if definition in term_def_dict(exists)
+        for term, definition in term_def_dict.items():
+            begrepp_dict_list[index]['definition'] = format_html(begrepp.get('definition').replace(begrepp, f'<b>{term}</b>'))
     return begrepp_dict_list
 
 def hämta_data_till_begrepp_view(url_parameter):
@@ -163,7 +186,10 @@ def hämta_data_till_begrepp_view(url_parameter):
     for return_result in synonym:
         return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
 
-    return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
+    term_def_dict = return_list_of_term_and_definition()
+    set_trace()
+    return_list_dict = marking_external_info(begrepp_dict_list=return_list_dict,
+                                             term_def_dict=term_def_dict)
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
     
@@ -177,7 +203,7 @@ def hämta_data_till_begrepp_view(url_parameter):
 
 
 def begrepp_view(request):
-    ctx = {}
+    
     url_parameter = request.GET.get("q")
     
     #set_trace()
@@ -190,8 +216,8 @@ def begrepp_view(request):
     #     data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
     #     return render(request, "term-results-partial.html", context=data_dict)
 
-    # elif request.method=='GET':
-    #     return render(request, "term_forklaring.html", context=template_context)
+    elif request.method=='GET':
+        return render(request, "term_forklaring_only.html", context=template_context)
     
     else:
         begrepp = Begrepp.objects.none()
