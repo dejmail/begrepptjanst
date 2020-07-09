@@ -143,9 +143,9 @@ nav {
   .definitiontooltip .definitiontooltiptext {
     visibility: hidden;
     width: 200px;
-    color: rgb(85, 85, 85);
-    background-color: rgb(209, 209, 209);
-    font-size: 11px;
+    color: rgb(0, 0, 0);
+    background-color: rgb(255, 255, 255);
+    font-size: 12px;
     font-style: normal;
     text-align: left;
     border-radius: 6px;
