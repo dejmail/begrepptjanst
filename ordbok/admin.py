@@ -63,7 +63,6 @@ class BegreppAdmin(admin.ModelAdmin):
         }]
     ]
 
-
     save_on_top = True
 
     list_display = ('term',
@@ -167,8 +166,6 @@ class BestallareAdmin(admin.ModelAdmin):
         if display_text:
             return mark_safe(display_text)
         return display_text
-
-    
 
 class DomanAdmin(admin.ModelAdmin):
 

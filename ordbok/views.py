@@ -7,12 +7,14 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 from datetime import datetime
 from django.db import connection, transaction
+from django.db.models import Q
 from django.core.mail import EmailMessage
 
 from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
 from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
-from .functions import mäta_sök_träff, mäta_förklaring_träff
+from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
+
 import re
 import logging
 from begrepptjanst.logs import setup_logging
@@ -139,33 +141,41 @@ def sort_returned_sql_search_according_to_search_term_position(lines, delim, pos
 
     return sorted(lines, key=lambda x: x.get('term').split(delim)[int(position) - 1])
 
-# def highlight_search_term_i_definition(search_term, begrepp_dict_list):
+def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
-#     for idx, begrepp in enumerate(begrepp_dict_list):
-#         begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+    for idx, begrepp in enumerate(begrepp_dict_list):
+        begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
         
-#     return begrepp_dict_list
+    return begrepp_dict_list
 
 
 def return_list_of_term_and_definition():
+    
     cursor = connection.cursor()
-
-    sql_statement = f'''SELECT term, definition FROM ordbok_begrepp;'''
-
+    sql_statement = f"SELECT term, definition FROM ordbok_begrepp;"
     clean_statement = re.sub(re_pattern, ' ', sql_statement)
-    print(clean_statement)
     cursor.execute(clean_statement)
     result = cursor.fetchall()
-    
+
     return result
 
-def marking_external_info(begrepp_dict_list, term_def_dict):
+def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list, term_def_dict):
+
+    #create a set as there are duplicates in the database
+    term_def_set = set([(concepts,definition) for concepts,definition in term_def_dict])
+    term_def_dict = {concept:f'''<div class="definitiontooltip">{concept}<div class="definitiontooltiptext">{definition}</div></div>''' for concept, definition in term_def_set}
+    
+    translator = Xlator(term_def_dict)
+    # possibly better to join with another string character that is never used, perhaps a special ASCII character?
+    altered_strings = translator.xlat('½'.join([i.get('definition') for i in begrepp_dict_list]))
+    resplit_altered_strings = altered_strings.split('½')
 
     for index, begrepp in enumerate(begrepp_dict_list):
-        begrepp_dict_list[index]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
-        #replace begrepp in begrepp_dict_list with bold if definition in term_def_dict(exists)
-        for term, definition in term_def_dict.items():
-            begrepp_dict_list[index]['definition'] = format_html(begrepp.get('definition').replace(begrepp, f'<b>{term}</b>'))
+        try:
+           begrepp_dict_list[index]['definition'] = format_html(resplit_altered_strings[index])
+        except re.error as e:
+           print(e)
+
     return begrepp_dict_list
 
 def hämta_data_till_begrepp_view(url_parameter):
@@ -187,9 +197,11 @@ def hämta_data_till_begrepp_view(url_parameter):
         return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
 
     term_def_dict = return_list_of_term_and_definition()
-    set_trace()
-    return_list_dict = marking_external_info(begrepp_dict_list=return_list_dict,
+    
+    return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,
                                              term_def_dict=term_def_dict)
+
+    return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
     
@@ -216,8 +228,8 @@ def begrepp_view(request):
     #     data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
     #     return render(request, "term-results-partial.html", context=data_dict)
 
-    elif request.method=='GET':
-        return render(request, "term_forklaring_only.html", context=template_context)
+    #elif request.method=='GET':
+    #    return render(request, "term_forklaring_only.html", context=template_context)
     
     else:
         begrepp = Begrepp.objects.none()
@@ -288,7 +300,7 @@ def begrepp_förklaring_view(request):
         return HttpResponse(html, content_type="html")
 
     elif request.method=='GET':
-        return render(request, "term_forklaring.html", context=template_context)
+        return render(request, "term_forklaring_only.html", context=template_context)
 
     return render(request, "base.html", context={})
 
@@ -396,6 +408,17 @@ def bekräfta_term(request):
                                    </div>''')
     else:
         return render(request, 'bekrafta_term.html', {'bekräfta': form})
+
+def return_number_of_recent_comments(request):
+    
+    if request.method == 'GET':
+        #set_trace()
+        unread_comments = OpponeraBegreppDefinition.objects.filter(~Q(status='Beslutad'))
+        total_comments = 56
+        #set_trace()
+        return JsonResponse({'unread_comment' : unread_comments.count(),
+        'total_comments' : total_comments})
+
 
 def youRealise(http_link):
     if "http" in http_link:

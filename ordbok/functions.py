@@ -5,7 +5,7 @@ from .models import SökData, SökFörklaring, Bestallare
 
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, send_mail
-
+import re
 
 def besökare_ip_adress(request):
 
@@ -55,3 +55,21 @@ def skicka_epost_till_beställaren(queryset):
     with mail.get_connection() as connection:
         connection.send_messages(email_list)
         connection.close()
+
+class Xlator(dict):
+    """ All-in-one multiple-string-substitution class
+        a version to substitute only entire words """
+
+    def _make_regex(self):
+        return re.compile(
+          r'\b'+r'\b|\b'.join(map(re.escape, self.keys(  )))+r'\b')
+
+    def __call__(self, match):
+        """ Handler invoked for each regex match """
+        return self[match.group(0)]
+
+    def xlat(self, text):
+        """ Translate text, returns the modified text. """
+        return self._make_regex(  ).sub(self, text)
+        return regex.sub(lambda match: adict[match.group(0)], text)
+

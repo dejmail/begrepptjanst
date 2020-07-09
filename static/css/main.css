@@ -103,6 +103,9 @@ nav {
     list-style-position: inside;
     padding: 0;
   }
+
+
+  
   
   .tooltip {
     position: relative;
@@ -122,6 +125,34 @@ nav {
     padding: 5px 0;
     /* Position the tooltip */
     position: absolute;
+    opacity : 1;
+    z-index: 1000;
+  }
+
+  .definitiontooltip {
+    position: relative;
+    display: inline-block;
+    opacity : 1;
+    font-size: 14px;
+    /* font-weight: 700; */
+    /* font-style: oblique; */
+    text-decoration: underline;
+    font-family: -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, "“Helvetica Neue”", Arial, sans-serif, "“Apple Color Emoji”", "“Segoe UI Emoji”", "“Segoe UI Symbol”";
+  }
+
+  .definitiontooltip .definitiontooltiptext {
+    visibility: hidden;
+    width: 200px;
+    color: rgb(85, 85, 85);
+    background-color: rgb(209, 209, 209);
+    font-size: 11px;
+    font-style: normal;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px 10px;
+    /* Position the tooltip */
+    position: absolute;
+    opacity : 1!important;
     z-index: 1;
   }
 
@@ -133,3 +164,7 @@ nav {
     visibility: visible;
   }
   
+  .definitiontooltip:hover .definitiontooltiptext {
+    visibility: visible;
+    z-index: 2!important;
+  }
