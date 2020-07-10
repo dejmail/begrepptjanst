@@ -7,7 +7,7 @@ from django.utils.html import format_html
 import django.utils.encoding
 
 from django.contrib import admin
-from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym
+from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym, SökData, SökFörklaring
 from .functions import skicka_epost_till_beställaren
 
 import re
@@ -209,12 +209,21 @@ class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
                     'status',
                     'telefon')
 
+class SökFörklaringAdmin(admin.ModelAdmin):
+
+    list_display = ('sök_term',
+                    'ip_adress',
+                    'sök_timestamp')
+
+
 
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
+admin.site.register(SökFörklaring, SökFörklaringAdmin)
+admin.site.register(SökData)
 
 
 

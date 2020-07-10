@@ -1,0 +1,35 @@
+
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block responsive %}
+{{ block.super }}
+
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+
+function change_link_anchor_text(data) {
+    $('a').filter(function(){
+			return this.innerHTML == 'Kommenterade Begrepp';}).append(` - ${data.unreadcomments}/${data.totalcomments} ej Beslutad`);			
+}
+		
+function check_number_of_recent_comments() {
+
+$.ajax({
+		type: "GET",
+		dataType: "json",
+		url: "{% url 'unread_comments' %}",
+	}).done(function(data, textStatus, jqXHR) {
+		change_link_anchor_text(data);
+	}).fail(function(data,textStatus,jqXHR) {        
+		error: console.log('Unable to update unread comments', response);
+		});
+	}
+
+$( document ).ready(function() {
+	check_number_of_recent_comments();
+});
+
+</script>
+{% endblock responsive %}

@@ -412,13 +412,11 @@ def bekräfta_term(request):
 def return_number_of_recent_comments(request):
     
     if request.method == 'GET':
-        #set_trace()
-        unread_comments = OpponeraBegreppDefinition.objects.filter(~Q(status='Beslutad'))
-        total_comments = 56
-        #set_trace()
-        return JsonResponse({'unread_comment' : unread_comments.count(),
-        'total_comments' : total_comments})
-
+        total_comments = OpponeraBegreppDefinition.objects.all()
+        status_list = [i.get('status') for i in total_comments.values()]
+        
+        return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
+                             'totalcomments' : len(status_list)})
 
 def youRealise(http_link):
     if "http" in http_link:
