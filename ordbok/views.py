@@ -414,7 +414,6 @@ def return_number_of_recent_comments(request):
     if request.method == 'GET':
         total_comments = OpponeraBegreppDefinition.objects.all()
         status_list = [i.get('status') for i in total_comments.values()]
-        
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})
 

@@ -6,14 +6,21 @@
 {{ block.super }}
 
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">  
 
 <script>
 
 function change_link_anchor_text(data) {
-    $('a').filter(function(){
-			return this.innerHTML == 'Kommenterade Begrepp';}).append(` - ${data.unreadcomments}/${data.totalcomments} ej Beslutad`);			
+	
+    var inner_html = $('a').filter(function(data){
+			return this.innerHTML == 'Kommenterade Begrepp';});
+			if (data.unreadcomments == 0) {
+					return inner_html
+				} else {
+					return inner_html.after('<span class="text-danger"> - ' + data.unreadcomments + "/" + data.totalcomments + " ej Beslutad</span>");
+				};
 }
-		
+
 function check_number_of_recent_comments() {
 
 $.ajax({
