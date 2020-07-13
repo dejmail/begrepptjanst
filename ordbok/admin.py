@@ -58,7 +58,6 @@ class BegreppAdmin(admin.ModelAdmin):
                     'begrepp_kontext',
                     'beställare',
                     #'domän',
-                    'begrepp_version_nummer',
                     'kommentar_handläggning']
         }]
     ]
@@ -73,7 +72,8 @@ class BegreppAdmin(admin.ModelAdmin):
                     'status_button',
                     'visa_html_i_begrepp_kontext',    
                     'annan_ordlista',
-                    'begrepp_version_nummer')
+                    'begrepp_version_nummer',
+                    'beställare')
 
     list_filter = ("begrepp_version_nummer", "status",)
 
@@ -85,7 +85,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'utländsk_definition',
                     'utländsk_term',
                     'begrepp_version_nummer',
-                    'status',)
+                    'status')
 
     date_hierarchy = 'begrepp_version_nummer'
 
@@ -215,6 +215,13 @@ class SökFörklaringAdmin(admin.ModelAdmin):
                     'ip_adress',
                     'sök_timestamp')
 
+class SökDataAdmin(admin.ModelAdmin):
+
+    list_display = ('sök_term',
+                    'ip_adress',
+                    'sök_timestamp',
+                    'records_returned')
+
 
 
 admin.site.register(Begrepp, BegreppAdmin)
@@ -223,7 +230,7 @@ admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
-admin.site.register(SökData)
+admin.site.register(SökData, SökDataAdmin)
 
 
 

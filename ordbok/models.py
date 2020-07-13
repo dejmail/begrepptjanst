@@ -21,7 +21,7 @@ class Begrepp(models.Model):
         verbose_name_plural = "Begrepp"
 
     begrepp_kontext = models.TextField(default='Inte definierad')
-    begrepp_version_nummer = models.DateTimeField()
+    begrepp_version_nummer = models.DateTimeField(auto_now_add=True)
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     alternativ_definition = models.TextField(null=True)
@@ -45,7 +45,7 @@ class Bestallare(models.Model):
         verbose_name_plural = "Beställare"
 
     beställare_namn = models.CharField(max_length=255)
-    beställare_datum = models.DateTimeField()
+    beställare_datum = models.DateTimeField(auto_now_add=True)
     beställare_email = models.EmailField()
     beställare_telefon = models.IntegerField()
 
@@ -88,7 +88,7 @@ class OpponeraBegreppDefinition(models.Model):
     
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
     begrepp_kontext = models.TextField()
-    datum = models.DateTimeField()
+    datum = models.DateTimeField(auto_now_add=True)
     epost = models.EmailField()
     namn = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_VAL, default=DEFAULT_STATUS)
@@ -104,9 +104,18 @@ class SökData(models.Model):
     sök_timestamp = models.DateTimeField(auto_now_add=True)
     records_returned = models.TextField()
 
+    def __str__(self):
+        return self.sök_term
+
 class SökFörklaring(models.Model):
+
+    class Meta:
+        verbose_name = ('Sök Förklaring')
 
     sök_term = models.CharField(max_length=255)
     ip_adress = models.GenericIPAddressField()
     sök_timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.sök_term
     
