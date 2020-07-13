@@ -3,7 +3,7 @@ from pdb import set_trace
 
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from datetime import datetime
 from django.db import connection, transaction
@@ -207,10 +207,10 @@ def hämta_data_till_begrepp_view(url_parameter):
     
     html = render_to_string(
         template_name="term-results-partial.html", context={'begrepp': return_list_dict,
-                                                            'synonym' : return_synonym_list_dict}
+                                                            'synonym' : return_synonym_list_dict,
+                                                            'searched_for_term' : url_parameter}
     )
-    #html = re.sub('\n', '', html)
-
+    
     return html, return_list_dict
 
 
@@ -233,13 +233,17 @@ def begrepp_view(request):
     
     else:
         begrepp = Begrepp.objects.none()
+    #    context = dict.fromkeys(['searched_for_term'], url_parameter)
+    
+    #context['begrepp'] = begrepp
 
-    return render(request, "term.html", context={'begrepp': begrepp})
+    #print(f"context = {context}, {url_parameter}")
+    
+    return render(request, "term.html", context={'begrepp' : begrepp})
 
 def begrepp_förklaring_view(request):
 
     url_parameter = request.GET.get("q")
-    
     if url_parameter:
         exact_term_request = retur_komplett_förklaring_custom_sql(url_parameter)
         begrepp_full = extract_columns_from_query_and_return_set(exact_term_request, 0, -5)
@@ -291,16 +295,18 @@ def begrepp_förklaring_view(request):
                             'färg_status' : status_färg_dict}
         
         html = render_to_string(template_name="term_forklaring.html", context=template_context)
-        #html = re.sub('\n', '', html)
-    else:
-        term_json = Begrepp.objects.none()
+        
+    # else:
+    #     term_json = Begrepp.objects.none()
 
-    if request.is_ajax():
-        #set_trace()
+    if request.is_ajax():        
         return HttpResponse(html, content_type="html")
 
     elif request.method=='GET':
-        return render(request, "term_forklaring_only.html", context=template_context)
+        if url_parameter is None:
+            return render(request, "term.html", context={})
+        else:
+            return render(request, "term_forklaring_only.html", context=template_context)
 
     return render(request, "base.html", context={})
 
@@ -311,7 +317,8 @@ def hantera_request_term(request):
         if form.is_valid():
 
             ny_beställare = Bestallare()
-            ny_beställare.beställare_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
+            # made the date auto-add now
+            #ny_beställare.beställare_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_beställare.beställare_namn = form.clean_name()
             ny_beställare.beställare_email = form.clean_epost()
             ny_beställare.beställare_telefon = form.clean_telefon()
@@ -320,7 +327,8 @@ def hantera_request_term(request):
             ny_term = Begrepp()
             ny_term.term = form.cleaned_data.get('begrepp')
             ny_term.begrepp_kontext = request.POST.get('kontext')
-            ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
+            # made the date auto-add now
+            #ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_term.beställare = ny_beställare
             
             
@@ -346,8 +354,11 @@ def hantera_request_term(request):
                 return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
-    else:
-        form = TermRequestForm()
+       
+    # I would like to control for a GET, as a person could refresh and get 
+    # the submit form which would have no styling.
+
+    form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
     
     return render(request, 'requestTerm.html', {'form': form})
 
@@ -366,7 +377,7 @@ def opponera_term(request):
             
             opponera_term = OpponeraBegreppDefinition()
             opponera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
-            opponera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
+            #opponera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
             opponera_term.epost = form.cleaned_data.get('epost')
             opponera_term.namn = form.cleaned_data.get('namn')
             opponera_term.status = models.DEFAULT_STATUS
