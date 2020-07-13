@@ -122,10 +122,10 @@
 
 {% else %}
 
-<div id="nyTermForm">
-    <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}">
-<script> populate_request_form()</script>
-</div>
+  <div id="nyTermForm">
+      <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}">
+  <script> populate_request_form("{{searched_for_term}}")</script>
+  </div>
 {% endif %}
 {% endspaceless %}
 

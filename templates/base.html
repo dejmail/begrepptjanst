@@ -60,20 +60,23 @@
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
-function populate_request_form()
+function populate_request_form(requested_term)
     {    
+      // debugger;
     $.ajax({
         type: "GET",
         dataType: "html",
-        url: "{% url 'hantera_term_request' %}",
+        url: "{% url 'hantera_term_request' %}?q="+requested_term,
         success: function(data) {
+          // debugger;
             var display_html = data.html_from_view;
+            // debugger;
         $('#mitten-span-middle-column').html(data);
         changeBrowserURL(data, this.url);
         popStateHandler();
         },
         error: function() {
-        $('#mitten-span-middle-column').html("Loaded");
+        $('#mitten-span-middle-column').html("There has been an error loading this form");
         },
         });
     };

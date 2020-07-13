@@ -175,7 +175,9 @@ function get_form_function(url, div_to_replace, type_method){
             success: function(response){
                 $(div_to_replace).html(response);
             },
-            error: console.log('Unable to load form')
+            error: function() {
+        $(div_to_replace).html("There has been an error loading this form");
+        },
 
         });
 

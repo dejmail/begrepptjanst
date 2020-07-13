@@ -9,7 +9,7 @@
 {% load crispy_forms_filters %}
     {% if form %}
     
-    Sökningen gav ingen träff!<br><br>
+    <span class="text-danger">Sökningen gav ingen träff!</span><br><br>
     <h5>Önskemål om nytt begrepp</h5>
     <form id="beställ_form" action="{% url 'hantera_term_request' %}", method='POST'>{% csrf_token %}
       
