@@ -52,7 +52,7 @@ class OpponeraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20, label="Telefon")
+    telefon = forms.CharField(max_length=20, label="Telefon", widget=forms.TextInput(attrs={'placeholder': "123 456 7890"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())  
 
@@ -60,6 +60,6 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20, label="Telefon")
+    telefon = forms.CharField(max_length=20, label="Telefon", widget=forms.TextInput(attrs={'placeholder': "123 456 7890"}))
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
     kontext = forms.CharField(label='Specificera var begreppet används')
