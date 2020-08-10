@@ -70,7 +70,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'utländsk_term',
                     'utländsk_definition',
                     'status_button',
-                    'visa_html_i_begrepp_kontext',    
+                    #'visa_html_i_begrepp_kontext',    
                     'annan_ordlista',
                     'begrepp_version_nummer',
                     'beställare')
@@ -109,20 +109,20 @@ class BegreppAdmin(admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
-    def visa_html_i_begrepp_kontext(self, obj):
+    # def visa_html_i_begrepp_kontext(self, obj):
         
-        #set_trace()
-        #if len(re.findall("|") > 1:
-        # if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
-        #     set_trace()
-        #     description, url = obj.begrepp_kontext.split('|')
+    #     set_trace()
+    #     if len(re.findall("|") > 1:
+    #     if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
+    #         set_trace()
+    #         description, url = obj.begrepp_kontext.split('|')
 
-        #     display_text = f"<a href={url}>{description}</a>"
-        #     return mark_safe(display_text)
-        # else:
-        return obj.begrepp_kontext
+    #         display_text = f"<a href={url}>{description}</a>"
+    #         return mark_safe(display_text)
+    #     else:
+    #     return obj.begrepp_kontext
 
-    visa_html_i_begrepp_kontext.short_description = "begrepp context"
+    # visa_html_i_begrepp_kontext.short_description = "begrepp context"
     
     def status_button(self, obj):
 
