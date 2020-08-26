@@ -21,7 +21,7 @@ class Begrepp(models.Model):
         verbose_name_plural = "Begrepp"
 
     begrepp_kontext = models.TextField(default='Inte definierad')
-    begrepp_version_nummer = models.DateTimeField(auto_now_add=True)
+    begrepp_version_nummer = models.DateTimeField(auto_now_add=True, verbose_name='Senaste ändring')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     alternativ_definition = models.TextField(null=True)
@@ -47,7 +47,7 @@ class Bestallare(models.Model):
     beställare_namn = models.CharField(max_length=255)
     beställare_datum = models.DateTimeField(auto_now_add=True)
     beställare_email = models.EmailField()
-    beställare_telefon = models.IntegerField()
+    beställare_telefon = models.CharField(max_length=30)
 
     def __str__(self):
         return self.beställare_namn
@@ -92,7 +92,7 @@ class OpponeraBegreppDefinition(models.Model):
     epost = models.EmailField()
     namn = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_VAL, default=DEFAULT_STATUS)
-    telefon = models.CharField(max_length=13)
+    telefon = models.CharField(max_length=30)
 
 class SökData(models.Model):
 
