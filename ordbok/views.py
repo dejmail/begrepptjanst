@@ -428,8 +428,21 @@ def return_number_of_recent_comments(request):
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})
 
+from django.views.decorators.clickjacking import xframe_options_exempt
+
+def take_a_screenshot(request):
+    #set_trace()
+    request.META['X-Frame-Options'] = 'ALLOW-FROM 127.0.0.1'
+    return render(request, 'upload_context_video_or_pic.html', {})
+    #return HttpResponse("This page is safe to load in a frame on any site.")
+
+@xframe_options_exempt
+def screenshot_iframe_content(request):
+    request.META['X-Frame-Options'] = 'SAMEORIGIN'
+    return render(request, 'iframe_code.html', {})
+
 def youRealise(http_link):
     if "http" in http_link:
         return format_html(http_link)
     else:
-        return http_link        
+        return http_link
