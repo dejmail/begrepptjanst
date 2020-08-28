@@ -21,6 +21,9 @@ workstream_choices = [('Inte relevant','Inte relevant'),
 ('Övrigt/Annan','Övrigt/Annan')]
 
 
+class CustomDateInput(forms.DateInput):
+    input_type = 'date'
+
 class TermRequestForm(forms.Form):
 
     def clean_name(self):
@@ -42,6 +45,7 @@ class TermRequestForm(forms.Form):
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
     workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
+    önskad_datum = forms.DateField(widget=CustomDateInput, label="Önskad slutdatum för prioritering", help_text="Klicka på kalendar ikon på höger sidan")
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 

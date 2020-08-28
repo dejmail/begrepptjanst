@@ -75,7 +75,8 @@ class BegreppAdmin(admin.ModelAdmin):
                     #'visa_html_i_begrepp_kontext',    
                     'annan_ordlista',
                     'begrepp_version_nummer',
-                    'beställare')
+                    'beställare',
+                    'önskad_slutdatum')
 
     list_filter = ("begrepp_version_nummer", "status",)
 
@@ -98,6 +99,10 @@ class BegreppAdmin(admin.ModelAdmin):
         skicka_epost_till_beställaren(queryset)
 
     skicka_epost_till_beställaren.short_description = "Skicka epost till beställaren"
+
+    def önskad_slutdatum(self, obj):
+        
+        return obj.beställare.önskad_slutdatum
 
     def synonym(self, obj):
         display_text = ", ".join([
@@ -153,6 +158,7 @@ class BestallareAdmin(admin.ModelAdmin):
                     'beställare_email',
                     'beställare_telefon',
                     'beställare_datum',
+                    'önskad_slutdatum',
                     'begrepp')
     search_fields = ("begrepp__term","beställare_namn", "beställare_email") 
 
