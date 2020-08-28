@@ -38,7 +38,7 @@ class TermRequestForm(forms.Form):
     def not_previously_mentionend_in_workstream(self):
         övrig = self.cleaned_data.get('other')
 
-    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput(attrs={'readonly':'readonly'}))
+    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
     workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
