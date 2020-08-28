@@ -217,6 +217,8 @@ class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
                     'status',
                     'telefon')
 
+    list_filter = ('status',)
+
 class SökFörklaringAdmin(admin.ModelAdmin):
 
     list_display = ('sök_term',
