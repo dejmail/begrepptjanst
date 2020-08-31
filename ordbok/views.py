@@ -433,7 +433,8 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 def take_a_screenshot(request):
     #set_trace()
     request.META['X-Frame-Options'] = 'ALLOW-FROM 127.0.0.1'
-    return render(request, 'upload_context_video_or_pic.html', {})
+    return render(request, 'screencast.html', {})
+    #return render(request, 'upload_context_video_or_pic.html', {})
     #return HttpResponse("This page is safe to load in a frame on any site.")
 
 @xframe_options_exempt
