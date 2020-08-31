@@ -318,19 +318,17 @@ def hantera_request_term(request):
 
             ny_beställare = Bestallare()
             # made the date auto-add now
-            #ny_beställare.beställare_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_beställare.beställare_namn = form.clean_name()
             ny_beställare.beställare_email = form.clean_epost()
             ny_beställare.beställare_telefon = form.clean_telefon()
+            ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
             ny_beställare.save()
 
             ny_term = Begrepp()
             ny_term.term = form.cleaned_data.get('begrepp')
             ny_term.begrepp_kontext = request.POST.get('kontext')
-            # made the date auto-add now
-            #ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
-            ny_term.beställare = ny_beställare
             
+            ny_term.beställare = ny_beställare
             
             inkommande_domän = Doman()
             
@@ -339,7 +337,6 @@ def hantera_request_term(request):
             else:
                 inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
             
-            #inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
             
             if Begrepp.objects.filter(term=ny_term.term).exists():
@@ -354,9 +351,6 @@ def hantera_request_term(request):
                 return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
-       
-    # I would like to control for a GET, as a person could refresh and get 
-    # the submit form which would have no styling.
 
     elif request.is_ajax():
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
