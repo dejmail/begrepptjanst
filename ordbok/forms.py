@@ -1,5 +1,8 @@
 from django import forms
 from .models import Doman, Begrepp
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column
+from crispy_forms.layout import Field
 
 workstream_choices = [('Inte relevant','Inte relevant'),
 ('Akutsjukvård','Akutsjukvård'),
@@ -25,6 +28,22 @@ class CustomDateInput(forms.DateInput):
     input_type = 'date'
 
 class TermRequestForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'begrepp',
+            'kontext',
+            'workstream',
+            'other'
+            'namn',
+            'epost',
+            'telefon',
+            Row('skärmbild', css_class='btn btn-default btn-file'),
+            CustomScreencast('Skapa en screencast med audio'),
+            Submit('submit', 'Sign in')
+        )
 
     def clean_name(self):
         namn =  self.cleaned_data.get('namn')
