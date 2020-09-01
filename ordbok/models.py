@@ -36,9 +36,15 @@ class Begrepp(models.Model):
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
 
-
     def __str__(self):
         return self.term
+
+class BegreppExternalFiles(models.Model):
+    begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.PROTECT)
+    support_file = models.FileField(blank=True, null=True, upload_to='uploads')
+
+    def __str__(self):
+        return self.support_file
 
 class Bestallare(models.Model):
     class Meta:
