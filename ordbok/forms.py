@@ -1,5 +1,8 @@
 from django import forms
 from .models import Doman, Begrepp
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Submit, Row, Column
+from crispy_forms.layout import Field
 
 workstream_choices = [('Inte relevant','Inte relevant'),
 ('Akutsjukvård','Akutsjukvård'),
@@ -23,6 +26,22 @@ workstream_choices = [('Inte relevant','Inte relevant'),
 
 class TermRequestForm(forms.Form):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'begrepp',
+            'kontext',
+            'workstream',
+            'other'
+            'namn',
+            'epost',
+            'telefon',
+            Row('skärmbild', css_class='btn btn-default btn-file'),
+            CustomScreencast('Skapa en screencast med audio'),
+            Submit('submit', 'Sign in')
+        )
+
     def clean_name(self):
         namn =  self.cleaned_data.get('namn')
         return namn
@@ -37,6 +56,7 @@ class TermRequestForm(forms.Form):
 
     def not_previously_mentionend_in_workstream(self):
         övrig = self.cleaned_data.get('other')
+
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput(attrs={'readonly':'readonly'}))
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
     workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
@@ -45,8 +65,9 @@ class TermRequestForm(forms.Form):
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=20, label="Telefon",  widget=forms.TextInput(attrs={'placeholder': "123 456 7890"}))
-    
 
+class CustomScreencast(Field):
+    template = 'custom_screencast.html'
 
 class OpponeraTermForm(forms.Form):
 
