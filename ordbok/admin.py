@@ -42,7 +42,7 @@ class BegreppAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ['Main', {
-        'fields': [('status', 'id_vgr')],
+        'fields': ['begrepp_version_nummer', ('status', 'id_vgr',)],
         }],
         [None, {
         #'classes': ['collapse'],
@@ -61,6 +61,8 @@ class BegreppAdmin(admin.ModelAdmin):
                     'kommentar_handläggning']
         }]
     ]
+
+    readonly_fields = ('begrepp_version_nummer',)
 
     save_on_top = True
 

@@ -358,9 +358,12 @@ def hantera_request_term(request):
     # I would like to control for a GET, as a person could refresh and get 
     # the submit form which would have no styling.
 
-    form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
-    
-    return render(request, 'requestTerm.html', {'form': form})
+    elif request.is_ajax():
+        form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
+        return render(request, 'requestTerm.html', {'form': form})
+
+    elif request.method == 'GET':
+        return render(request, 'term.html', {})
 
 def opponera_term(request):
 

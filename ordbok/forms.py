@@ -60,20 +60,20 @@ class TermRequestForm(forms.Form):
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput(attrs={'readonly':'readonly'}))
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
     workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)    
-    # workflow_namn = forms.CharField(max_length=254)
+    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=20, label="Telefon",  widget=forms.TextInput(attrs={'placeholder': "123 456 7890"}))
+    telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
 
 class CustomScreencast(Field):
     template = 'custom_screencast.html'
+    
 
 class OpponeraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20, label="Telefon", widget=forms.TextInput(attrs={'placeholder': "123 456 7890"}))
+    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())  
 
@@ -81,6 +81,6 @@ class BekräftaTermForm(forms.Form):
 
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=20, label="Telefon", widget=forms.TextInput(attrs={'placeholder': "123 456 7890"}))
+    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
     kontext = forms.CharField(label='Specificera var begreppet används')
