@@ -39,7 +39,7 @@ class TermRequestForm(forms.Form):
         return telefon
 
     def clean_önskad_datum(self):
-	return self.cleaned_data.get('önskad_datum')
+	    return self.cleaned_data.get('önskad_datum')
 
     def not_previously_mentionend_in_workstream(self):
         övrig = self.cleaned_data.get('other')
