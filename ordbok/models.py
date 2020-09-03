@@ -52,6 +52,7 @@ class Bestallare(models.Model):
 
     beställare_namn = models.CharField(max_length=255)
     beställare_datum = models.DateTimeField(auto_now_add=True)
+    önskad_slutdatum = models.DateTimeField()
     beställare_email = models.EmailField()
     beställare_telefon = models.CharField(max_length=30)
 

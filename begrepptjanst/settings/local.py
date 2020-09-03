@@ -44,6 +44,10 @@ PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
 TEMPLATE_DIRS = ['/templates/',]
 
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
 STATICFILES_DIRS = [
     "static",
 ]

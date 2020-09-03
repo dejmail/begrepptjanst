@@ -10,7 +10,10 @@ from django.db import connection, transaction
 from django.db.models import Q
 from django.core.mail import EmailMessage
 
-from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
+from ordbok.models import *
 from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
@@ -313,33 +316,39 @@ def begrepp_förklaring_view(request):
 def hantera_request_term(request):
     
     if request.method == 'POST':
-        form = TermRequestForm(request.POST)
+        form = TermRequestForm(request.POST, request.FILES)
+        
         if form.is_valid():
 
             ny_beställare = Bestallare()
-            # made the date auto-add now
-            #ny_beställare.beställare_datum = datetime.now().strftime("%Y-%m-%d %H:%M")
             ny_beställare.beställare_namn = form.clean_name()
             ny_beställare.beställare_email = form.clean_epost()
             ny_beställare.beställare_telefon = form.clean_telefon()
+            ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
             ny_beställare.save()
 
             ny_term = Begrepp()
             ny_term.term = form.cleaned_data.get('begrepp')
             ny_term.begrepp_kontext = request.POST.get('kontext')
-            # made the date auto-add now
-            #ny_term.begrepp_version_nummer = datetime.now().strftime("%Y-%m-%d %H:%M")
+            
             ny_term.beställare = ny_beställare
             
-            
             inkommande_domän = Doman()
+            
+            if request.FILES is not None:
+                new_file = BegreppExternalFiles()
+                for file in request.FILES.getlist('file_field'):
+                    print(settings.MEDIA_ROOT)
+                    print(settings.MEDIA_URL)
+                    fs = FileSystemStorage()
+                    filename = fs.save(content=file, name=file.name)
+                    uploaded_file_url = fs.url(filename)
             
             if form.cleaned_data.get('other') == "Övrigt/Annan":
                 inkommande_domän.domän_namn = form.cleaned_data.get('other')
             else:
                 inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
             
-            #inkommande_domän.domän_kontext = form.cleaned_data.get('workflow_namn')
             inkommande_domän.begrepp = ny_term
             
             if Begrepp.objects.filter(term=ny_term.term).exists():
@@ -354,9 +363,6 @@ def hantera_request_term(request):
                 return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
-       
-    # I would like to control for a GET, as a person could refresh and get 
-    # the submit form which would have no styling.
 
     elif request.is_ajax():
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
