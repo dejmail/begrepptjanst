@@ -17,4 +17,9 @@ class Migration(migrations.Migration):
             field=models.DateTimeField(default=django.utils.timezone.now),
             preserve_default=False,
         ),
+        migrations.AddField(
+            model_name='begrepp',
+            name='support_files',
+            field=models.FileField(blank=True, null=True, upload_to='uploads'),
+        ),
     ]
