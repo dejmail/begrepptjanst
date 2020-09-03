@@ -76,21 +76,30 @@ $(document).ready(function() {
 });
  
     $("#beställ_form").submit(function(event){
-	event.preventDefault(); //prevent default action 
-	var post_url = $(this).attr("action"); //get form action url
-	var request_method = $(this).attr("method"); //get form GET/POST method
-	var form_data = $(this).serialize(); //Encode form elements for submission
-	
-	$.ajax({
-		url : post_url,
-		type: request_method,
-		data : form_data
-	}).done(function(response){ 
-        $("#mitten-span-middle-column").html(response);
-        history.pushState(post_url, '', post_url)
-        setTimeout(function(){
+    event.preventDefault();
+	var post_url = $(this).attr("action");
+    var request_method = $(this).attr("method");
+    var formdata = new FormData($(this)[0]);
+    
+    $.ajax({
+        beforeSend: function (request)
+            {
+                request.setRequestHeader("X-CSRFTOKEN", "{{ csrf_token }}");
+            },
+        url : post_url,
+        type: request_method,
+        dataType: 'html',
+        contentType: false,
+        cache: false,
+        processData:false,
+        data : formdata,
+        success : function(response){
+            $("#mitten-span-middle-column").html(response);
+            history.pushState(post_url, '', post_url)
+            setTimeout(function(){
             $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
-	});
+	    }
+    });
 });
 
     </script>

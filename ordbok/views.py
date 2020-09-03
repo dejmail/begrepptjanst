@@ -332,6 +332,13 @@ def hantera_request_term(request):
             
             inkommande_domän = Doman()
             
+            if request.FILES is not None:
+                new_file = BegreppExternalFiles()
+                for file in request.FILES.getlist('file_field'):
+                    fs = FileSystemStorage()
+                    filename = fs.save(content=file, name=file.name)
+                    uploaded_file_url = fs.url(filename)
+            
             if form.cleaned_data.get('other') == "Övrigt/Annan":
                 inkommande_domän.domän_namn = form.cleaned_data.get('other')
             else:
