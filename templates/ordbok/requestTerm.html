@@ -98,6 +98,8 @@ $(document).ready(function() {
             history.pushState(post_url, '', post_url)
             setTimeout(function(){
             $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
+            document.getElementById('user-input').value = '';
+            history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', '/');
 	    }
     });
 });
