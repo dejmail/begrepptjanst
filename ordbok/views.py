@@ -338,8 +338,6 @@ def hantera_request_term(request):
             if request.FILES is not None:
                 new_file = BegreppExternalFiles()
                 for file in request.FILES.getlist('file_field'):
-                    print(settings.MEDIA_ROOT)
-                    print(settings.MEDIA_URL)
                     fs = FileSystemStorage()
                     filename = fs.save(content=file, name=file.name)
                     uploaded_file_url = fs.url(filename)

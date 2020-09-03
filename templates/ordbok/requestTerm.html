@@ -72,10 +72,10 @@
 // });
 
     $("#beställ_form").submit(function(event){
-    event.preventDefault(); //prevent default action
-	var post_url = $(this).attr("action"); //get form action url
-    var request_method = $(this).attr("method"); //get form GET/POST method
-    new formData = FormData($(this));
+    event.preventDefault();
+	var post_url = $(this).attr("action");
+    var request_method = $(this).attr("method");
+    var formdata = new FormData($(this)[0]);
     
     $.ajax({
         beforeSend: function (request)
@@ -83,22 +83,20 @@
                 request.setRequestHeader("X-CSRFTOKEN", "{{ csrf_token }}");
             },
         url : post_url,
-        dataType: 'json',
-		type: request_method,
-        data : {'content' : formData,
-                'csrfmiddlewaretoken': '{{ csrf_token }}',
-            },
+        type: request_method,
+        dataType: 'html',
         contentType: false,
         cache: false,
-        processData: false,        
+        processData:false,
+        data : formdata,
         success : function(response){
-            debugger;
             $("#mitten-span-middle-column").html(response);
             history.pushState(post_url, '', post_url)
             setTimeout(function(){
             $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
 	    }
-	});
+    });
+});
 
     </script>
 {% endblock extra_javascript %}
