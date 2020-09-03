@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ordbok', '0027_begrepp_support_files'),
+        ('ordbok', '0027_bestallare_önskad_slutdatum'),
     ]
 
     operations = [
