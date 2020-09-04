@@ -7,7 +7,7 @@ from django.utils.html import format_html
 import django.utils.encoding
 
 from django.contrib import admin
-from ordbok.models import Begrepp, Bestallare, Doman, OpponeraBegreppDefinition, Synonym, SökData, SökFörklaring
+from ordbok.models import *
 from .functions import skicka_epost_till_beställaren
 
 import re
@@ -31,14 +31,18 @@ class SynonymInline(admin.StackedInline):
     model = Synonym
     extra = 1
 
+class BegreppExternalFilesInline(admin.StackedInline):
+    model = BegreppExternalFiles
+    extra = 1
+
 class BegreppAdmin(admin.ModelAdmin):
-    
+
     class Media:
         css = {
         'all': (f'{settings.STATIC_URL}css/main.css',)
          }
     
-    inlines = [SynonymInline]
+    inlines = [BegreppExternalFilesInline, SynonymInline]
 
     fieldsets = [
         ['Main', {
@@ -46,8 +50,7 @@ class BegreppAdmin(admin.ModelAdmin):
         }],
         [None, {
         #'classes': ['collapse'],
-        'fields' : [#'synonym',
-                    'term',
+        'fields' : ['term',
                     'definition',
                     'källa',
                     'alternativ_definition',
@@ -55,9 +58,8 @@ class BegreppAdmin(admin.ModelAdmin):
                     'utländsk_term',
                     'utländsk_definition',
                     ('annan_ordlista', 'externt_id'),
-                    'begrepp_kontext',
+                    ('begrepp_kontext'),
                     'beställare',
-                    #'domän',
                     'kommentar_handläggning']
         }]
     ]
