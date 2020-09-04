@@ -336,11 +336,12 @@ def hantera_request_term(request):
             inkommande_domän = Doman()
             
             if request.FILES is not None:
-                new_file = BegreppExternalFiles()
+                file_list = []
                 for file in request.FILES.getlist('file_field'):
                     fs = FileSystemStorage()
                     filename = fs.save(content=file, name=file.name)
                     uploaded_file_url = fs.url(filename)
+                    file_list.append(file.name)
             
             if form.cleaned_data.get('other') == "Övrigt/Annan":
                 inkommande_domän.domän_namn = form.cleaned_data.get('other')
@@ -357,6 +358,12 @@ def hantera_request_term(request):
             else:
                 ny_term.save()
                 inkommande_domän.save()
+
+                for filename in file_list:
+                    new_file = BegreppExternalFiles()
+                    new_file.begrepp = ny_term
+                    new_file.support_file = filename
+                    new_file.save()
 
                 return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
