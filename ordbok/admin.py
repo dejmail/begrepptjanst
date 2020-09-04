@@ -34,6 +34,8 @@ class SynonymInline(admin.StackedInline):
 class BegreppExternalFilesInline(admin.StackedInline):
     model = BegreppExternalFiles
     extra = 1
+    verbose_name = "Externt Kontext Fil"
+    verbose_name_plural = "Externa Kontext Filer"
 
 class BegreppAdmin(admin.ModelAdmin):
 
