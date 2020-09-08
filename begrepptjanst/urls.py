@@ -20,12 +20,16 @@ from django.views.generic import TemplateView
 from django.conf import settings
 from django.urls import include, path  # For django versions from 2.0 and up
 from django.views.generic import RedirectView
+from django.conf.urls.static import static
+
 
 urlpatterns = [
     path('', include('ordbok.urls')),
     path('admin/', admin.site.urls),
     path('favicon.ico',RedirectView.as_view(url='/static/images/favicon.ico')),
 ]
+
+urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     #import debug_toolbar
