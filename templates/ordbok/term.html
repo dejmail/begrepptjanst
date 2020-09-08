@@ -1,19 +1,26 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block header %}
-<link href="https://fonts.googleapis.com/css2?family=Arvo:ital@1&display=swap" rel="stylesheet"> 
-<div class="row" id="header_row"> 
-	<div class="col-2 mt-3" id="header_left_column"></div>
-	<div class="col-8 text-center mt-3" id="header_center_column">
-		<h2 style="font-family: frutiger;">OLLI Begreppstjänst (beta)</h2>
-	</div>
-	<div class="col-2" id="header_left_column"></div>
-</div>
-<div class="row" id="thermos_flask_icon_row">
-	<div class="text-center col-12 top-buffer-10">
-		<img src="{% static '/images/favicon.gif' %}">
-	</div>
-</div>
+	{% block header_row1 %}
+		{{ block.super }}
+	{% endblock header_row1 %}
+
+	{% block header_row3 %}
+		<link href="https://fonts.googleapis.com/css2?family=Arvo:ital@1&display=swap" rel="stylesheet"> 
+		<div class="row" id="header_row"> 
+			<div class="col-2 mt-3" id="header_left_column"></div>
+			<div class="col-8 text-center mt-3" id="header_center_column">
+				<h2 style="font-family: frutiger;">OLLI Begreppstjänst (beta)</h2>
+			</div>
+			<div class="col-2" id="header_left_column"></div>
+		</div>
+		<div class="row" id="thermos_flask_icon_row">
+			<div class="text-center col-12 top-buffer-10">
+				<img src="{% static '/images/favicon.gif' %}">
+			</div>
+		</div>
+	{% endblock header_row3 %}
+
 {% endblock header %}
 {# start of the row containing the search bar #}
 {% block search_bar %}
@@ -22,10 +29,10 @@
 	<div class="col-3" id="search-left-column"></div>
 	{% endblock search-left-column %}
 	{% block search-middle-column %}
-		<div class="col-8 mx-auto" id="search-middle-column">
+		<div class="col-6" id="search-middle-column">
 			<form class="form-inline" onsubmit="return false;">
 			<i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-			<input id="user-input" class="form-control form-control-md col-md-8" type="text" placeholder="Sök" aria-label="Sök">
+			<input id="user-input" class="form-control form-control-md" style="flex:1" type="text" placeholder="Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
 			</form>
 		</div>
 	{% endblock search-middle-column %}
