@@ -10,7 +10,10 @@ from django.db import connection, transaction
 from django.db.models import Q
 from django.core.mail import EmailMessage
 
-from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
+from ordbok.models import *
 from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
@@ -313,11 +316,11 @@ def begrepp_förklaring_view(request):
 def hantera_request_term(request):
     
     if request.method == 'POST':
-        form = TermRequestForm(request.POST)
+        form = TermRequestForm(request.POST, request.FILES)
+        
         if form.is_valid():
 
             ny_beställare = Bestallare()
-            # made the date auto-add now
             ny_beställare.beställare_namn = form.clean_name()
             ny_beställare.beställare_email = form.clean_epost()
             ny_beställare.beställare_telefon = form.clean_telefon()

@@ -56,6 +56,9 @@ class TermRequestForm(forms.Form):
     def clean_telefon(self):
         telefon = self.cleaned_data.get('telefon')
         return telefon
+    
+    def clean_önskad_datum(self):
+        return self.cleaned_data.get('önskad_datum')
 
     def not_previously_mentionend_in_workstream(self):
         övrig = self.cleaned_data.get('other')
@@ -72,6 +75,11 @@ class TermRequestForm(forms.Form):
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
+    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+
+class CustomScreencast(Field):
+    template = 'custom_screencast.html'
+    
 
 class OpponeraTermForm(forms.Form):
 
