@@ -13,7 +13,7 @@
 
   <link rel="icon" type="image/png" href="{% static '/images/favicon-32x32.png' %}" sizes="32x32" />
   <link rel="icon" type="image/png" href="{% static '/images/favicon-16x16.png' %}" sizes="16x16" />
-  <img style="margin-top: 1%;margin-left: 1%;"src="{% static '/images/VGR-logga.PNG'%}"> <div style="text-align: right;"><button  onclick="scrollToHelp()"type="button" style="font-family: frutiger; background-color:#006298;" class="btn btn-info btn-lg">Hjälp!</button></div>
+
   {% block base_static %}  
       <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
       <!-- Bootstrap CDN -->
@@ -26,8 +26,33 @@
 </head>
 <body>
 {% endblock preamble %}
+<div class="container-fluid">
   {% load crispy_forms_tags %}
   {% block header %}
+      {% block header_row1 %}
+      <div class="container-fluid">
+      <div class="row align-items-center top-buffer-15" style="position: relative; vertical-align: middle; text-align: center;">
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+              <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.PNG'%}">
+            </div>
+
+            <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7"></div>
+
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 1%; vertical-align: middle;">
+              <button onclick="scrollToHelp()"type="button" style="font-family: frutiger; background-color:#006298;;" class="btn btn-info btn-md">
+                  Hjälp!
+              </button>
+            </div>
+              
+          </div>
+        </div>
+      
+      {% endblock header_row1 %}
+  {% block header_row2 %}
+  {% endblock header_row2 %}
+  {% block header_row3 %}
+  {% endblock header_row3 %}
+
   {% endblock header %}
   {% block search_bar %}
     {% block search_left_column %}
@@ -46,45 +71,27 @@
   {% endblock replaceable-content %}  
   {% block mitten-span %}
   <div class="row mt-10" id="mitten-span-row">
-    <div class="col-2" id="mitten-span-left-column"></div>
-    <div class="col-8" id="mitten-span-middle-column"></div>
-    <div class="col-2" id="mitten-span-right-column"></div>
+    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="mitten-span-left-column"></div>
+    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="mitten-span-middle-column"></div>
+    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="mitten-span-right-column"></div>
   </div>
   {% endblock mitten-span %}   
   {% block footer %}
   {% endblock footer %}
+
 {% block endbody %}
-<div id="helpInfo" style="display: none;"> 
-  <div class="row" style="text-align: center;">
-   <div class="col-sm"></div> 
-  <div class="col-sm"><h4>Om Olli</h4><div class="card">
-    <div class="card-body" style="font-family: Calibri;">OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, allt från rent klinisk terminologi till olika administrativa och tekniska begrepp. OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i regionen och olika verksamheter samt personal med administrativa uppgifter och andra stödfunktioner.</div></div></div>
-  <div class="col-sm"><h4>Använda Olli</h4><div class="card">
-    <div class="card-body" style="font-family: Calibri;" ><p>Skriv in början på den textsträng du söker i sökfältet. En lista med begrepp som innehåller strängen visas under sökfältet. När ett begrepp dyker upp kan man se begreppets term, en definition och eventuella synonymer i listan.
-    När man söker i OLLI görs sökningen på hela begreppet, det vill säga inte bara på begreppets term utan även på eventuell term på annat språk och synonymer. Sökfunktionen kontrollerar också om den textsträng du söker finns i definitionen, den svenska eller annat språk. Sökresultatet kan därför visa begrepp där söksträngen inte syns i listan som visas automatiskt. Man får då klicka in sig på begreppet för att se mer information om begreppet och den sträng som är eftersökt.</div></div></div>
-    
-    <div class="col-sm"><h4>Kontakta oss</h4><div class="card">
-      <div class="card-body" style="font-family: Calibri;">Om ni har frågor eller funderingar gällande OLLI begreppstjänst får ni gärna maila oss på informatik@vgregion.se</div></div></div>
-    <div class="col-sm"></div> 
-  </div>
-  <div class="row">
-    <div class="col-sm-4"></div><br>
-    <div class="col-sm-4"><h4 style="text-align: center;"><br>Demo av Olli</h2><video width="720" height="540" controls>
-      <!-- <source src="{% static '/images/infomercial.mp4'%}" type="video/mp4"> -->
-        <source src="{% static '/images/infomercial.mp4'%}" type="video/mp4">
-      <source src="movie.ogg" type="video/ogg">
-    Your browser does not support the video tag.
-    </video>
-  </div>
-  </div>
-  </div>
+
+{% include "hjälp_text_och_video.html" %}
 </div>
+
 </body>
 </html>
 {% endblock endbody %}
+
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
+
 function populate_request_form(requested_term)
     {    
       // debugger;
@@ -107,7 +114,7 @@ function populate_request_form(requested_term)
     };
 function scrollToHelp()
 {
-  
+  $('#mitten-span-middle-column').empty(); 
   var x = document.getElementById("helpInfo");
   if (x.style.display === "none") {
     x.style.display = "block";
@@ -117,5 +124,11 @@ function scrollToHelp()
   var elmnt = document.getElementById("helpInfo");
   elmnt.scrollIntoView({behavior : 'smooth'});
 }
+
+function clear_mittenspanrow() {
+  $('#helpInfo').hide();
+
+}
+
 </script>
 {% endblock extra_javascript %}
