@@ -320,21 +320,6 @@ def hantera_request_term(request):
         
         if form.is_valid():
 
-            ny_beställare = Bestallare()
-            ny_beställare.beställare_namn = form.clean_name()
-            ny_beställare.beställare_email = form.clean_epost()
-            ny_beställare.beställare_telefon = form.clean_telefon()
-            ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
-            ny_beställare.save()
-
-            ny_term = Begrepp()
-            ny_term.term = form.cleaned_data.get('begrepp')
-            ny_term.begrepp_kontext = request.POST.get('kontext')
-            
-            ny_term.beställare = ny_beställare
-            
-            inkommande_domän = Doman()
-            
             if request.FILES is not None:
                 file_list = []
                 for file in request.FILES.getlist('file_field'):
@@ -343,20 +328,27 @@ def hantera_request_term(request):
                     uploaded_file_url = fs.url(filename)
                     file_list.append(file.name)
             
-            if form.cleaned_data.get('other') == "Övrigt/Annan":
-                inkommande_domän.domän_namn = form.cleaned_data.get('other')
-            else:
-                inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
-            
-            inkommande_domän.begrepp = ny_term
-            
-            if Begrepp.objects.filter(term=ny_term.term).exists():
+            if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
                     
                     return HttpResponse('''<div class="alert alert-danger text-center">
                                    Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
                                    </div>''')
             else:
+
+                ny_beställare = Bestallare()
+                ny_beställare.beställare_namn = form.clean_name()
+                ny_beställare.beställare_email = form.clean_epost()
+                ny_beställare.beställare_telefon = form.clean_telefon()
+                ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
+                ny_beställare.save()
+
+                ny_term = Begrepp()
+                ny_term.term = form.cleaned_data.get('begrepp')
+                ny_term.begrepp_kontext = request.POST.get('kontext')
+                ny_term.beställare = ny_beställare
                 ny_term.save()
+                
+                inkommande_domän = Doman()
                 inkommande_domän.save()
 
                 for filename in file_list:
@@ -368,6 +360,15 @@ def hantera_request_term(request):
                 return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack! Begrepp skickades in för granskning.
                                    </div>''')
+            
+            if form.cleaned_data.get('other') == "Övrigt/Annan":
+                inkommande_domän.domän_namn = form.cleaned_data.get('other')
+            else:
+                inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
+            
+            inkommande_domän.begrepp = ny_term
+            
+            
 
     elif request.is_ajax():
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
