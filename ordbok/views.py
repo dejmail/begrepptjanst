@@ -10,7 +10,10 @@ from django.db import connection, transaction
 from django.db.models import Q
 from django.core.mail import EmailMessage
 
-from ordbok.models import Begrepp, Bestallare, Doman, Synonym, OpponeraBegreppDefinition
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+
+from ordbok.models import *
 from ordbok import models
 from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
 from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
@@ -313,24 +316,50 @@ def begrepp_förklaring_view(request):
 def hantera_request_term(request):
     
     if request.method == 'POST':
-        form = TermRequestForm(request.POST)
+        form = TermRequestForm(request.POST, request.FILES)
+        
         if form.is_valid():
 
-            ny_beställare = Bestallare()
-            # made the date auto-add now
-            ny_beställare.beställare_namn = form.clean_name()
-            ny_beställare.beställare_email = form.clean_epost()
-            ny_beställare.beställare_telefon = form.clean_telefon()
-            ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
-            ny_beställare.save()
+            if request.FILES is not None:
+                file_list = []
+                for file in request.FILES.getlist('file_field'):
+                    fs = FileSystemStorage()
+                    filename = fs.save(content=file, name=file.name)
+                    uploaded_file_url = fs.url(filename)
+                    file_list.append(file.name)
+            
+            if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
+                    
+                    return HttpResponse('''<div class="alert alert-danger text-center">
+                                   Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
+                                   </div>''')
+            else:
 
-            ny_term = Begrepp()
-            ny_term.term = form.cleaned_data.get('begrepp')
-            ny_term.begrepp_kontext = request.POST.get('kontext')
-            
-            ny_term.beställare = ny_beställare
-            
-            inkommande_domän = Doman()
+                ny_beställare = Bestallare()
+                ny_beställare.beställare_namn = form.clean_name()
+                ny_beställare.beställare_email = form.clean_epost()
+                ny_beställare.beställare_telefon = form.clean_telefon()
+                ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
+                ny_beställare.save()
+
+                ny_term = Begrepp()
+                ny_term.term = form.cleaned_data.get('begrepp')
+                ny_term.begrepp_kontext = request.POST.get('kontext')
+                ny_term.beställare = ny_beställare
+                ny_term.save()
+                
+                inkommande_domän = Doman()
+                inkommande_domän.save()
+
+                for filename in file_list:
+                    new_file = BegreppExternalFiles()
+                    new_file.begrepp = ny_term
+                    new_file.support_file = filename
+                    new_file.save()
+
+                return HttpResponse('''<div class="alert alert-success text-center">
+                                   Tack! Begrepp skickades in för granskning.
+                                   </div>''')
             
             if form.cleaned_data.get('other') == "Övrigt/Annan":
                 inkommande_domän.domän_namn = form.cleaned_data.get('other')
@@ -339,18 +368,7 @@ def hantera_request_term(request):
             
             inkommande_domän.begrepp = ny_term
             
-            if Begrepp.objects.filter(term=ny_term.term).exists():
-                    
-                    return HttpResponse('''<div class="alert alert-danger text-center">
-                                   Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
-                                   </div>''')
-            else:
-                ny_term.save()
-                inkommande_domän.save()
-
-                return HttpResponse('''<div class="alert alert-success text-center">
-                                   Tack! Begrepp skickades in för granskning.
-                                   </div>''')
+            
 
     elif request.is_ajax():
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
@@ -424,6 +442,20 @@ def return_number_of_recent_comments(request):
         status_list = [i.get('status') for i in total_comments.values()]
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})
+
+from django.views.decorators.clickjacking import xframe_options_exempt
+
+def take_a_screenshot(request):
+    #set_trace()
+    request.META['X-Frame-Options'] = 'ALLOW-FROM 127.0.0.1'
+    return render(request, 'screencast.html', {})
+    #return render(request, 'upload_context_video_or_pic.html', {})
+    #return HttpResponse("This page is safe to load in a frame on any site.")
+
+@xframe_options_exempt
+def screenshot_iframe_content(request):
+    request.META['X-Frame-Options'] = 'SAMEORIGIN'
+    return render(request, 'iframe_code.html', {})
 
 def youRealise(http_link):
     if "http" in http_link:

@@ -27,3 +27,6 @@ STATIC_ROOT = '/home/vgrinfor/public_html/begreppstjanst-dev/static'
 STATICFILES_DIRS = ['/home/vgrinfor/begreppstjanst-dev/static',]
 STATIC_URL = '/begreppstjanst-dev/static/'
 
+# media files 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst-dev/media'

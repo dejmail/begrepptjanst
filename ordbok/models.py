@@ -11,7 +11,6 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
               ('Preliminär', 'Preliminär'),
-              ('nonsens', 'nonsens'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
             
@@ -37,9 +36,16 @@ class Begrepp(models.Model):
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
 
-
     def __str__(self):
         return self.term
+
+class BegreppExternalFiles(models.Model):
+    begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
+    support_file = models.FileField(blank=True, null=True, upload_to='uploads')
+    
+    def __str__(self):
+        return str(self.support_file)
+
 
 class Bestallare(models.Model):
     class Meta:
@@ -58,7 +64,7 @@ class Doman(models.Model):
     class Meta:     
         verbose_name_plural = "Domäner"
 
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True )
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True )
     domän_id = models.AutoField(primary_key=True)
     domän_kontext = models.TextField()
     domän_namn = models.CharField(max_length=255)       
@@ -76,7 +82,7 @@ class Synonym(models.Model):
     class Meta:
         verbose_name_plural = "Synonymer"
 
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
     synonym = models.CharField(max_length=255, blank=True, null=True)
     synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
 

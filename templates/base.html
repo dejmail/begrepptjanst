@@ -23,6 +23,8 @@
       <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
       <link rel="stylesheet" href="{% static '/css/main.css' %}" media="screen">
   {% endblock base_static %}
+  {% block extra_head_static %}  
+  {% endblock extra_head_static %}  
 </head>
 <body>
 {% endblock preamble %}
@@ -94,18 +96,15 @@
 
 function populate_request_form(requested_term)
     {    
-      // debugger;
     $.ajax({
         type: "GET",
         dataType: "html",
         url: "{% url 'hantera_term_request' %}?q="+requested_term,
         success: function(data) {
-          // debugger;
             var display_html = data.html_from_view;
-            // debugger;
-        $('#mitten-span-middle-column').html(data);
-        changeBrowserURL(data, this.url);
-        popStateHandler();
+            $('#mitten-span-middle-column').html(data);
+            changeBrowserURL(data, this.url);
+            popStateHandler();
         },
         error: function() {
         $('#mitten-span-middle-column').html("There has been an error loading this form");
