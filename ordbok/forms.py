@@ -29,22 +29,6 @@ class CustomDateInput(forms.DateInput):
 
 class TermRequestForm(forms.Form):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            'begrepp',
-            'kontext',
-            'workstream',
-            'other'
-            'namn',
-            'epost',
-            'telefon',
-            Row('skärmbild', css_class='btn btn-default btn-file'),
-            CustomScreencast('Skapa en screencast med audio'),
-            Submit('submit', 'Sign in')
-        )
-
     def clean_name(self):
         namn =  self.cleaned_data.get('namn')
         return namn
@@ -76,10 +60,6 @@ class TermRequestForm(forms.Form):
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
-
-class CustomScreencast(Field):
-    template = 'custom_screencast.html'
-    
 
 class OpponeraTermForm(forms.Form):
 
