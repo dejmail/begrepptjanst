@@ -11,10 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='begrepp',
-            name='support_files',
-        ),
         migrations.CreateModel(
             name='BegreppExternalFiles',
             fields=[
