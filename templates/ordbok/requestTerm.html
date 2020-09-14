@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 
 {% block preamble %}
+{% block header_row1 %}
+{% endblock header_row1 %}
+
 {% endblock preamble %}
 
 {% block mitten-span %}
@@ -11,10 +14,10 @@
     
     <span class="text-danger">Sökningen gav ingen träff!</span><br><br>
     <h5>Önskemål om nytt begrepp</h5>
-    <form id="beställ_form" action="{% url 'hantera_term_request' %}", method='POST'>{% csrf_token %}
+    <form id="beställ_form" action="{% url 'hantera_term_request' %}" method='POST' enctype="multipart/form-data">{% csrf_token %}
       
     {{ form|crispy }}
-        
+
     {% else %}
         {% for term in begrepp %}
         {{ term.term }}
@@ -22,31 +25,43 @@
     <h5>Sökningen gav ingen träff!</h5>
     There is no form variable coming in
     {% endif %}
-    <input type="submit" value="Skicka">
+    <input class="btn btn-primary" type="submit" value="Skicka">
 
 </form>
 
 {% endblock mitten-span %}
 
 {% block extra_javascript %}
-<script>    
 
+<script>
+ 
     $("#beställ_form").submit(function(event){
-	event.preventDefault(); //prevent default action 
-	var post_url = $(this).attr("action"); //get form action url
-	var request_method = $(this).attr("method"); //get form GET/POST method
-	var form_data = $(this).serialize(); //Encode form elements for submission
-	
-	$.ajax({
-		url : post_url,
-		type: request_method,
-		data : form_data
-	}).done(function(response){ 
-        $("#mitten-span-middle-column").html(response);
-        history.pushState(post_url, '', post_url)
-        setTimeout(function(){
+    event.preventDefault();
+	var post_url = $(this).attr("action");
+    var request_method = $(this).attr("method");
+    var formdata = new FormData($(this)[0]);
+    
+    $.ajax({
+        beforeSend: function (request)
+            {
+                request.setRequestHeader("X-CSRFTOKEN", "{{ csrf_token }}");
+            },
+        url : post_url,
+        type: request_method,
+        dataType: 'html',
+        contentType: false,
+        cache: false,
+        processData:false,
+        data : formdata,
+        success : function(response){
+            $("#mitten-span-middle-column").html(response);
+            history.pushState(post_url, '', post_url)
+            setTimeout(function(){
             $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
-	});
+            document.getElementById('user-input').value = '';
+            history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', '/');
+	    }
+    });
 });
 
     </script>
