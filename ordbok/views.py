@@ -58,6 +58,7 @@ def retur_general_sök(url_parameter):
     sql_statement = f'''SELECT ordbok_begrepp.id,\
                               definition,\
                               term,\
+                              utländsk_term,\
                               ordbok_begrepp.status AS begrepp_status,\
                               ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
                               synonym,\
@@ -75,6 +76,7 @@ def retur_general_sök(url_parameter):
     column_names = ['begrepp_id',
                     'definition',
                     'term',
+                    'utländsk_term',
                     'begrepp_status', 
                     'synonym_begrepp_id',
                     'synonym',
@@ -184,10 +186,10 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
 def hämta_data_till_begrepp_view(url_parameter):
     search_request = retur_general_sök(url_parameter)
 
-    begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=4)
-    synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=4, stop=7)
+    begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=5)
+    synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=5, stop=8)
     
-    begrepp_column_names = ['begrepp_id', 'definition', 'term', 'begrepp_status']
+    begrepp_column_names = ['begrepp_id', 'definition', 'term', 'utländsk_term', 'begrepp_status']
 
     return_list_dict = []
     for return_result in begrepp:
