@@ -21,6 +21,7 @@
         <thead>
           <tr>
             <th>Term</th>
+            <th>Non-Swedish Term</th>
             <th>Definition</th>
             <th>Synonym</th>
           </tr>
@@ -30,7 +31,8 @@
             {% if begrepp.begrepp_status == "Beslutad" %}
             <tr class="table-success">
               <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
-              <td>{{begrepp.definition}}</td>   
+              <td>{{begrepp.utländsk_term}}</td>   
+              <td>{{begrepp.definition}}</td>                 
               <td>
                   {% for syn in synonym %}
                     {% ifequal syn.begrepp_id begrepp.begrepp_id %}
@@ -51,6 +53,7 @@
             {% elif begrepp.begrepp_status == "Preliminär" %}
             <tr class="table-warning">
               <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>
+              <td>{{begrepp.utländsk_term}}</td>   
               <td>{{begrepp.definition}}</td>   
               <td>
                 
@@ -75,6 +78,7 @@
             {% elif begrepp.begrepp_status == "Avråds" %}
             <tr>
               <td><a STYLE="Color: red;text-decoration: line-through" href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</p></a></td>
+              <td>{{begrepp.utländsk_term}}</td>   
               <td>{{begrepp.definition}}</td>   
               <td>
                 
@@ -98,6 +102,7 @@
             {% else %}
             <tr>
               <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
+              <td>{{begrepp.utländsk_term}}</td>   
               <td>{{begrepp.definition}}</td>   
               <td>
                 
