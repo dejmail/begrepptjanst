@@ -109,9 +109,10 @@ class BegreppAdmin(admin.ModelAdmin):
         return obj.beställare.önskad_slutdatum
 
     def synonym(self, obj):
+        
         display_text = ", ".join([
             "<a href={}>{}</a>".format(
-                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[1].name),
+                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[2].name),
                     args=(synonym.id,)),
                 synonym.synonym)
              for synonym in obj.synonym_set.all()
