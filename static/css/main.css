@@ -16,7 +16,6 @@ body {
    
   }
 
-
 nav {
     margin-bottom: 4em;
 }
@@ -25,6 +24,13 @@ nav {
     from {opacity: 1.0;}
     to {opacity: 0.0;}
   }
+
+
+.text-monospace {
+  font-size: 11px;
+}
+
+  
   
 .blink {
     text-decoration: blink;
