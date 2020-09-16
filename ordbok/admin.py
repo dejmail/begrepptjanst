@@ -214,6 +214,11 @@ class SynonymAdmin(admin.ModelAdmin):
 
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
+    class Media:
+        css = {
+            'all': (f'{settings.STATIC_URL}css/admin_kommentarmodel_custom.css',)
+            }
+
     list_display = ('begrepp',
                     'begrepp_kontext',
                     'datum',
