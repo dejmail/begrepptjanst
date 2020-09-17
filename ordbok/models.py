@@ -13,7 +13,7 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Preliminär', 'Preliminär'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
-SYSTEM_VAL = (('Millenium', "Millenium"),
+SYSTEM_VAL = (('Millennium', "Millennium"),
               ('Annat system', "Annat system"),
                ('VGR Begreppsystem',"VGR Begreppsystem"))
             
