@@ -98,6 +98,7 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             begrepp_version_nummer,\
                             definition,\
                             källa,\
+                            term_i_system, \
                             externt_id,\
                             annan_ordlista,\
                             status,\
@@ -260,6 +261,7 @@ def begrepp_förklaring_view(request):
                                'begrepp_version_nummer',
                                'definition',
                                'källa',
+                               'term_i_system',
                                'externt_id',
                                'externt_register',
                                'status',
