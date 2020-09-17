@@ -13,6 +13,9 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Preliminär', 'Preliminär'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
+SYSTEM_VAL = (('Millenium', "Millenium"),
+              ('Annat system', "Annat system"),
+               ('VGR Begreppsystem',"VGR Begreppsystem"))
             
 
 class Begrepp(models.Model):
@@ -35,6 +38,7 @@ class Begrepp(models.Model):
     id_vgr = models.CharField(max_length=255, null=True, default='Inte definierad')
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
+    term_i_system = models.CharField(verbose_name="Används i system",max_length=255,null=True, choices=SYSTEM_VAL)
 
     def __str__(self):
         return self.term
