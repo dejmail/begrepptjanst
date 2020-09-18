@@ -55,6 +55,7 @@ class TermRequestForm(forms.Form):
         return önskad_datum
 
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
+    utländsk_term = forms.CharField(max_length=254, label="Engelsk term")
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
     workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)

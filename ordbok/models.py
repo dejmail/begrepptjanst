@@ -33,12 +33,12 @@ class Begrepp(models.Model):
     annan_ordlista = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255)
+    utländsk_term = models.CharField(max_length=255)
     utländsk_definition = models.TextField(default='Inte definierad')
-    utländsk_term = models.CharField(default='Inte definierad', max_length=255)
     id_vgr = models.CharField(max_length=255, null=True, default='Inte definierad')
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
-    term_i_system = models.CharField(verbose_name="Används i system",max_length=255,null=True, choices=SYSTEM_VAL)
+    term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
 
     def __str__(self):
         return self.term
