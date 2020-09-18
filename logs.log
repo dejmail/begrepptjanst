@@ -1,2 +1,0 @@
-2020-09-18 08:14:25,418 django.utils.autoreload INFO     /mnt/c/Users/liath1/coding/begrepptjanst/begrepptjanst/settings/local.py changed, reloading.
-2020-09-18 08:14:25,421 asyncio      DEBUG    Using selector: EpollSelector
