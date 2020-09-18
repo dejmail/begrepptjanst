@@ -32,20 +32,24 @@
   {% load crispy_forms_tags %}
   {% block header %}
       {% block header_row1 %}
+
       <div class="container-fluid">
       <div class="row align-items-center top-buffer-15" style="position: relative; vertical-align: middle; text-align: center;">
+        {% block header_row1_column_left %}
             <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
               <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.SVG'%}">
             </div>
-
+        {% endblock header_row1_column_left %}
+        {% block header_row1_column_center %}
             <div class="col-lg-7 col-md-7 col-sm-7 col-xs-7"></div>
-
+        {% endblock header_row1_column_center %}
+        {% block header_row1_column_right %}
             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 1%; vertical-align: middle;">
               <button onclick="scrollToHelp()"type="button" style="font-family: frutiger; background-color:#006298;;" class="btn btn-info btn-md">
                   Hjälp!
               </button>
             </div>
-              
+        {% endblock header_row1_column_right %}
           </div>
         </div>
       
