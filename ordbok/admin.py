@@ -246,7 +246,7 @@ admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
-admin.site.regster(BegreppExternalFiles)
+admin.site.register(BegreppExternalFiles)
 
 
 
