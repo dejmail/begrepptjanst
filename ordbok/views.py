@@ -347,6 +347,7 @@ def hantera_request_term(request):
                 ny_beställare.save()
 
                 ny_term = Begrepp()
+                ny_term.utländsk_term = form.cleaned_data.get('utländsk_term')
                 ny_term.term = form.cleaned_data.get('begrepp')
                 ny_term.begrepp_kontext = request.POST.get('kontext')
                 ny_term.beställare = ny_beställare
