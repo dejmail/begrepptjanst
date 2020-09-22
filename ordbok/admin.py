@@ -59,6 +59,7 @@ class BegreppAdmin(admin.ModelAdmin):
                     'anmärkningar',
                     'utländsk_term',
                     'utländsk_definition',
+                    'term_i_system',
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
                     'beställare',

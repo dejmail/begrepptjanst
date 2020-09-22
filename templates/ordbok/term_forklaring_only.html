@@ -5,6 +5,11 @@
 {% block search_bar %}
 {% endblock search_bar %}
 
+
+{% block header_row1_column_right %}
+<a href="https://vgrinformatik.se/begreppstjanst"><img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}" alt="Navigera tillbaka till OLLI"></a>
+{% endblock header_row1_column_right %}
+
 {% block mitten-span %}
 {% if begrepp_full %}
 <div class="row mt-10" id="mitten-span-row">
@@ -81,6 +86,10 @@
                 <tr>
                     <td>Definition på annat språk</td>
                     <td>{{begrepp_full.utländsk_definition}}</td>
+                </tr>
+                <tr>
+                    <td>Används i system</td>
+                    <td>{{begrepp_full.term_i_system|default_if_none:'-'}}</td>
                 </tr>
                 <tr>
                     <td>Annan referens</td>
