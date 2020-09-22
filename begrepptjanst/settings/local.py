@@ -48,7 +48,7 @@ PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
 TEMPLATE_DIRS = ['/templates/',]
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/begrepptjanst/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # if settings.DEBUG:
