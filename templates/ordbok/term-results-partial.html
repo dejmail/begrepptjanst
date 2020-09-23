@@ -9,7 +9,7 @@
   <div class="table-responsive-md">
     <div class="mitten-span">
       
-<div class="col-12 text-center"><button class="btn btn-light-blue" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a></div>
+<div class="col-12 text-center"><button class="btn btn-light-blue" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a><button class="btn btn-light-blue" onclick="populate_request_form('{{searched_for_term}}+translate')">Översätta Begrepp</a></div>
       </h5>
         <br>
     </div>
@@ -132,7 +132,8 @@
 
   <div id="nyTermForm">
       <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}">
-  <script> populate_request_form("{{searched_for_term}}")</script>
+
+  <script> whatDoYouWant("{{middlepage}}")</script>
   </div>
 {% endif %}
 {% endspaceless %}

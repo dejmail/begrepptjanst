@@ -4,6 +4,8 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
 
+from .models import STATUS_VAL
+
 workstream_choices = [('Inte relevant','Inte relevant'),
 ('Akutsjukvård','Akutsjukvård'),
 ('DokumentationVårdproffesion','DokumentationVårdproffesion'),
@@ -61,6 +63,29 @@ class TermRequestForm(forms.Form):
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+
+class TermRequestTranslate(forms.Form):
+
+    def clean_name(self):
+        namn =  self.cleaned_data.get('namn')
+        return namn
+
+    def clean_epost(self):
+        epost = self.cleaned_data.get('epost')
+        return epost
+
+    def not_previously_mentionend_in_workstream(self):
+        övrig = self.cleaned_data.get('other')
+
+    
+    begrepp = forms.CharField(max_length=254, label="Förslag på svenskt begrepp", widget = forms.TextInput)
+    utländsk_term = forms.CharField(max_length=254, label="Engelsk term / Vad det heter i systemet")
+    kontext = forms.CharField(widget=forms.Textarea, label="Förklara funktionaliteten:")
+    workstream = forms.CharField(label='Ström som rapporterar in systembegrepp', widget=forms.Select(choices=workstream_choices))
+    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
+    epost =  forms.EmailField(max_length=254, label="E-post")
+    status = forms.ChoiceField(widget = forms.HiddenInput, choices=STATUS_VAL, initial={"Översättning"})
+
 
 class OpponeraTermForm(forms.Form):
 

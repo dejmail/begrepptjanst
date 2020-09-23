@@ -15,7 +15,7 @@ from django.conf import settings
 
 from ordbok.models import *
 from ordbok import models
-from .forms import TermRequestForm, OpponeraTermForm, BekräftaTermForm, OpponeraTermForm
+from .forms import *    
 from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
 
 import re
@@ -215,6 +215,7 @@ def hämta_data_till_begrepp_view(url_parameter):
         template_name="term-results-partial.html", context={'begrepp': return_list_dict,
                                                             'synonym' : return_synonym_list_dict,
                                                             'searched_for_term' : url_parameter}
+                                                            
     )
     
     return html, return_list_dict
@@ -319,6 +320,8 @@ def begrepp_förklaring_view(request):
 
 def hantera_request_term(request):
     
+
+
     if request.method == 'POST':
         form = TermRequestForm(request.POST, request.FILES)
         
@@ -373,10 +376,14 @@ def hantera_request_term(request):
             
             inkommande_domän.begrepp = ny_term
             
-            
 
     elif request.is_ajax():
-        form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
+
+        if 'translate' in request.GET.get('q'):
+            form = TermRequestTranslate(initial={'begrepp' : request.GET.get('q')})
+            return render(request, 'requestTranslate.html', {'form': form})
+        else:
+            form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
         return render(request, 'requestTerm.html', {'form': form})
 
     elif request.method == 'GET':
@@ -462,8 +469,12 @@ def screenshot_iframe_content(request):
     request.META['X-Frame-Options'] = 'SAMEORIGIN'
     return render(request, 'iframe_code.html', {})
 
-def youRealise(http_link):
-    if "http" in http_link:
-        return format_html(http_link)
-    else:
-        return http_link
+def whatDoYouWant(request):
+
+    url_parameter = request.GET.get("q")
+    #set_trace()
+    if request.method == 'GET':
+        
+         return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
+     # return render(request, "term.html", context={'begrepp' : begrepp})
+ 

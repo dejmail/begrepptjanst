@@ -3,7 +3,7 @@ from django.db import models
 from pdb import set_trace
 
 DEFAULT_STATUS = "Ej Påbörjad"
-
+DEFAULT_STATUS1 ='Översättning'
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Definiera ej', 'Definiera ej'), 
               ('Inte definierad', 'Inte definierad'), 
@@ -11,6 +11,7 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
               ('Preliminär', 'Preliminär'),
+              ('Översättning','Översättning'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
 SYSTEM_VAL = (('Millennium', "Millennium"),

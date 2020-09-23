@@ -97,6 +97,21 @@
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
+function whatDoYouWant()
+    {
+    $.ajax({
+    type: "get", 
+    dataType: "html",
+    url: "{% url 'whatDoYouWant' %}",
+    success: function(data) {
+    var display_html = data.html_from_view;
+    $('#mitten-span-middle-column').html(data);
+    changeBrowserURL(data, this.url);
+    popStateHandler();
+    
+    }
+    })
+    }
 
 function populate_request_form(requested_term)
     {    
@@ -132,6 +147,8 @@ function clear_mittenspanrow() {
   $('#helpInfo').hide();
 
 }
+
+
 
 </script>
 {% endblock extra_javascript %}
