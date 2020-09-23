@@ -25,7 +25,7 @@ class Begrepp(models.Model):
 
     begrepp_kontext = models.TextField(default='Inte definierad')
     begrepp_version_nummer = models.DateTimeField(auto_now_add=True, verbose_name='Senaste ändring')
-    datum_skapat = models.DateTimeField(null=True, auto_now_add=True, verbose_name='Datum skapat')
+    datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     alternativ_definition = models.TextField(null=True)
@@ -46,7 +46,7 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
-    support_file = models.FileField(blank=True, null=True, upload_to=MEDIA_ROOT)
+    support_file = models.FileField(blank=True, null=True, upload_to='uploads')
     
     def __str__(self):
         return str(self.support_file)
