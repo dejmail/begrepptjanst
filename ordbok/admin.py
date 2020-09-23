@@ -42,7 +42,7 @@ class BegreppAdmin(admin.ModelAdmin):
     class Media:
         css = {
         'all': (f'{settings.STATIC_URL}css/main.css',
-                f'{settings.STATIC_URL}css/custom_begrepp.css',
+                f'{settings.STATIC_URL}css/begrepp_custom.css',
                )
          }
     
