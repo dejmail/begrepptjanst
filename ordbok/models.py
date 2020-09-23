@@ -25,6 +25,7 @@ class Begrepp(models.Model):
 
     begrepp_kontext = models.TextField(default='Inte definierad')
     begrepp_version_nummer = models.DateTimeField(auto_now_add=True, verbose_name='Senaste ändring')
+    datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField()
     alternativ_definition = models.TextField(null=True)

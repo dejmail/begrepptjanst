@@ -41,14 +41,16 @@ class BegreppAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-        'all': (f'{settings.STATIC_URL}css/main.css',)
+        'all': (f'{settings.STATIC_URL}css/main.css',
+                f'{settings.STATIC_URL}css/custom_begrepp.css',
+               )
          }
     
     inlines = [BegreppExternalFilesInline, SynonymInline]
 
     fieldsets = [
         ['Main', {
-        'fields': ['begrepp_version_nummer', ('status', 'id_vgr',)],
+        'fields': [('datum_skapat','begrepp_version_nummer'), ('status', 'id_vgr',)],
         }],
         [None, {
         #'classes': ['collapse'],
@@ -67,7 +69,7 @@ class BegreppAdmin(admin.ModelAdmin):
         }]
     ]
 
-    readonly_fields = ('begrepp_version_nummer',)
+    readonly_fields = ('datum_skapat','begrepp_version_nummer',)
 
     save_on_top = True
 
