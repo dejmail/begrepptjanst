@@ -97,16 +97,16 @@
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
-function whatDoYouWant()
+function whatDoYouWant(requested_term)
     {
     $.ajax({
     type: "get", 
     dataType: "html",
-    url: "{% url 'whatDoYouWant' %}",
+    url: "{% url 'whatDoYouWant' %}?q="+requested_term,
     success: function(data) {
-    var display_html = data.html_from_view;
-    $('#mitten-span-middle-column').html(data);
-    changeBrowserURL(data, this.url);
+      var display_html = data.html_from_view;
+      $('#mitten-span-middle-column').html(data);
+      changeBrowserURL(data, this.url);
     popStateHandler();
     
     }

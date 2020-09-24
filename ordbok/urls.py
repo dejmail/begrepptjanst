@@ -13,5 +13,7 @@ urlpatterns = [
     path('screenshot/', ordbok_views.take_a_screenshot, name='take_screenshot'),
     path('screenshot_iframe/', ordbok_views.screenshot_iframe_content, name='screenshot_iframe_content'),
     path('whatDoYouWant/', ordbok_views.whatDoYouWant, name='whatDoYouWant'),
+    
+    
 ]
 
