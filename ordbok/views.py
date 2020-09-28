@@ -320,10 +320,16 @@ def begrepp_förklaring_view(request):
 
 def hantera_request_term(request):
     
-
-
+    
+    
     if request.method == 'POST':
-        form = TermRequestForm(request.POST, request.FILES)
+        set_trace()
+        # we need to know which form to process, so this needs to come in from the POST method
+        #if 'requestTranslate' in request.POST.keys():
+        # if 'translate':            
+        #     form = TranslateRequestForm(request.POST, request.FILES)            
+        # else:
+        #     form = TermRequestForm(request.POST, request.FILES)
         
         if form.is_valid():
 
@@ -379,12 +385,12 @@ def hantera_request_term(request):
 
     elif request.is_ajax():
 
-        if 'translate' in request.GET.get('q'):
+        if 'translate' in request.GET.keys():
             form = TermRequestTranslate(initial={'begrepp' : request.GET.get('q')})
-            return render(request, 'requestTranslate.html', {'form': form})
+            return render(request, 'requestTerm.html', {'form': form, 'whichTemplate' : 'requestTranslate'})
         else:
             form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
-        return render(request, 'requestTerm.html', {'form': form})
+        return render(request, 'requestTerm.html', {'form': form, 'whichTemplate' : 'requestTerm'})
 
     elif request.method == 'GET':
         return render(request, 'term.html', {})

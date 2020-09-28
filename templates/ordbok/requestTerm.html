@@ -14,7 +14,7 @@
     
     <span class="text-danger">Sökningen gav ingen träff!</span><br><br>
     <h5>Önskemål om nytt begrepp</h5>
-    <form id="beställ_form" action="{% url 'hantera_term_request' %}" method='POST' enctype="multipart/form-data">{% csrf_token %}
+    <form id="beställ_form" action="{% url 'hantera_term_request' %}?{{whichTemplate}}" method='POST' enctype="multipart/form-data">{% csrf_token %}
       
     {{ form|crispy }}
 
@@ -37,7 +37,7 @@
  
     $("#beställ_form").submit(function(event){
     event.preventDefault();
-	var post_url = $(this).attr("action");
+    var post_url = $(this).attr("action");
     var request_method = $(this).attr("method");
     var formdata = new FormData($(this)[0]);
     
