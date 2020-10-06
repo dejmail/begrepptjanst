@@ -3,7 +3,7 @@ from django.db import models
 from pdb import set_trace
 
 DEFAULT_STATUS = "Ej Påbörjad"
-DEFAULT_STATUS1 ='Översättning'
+DEFAULT_STATUS1 ="Översättning"
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Definiera ej', 'Definiera ej'), 
               ('Inte definierad', 'Inte definierad'), 
@@ -11,7 +11,7 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
               ('Preliminär', 'Preliminär'),
-              ('Översättning','Översättning'),
+              (DEFAULT_STATUS1, DEFAULT_STATUS1),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
 SYSTEM_VAL = (('Millennium', "Millennium"),
@@ -33,8 +33,8 @@ class Begrepp(models.Model):
     källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     annan_ordlista = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
-    term = models.CharField(max_length=255)
-    utländsk_term = models.CharField(max_length=255)
+    term = models.CharField(max_length=255, default='Angavs ej')
+    utländsk_term = models.CharField(max_length=255, blank=True)
     utländsk_definition = models.TextField(default='Inte definierad')
     id_vgr = models.CharField(max_length=255, null=True, default='Inte definierad')
     anmärkningar = models.TextField(null=True, default='Inte definierad')
@@ -56,11 +56,11 @@ class Bestallare(models.Model):
     class Meta:
         verbose_name_plural = "Beställare"
 
-    beställare_namn = models.CharField(max_length=255)
+    beställare_namn = models.CharField(max_length=255, blank=True)
     beställare_datum = models.DateTimeField(auto_now_add=True)
-    önskad_slutdatum = models.DateTimeField()
+    önskad_slutdatum = models.DateTimeField(null=True, blank=True)
     beställare_email = models.EmailField()
-    beställare_telefon = models.CharField(max_length=30)
+    beställare_telefon = models.CharField(max_length=30, blank=True)
 
     def __str__(self):
         return self.beställare_namn

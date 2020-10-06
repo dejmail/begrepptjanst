@@ -15,7 +15,7 @@ from django.conf import settings
 
 from ordbok.models import *
 from ordbok import models
-from .forms import *    
+from .forms import TermRequestForm, TermRequestTranslateForm   
 from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
 
 import re
@@ -319,78 +319,108 @@ def begrepp_förklaring_view(request):
     return render(request, "base.html", context={})
 
 def hantera_request_term(request):
-    
-    
-    
+       
     if request.method == 'POST':
-        set_trace()
-        # we need to know which form to process, so this needs to come in from the POST method
-        #if 'requestTranslate' in request.POST.keys():
-        # if 'translate':            
-        #     form = TranslateRequestForm(request.POST, request.FILES)            
-        # else:
-        #     form = TermRequestForm(request.POST, request.FILES)
         
-        if form.is_valid():
+        type_of_request = request.get_raw_uri().split('?')[-1].split('=')
 
-            if request.FILES is not None:
-                file_list = []
-                for file in request.FILES.getlist('file_field'):
-                    fs = FileSystemStorage()
-                    filename = fs.save(content=file, name=file.name)
-                    uploaded_file_url = fs.url(filename)
-                    file_list.append(file.name)
-            
-            if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
-                    
-                    return HttpResponse('''<div class="alert alert-danger text-center">
-                                   Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
-                                   </div>''')
-            else:
+
+        if 'requestTranslate' in type_of_request:
+            form = TermRequestTranslateForm(request.POST)
+            if form.is_valid():
 
                 ny_beställare = Bestallare()
-                ny_beställare.beställare_namn = form.clean_name()
                 ny_beställare.beställare_email = form.clean_epost()
-                ny_beställare.beställare_telefon = form.clean_telefon()
-                ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
                 ny_beställare.save()
 
                 ny_term = Begrepp()
-                ny_term.utländsk_term = form.cleaned_data.get('utländsk_term')
-                ny_term.term = form.cleaned_data.get('begrepp')
-                ny_term.begrepp_kontext = request.POST.get('kontext')
+                ny_term.utländsk_term = form.clean_utländsk_term()
+                ny_term.term = form.clean_begrepp()
+                ny_term.begrepp_kontext = form.clean_kontext()
+                ny_term.status = form.clean_status()
                 ny_term.beställare = ny_beställare
                 ny_term.save()
-                
+
                 inkommande_domän = Doman()
+                if form.cleaned_data.get('other') == "Övrigt/Annan":
+                    inkommande_domän.domän_namn = form.clean_not_previously_mentioned_in_workstream()
+                else:
+                    inkommande_domän.domän_namn = form.clean_workstream()
                 inkommande_domän.save()
 
-                for filename in file_list:
-                    new_file = BegreppExternalFiles()
-                    new_file.begrepp = ny_term
-                    new_file.support_file = filename
-                    new_file.save()
 
                 return HttpResponse('''<div class="alert alert-success text-center">
-                                   Tack! Begrepp skickades in för granskning.
-                                   </div>''')
+                                    Tack! Begrepp skickades in för översättning.
+                                    </div>''')
+
+        else:
+            form = TermRequestForm(request.POST, request.FILES)
+
+            if form.is_valid():
             
-            if form.cleaned_data.get('other') == "Övrigt/Annan":
-                inkommande_domän.domän_namn = form.cleaned_data.get('other')
-            else:
-                inkommande_domän.domän_namn = form.cleaned_data.get('workstream')
-            
-            inkommande_domän.begrepp = ny_term
-            
+                if request.FILES is not None:
+                    file_list = []
+                    for file in request.FILES.getlist('file_field'):
+                        fs = FileSystemStorage()
+                        filename = fs.save(content=file, name=file.name)
+                        uploaded_file_url = fs.url(filename)
+                        file_list.append(file.name)
+                
+                if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
+                        
+                    return HttpResponse('''<div class="alert alert-danger text-center">
+                                Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
+                                </div>''')
+                else:
+
+                    ny_beställare = Bestallare()
+                    ny_beställare.beställare_namn = form.clean_name()
+                    ny_beställare.beställare_email = form.clean_epost()
+                    ny_beställare.beställare_telefon = form.clean_telefon()
+                    ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
+                    ny_beställare.save()
+
+                    ny_term = Begrepp()
+                    ny_term.utländsk_term = form.clean_utländsk_term()
+                    ny_term.term = form.clean_begrepp()
+                    ny_term.begrepp_kontext = form.clean_kontext()
+                    ny_term.beställare = ny_beställare
+                    ny_term.save()
+                    
+                    inkommande_domän = Doman()
+                    inkommande_domän.save()
+
+                    if form.cleaned_data.get('other') == "Övrigt/Annan":
+                        inkommande_domän.domän_namn = form.clean_not_previously_mentioned_in_workstream()
+                    else:
+                        inkommande_domän.domän_namn = form.clean_workstream()
+                    
+                    inkommande_domän.begrepp = ny_term
+
+                    for filename in file_list:
+                        new_file = BegreppExternalFiles()
+                        new_file.begrepp = ny_term
+                        new_file.support_file = filename
+                        new_file.save()
+
+                    return HttpResponse('''<div class="alert alert-success text-center">
+                                    Tack! Begrepp skickades in för granskning.
+                                    </div>''')
 
     elif request.is_ajax():
-
+       #request.GET.get
         if 'translate' in request.GET.keys():
-            form = TermRequestTranslate(initial={'begrepp' : request.GET.get('q')})
-            return render(request, 'requestTerm.html', {'form': form, 'whichTemplate' : 'requestTranslate'})
+            form = TermRequestTranslateForm(initial={'begrepp' : '[Finns ingen översättning]',
+                                                     'utländsk_term' : request.GET.get("q")})
+            
+            return render(request, 'requestTerm.html', {'form': form, 
+                                                        'whichTemplate' : 'requestTranslate',
+                                                        'header' : 'Önskemål om ny översättning'})
         else:
             form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
-        return render(request, 'requestTerm.html', {'form': form, 'whichTemplate' : 'requestTerm'})
+        return render(request, 'requestTerm.html', {'form': form, 
+                                                    'whichTemplate' : 'requestTerm',
+                                                    'header' : 'Önskemål om nytt begrepp'})
 
     elif request.method == 'GET':
         return render(request, 'term.html', {})
