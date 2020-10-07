@@ -5,6 +5,9 @@ from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.utils.html import format_html
 import django.utils.encoding
+from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import F, IntegerField, TextField, Value
+from django.db.models.functions import Cast, StrIndex, Substr
 
 from django.contrib import admin
 from ordbok.models import *
@@ -37,18 +40,58 @@ class BegreppExternalFilesInline(admin.StackedInline):
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
 
-class BegreppAdmin(admin.ModelAdmin):
+
+
+class BegreppSearchResultsAdminMixin(object):
+
+    def get_search_results(self, request, queryset, search_term):
+    
+        ''' Show exact match for title at top of admin search results.
+        '''
+    
+        qs, use_distinct = \
+            super(BegreppSearchResultsAdminMixin, self).get_search_results(
+                request, queryset, search_term)
+        
+        search_term = search_term.strip()
+        if not search_term:
+            return qs, use_distinct
+
+        qs = qs.annotate(
+            position=Case(
+                When(Q(term__iexact=search_term), then=Value(1)),
+                When(Q(term__istartswith=search_term), then=Value(2)),
+                When(Q(term__icontains=search_term), then=Value(3)), 
+                When(Q(utländsk_term__icontains=search_term), then=Value(4)),
+                When(Q(definition__icontains=search_term), then=Value(5)), 
+                default=Value(6), output_field=IntegerField()
+            )
+        )
+
+        order_by = []
+        if qs.filter(position=1).exists():
+            order_by.append('position')
+
+        if order_by:
+            qs = qs.order_by(*order_by)
+
+        return qs, use_distinct
+
+
+class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     class Media:
         css = {
-        'all': (f'{settings.STATIC_URL}css/main.css',)
+        'all': (f'{settings.STATIC_URL}css/main.css',
+                f'{settings.STATIC_URL}css/begrepp_custom.css',
+               )
          }
     
     inlines = [BegreppExternalFilesInline, SynonymInline]
 
     fieldsets = [
         ['Main', {
-        'fields': ['begrepp_version_nummer', ('status', 'id_vgr',)],
+        'fields': [('datum_skapat','begrepp_version_nummer'), ('status', 'id_vgr',)],
         }],
         [None, {
         #'classes': ['collapse'],
@@ -67,10 +110,14 @@ class BegreppAdmin(admin.ModelAdmin):
         }]
     ]
 
+<<<<<<< HEAD
     readonly_fields = ['begrepp_version_nummer','beställare__beställare_epost']
 
     def beställare__beställare_epost(self, obj):
         return obj.beställare.beställare_email
+=======
+    readonly_fields = ('datum_skapat','begrepp_version_nummer',)
+>>>>>>> 404db544d88b068b8ff855a05f4b9a2ce72aedd9
 
     save_on_top = True
 
@@ -92,11 +139,8 @@ class BegreppAdmin(admin.ModelAdmin):
                     'definition',
                     'begrepp_kontext',    
                     'annan_ordlista',
-                    'term',
                     'utländsk_definition',
-                    'utländsk_term',
-                    'begrepp_version_nummer',
-                    'status')
+                    'utländsk_term')
 
     date_hierarchy = 'begrepp_version_nummer'
 
@@ -113,9 +157,10 @@ class BegreppAdmin(admin.ModelAdmin):
         return obj.beställare.önskad_slutdatum
 
     def synonym(self, obj):
+        
         display_text = ", ".join([
             "<a href={}>{}</a>".format(
-                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[1].name),
+                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[2].name),
                     args=(synonym.id,)),
                 synonym.synonym)
              for synonym in obj.synonym_set.all()
@@ -217,6 +262,11 @@ class SynonymAdmin(admin.ModelAdmin):
 
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
+    class Media:
+        css = {
+            'all': (f'{settings.STATIC_URL}css/admin_kommentarmodel_custom.css',)
+            }
+
     list_display = ('begrepp',
                     'begrepp_kontext',
                     'datum',
@@ -250,6 +300,3 @@ admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles)
-
-
-
