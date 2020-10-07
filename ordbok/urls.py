@@ -11,7 +11,9 @@ urlpatterns = [
     path('requesttermform/', ordbok_views.hantera_request_term, name='hantera_term_request'),
     path('unread_comments/', ordbok_views.return_number_of_recent_comments, name='unread_comments'),
     path('screenshot/', ordbok_views.take_a_screenshot, name='take_screenshot'),
-    path('screenshot_iframe/', ordbok_views.screenshot_iframe_content, name='screenshot_iframe_content')
-
+    path('screenshot_iframe/', ordbok_views.screenshot_iframe_content, name='screenshot_iframe_content'),
+    path('whatDoYouWant/', ordbok_views.whatDoYouWant, name='whatDoYouWant'),
+    
+    
 ]
 
