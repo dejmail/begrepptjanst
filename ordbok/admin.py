@@ -110,7 +110,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         }]
     ]
 
-    readonly_fields = ['begrepp_version_nummer','beställare__beställare_epost']
+    readonly_fields = ['begrepp_version_nummer','datum_skapat','beställare__beställare_epost']
 
     def beställare__beställare_epost(self, obj):
         return obj.beställare.beställare_email
