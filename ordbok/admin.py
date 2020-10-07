@@ -62,12 +62,15 @@ class BegreppAdmin(admin.ModelAdmin):
                     'term_i_system',
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
-                    'beställare',
+                    ('beställare','beställare__beställare_epost'),
                     'kommentar_handläggning']
         }]
     ]
 
-    readonly_fields = ('begrepp_version_nummer',)
+    readonly_fields = ['begrepp_version_nummer','beställare__beställare_epost']
+
+    def beställare__beställare_epost(self, obj):
+        return obj.beställare.beställare_email
 
     save_on_top = True
 
