@@ -145,7 +145,8 @@ def sort_returned_sql_search_according_to_search_term_position(lines, delim, pos
     Returns a sorted list based on "column" from list-of-dictionaries data.
     '''
 
-    return sorted(lines, key=lambda x: x.get('term').split(delim)[int(position) - 1])
+    return sorted(lines, key=lambda x: x.get('term').split(delim))
+
 
 def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
