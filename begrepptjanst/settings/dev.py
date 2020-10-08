@@ -29,4 +29,4 @@ STATIC_URL = '/begreppstjanst-dev/static/'
 
 # media files 
 MEDIA_URL = '/begrepptjanst/media/'
-MEDIA_ROOT = '/home/vgrinfor/public_html/begrepptjanst-dev/media'
+MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'

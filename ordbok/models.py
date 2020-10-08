@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from pdb import set_trace
+from django.conf import settings
 
 DEFAULT_STATUS = "Ej Påbörjad"
 DEFAULT_STATUS1 ="Översättning"
@@ -47,11 +48,10 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
-    support_file = models.FileField(blank=True, null=True, upload_to='uploads')
+    support_file = models.FileField(blank=True, null=True, upload_to=settings.MEDIA_ROOT)
     
     def __str__(self):
         return str(self.support_file)
-
 
 class Bestallare(models.Model):
     class Meta:

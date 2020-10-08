@@ -23,7 +23,7 @@ STATIC_URL = '/begrepptjanst/static/'
 
 # media files 
 MEDIA_URL = '/begrepptjanst/media/'
-MEDIA_ROOT = '/home/vgrinfor/public_html/begrepptjanst/media'
+MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
 
 
 # Email settings
