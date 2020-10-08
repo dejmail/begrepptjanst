@@ -48,8 +48,8 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
-    support_file = models.FileField(blank=True, null=True, upload_to=settings.MEDIA_ROOT)
-    
+    support_file = models.FileField(blank=True, null=True, upload_to='')
+        
     def __str__(self):
         return str(self.support_file)
 
