@@ -411,8 +411,7 @@ def hantera_request_term(request):
     elif request.is_ajax():
        #request.GET.get
         if 'translate' in request.GET.keys():
-            form = TermRequestTranslateForm(initial={'begrepp' : '[Finns ingen översättning]',
-                                                     'utländsk_term' : request.GET.get("q")})
+            form = TermRequestTranslateForm(initial={'utländsk_term' : request.GET.get("q")})
             
             return render(request, 'requestTerm.html', {'form': form, 
                                                         'whichTemplate' : 'requestTranslate',
