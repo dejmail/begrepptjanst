@@ -5,6 +5,9 @@ from django.utils.safestring import mark_safe
 from django.conf import settings
 from django.utils.html import format_html
 import django.utils.encoding
+from django.db.models import Q, Case, When, Value, IntegerField
+from django.db.models import F, IntegerField, TextField, Value
+from django.db.models.functions import Cast, StrIndex, Substr
 
 from django.contrib import admin
 from ordbok.models import *
@@ -37,7 +40,45 @@ class BegreppExternalFilesInline(admin.StackedInline):
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
 
-class BegreppAdmin(admin.ModelAdmin):
+
+
+class BegreppSearchResultsAdminMixin(object):
+
+    def get_search_results(self, request, queryset, search_term):
+    
+        ''' Show exact match for title at top of admin search results.
+        '''
+    
+        qs, use_distinct = \
+            super(BegreppSearchResultsAdminMixin, self).get_search_results(
+                request, queryset, search_term)
+        
+        search_term = search_term.strip()
+        if not search_term:
+            return qs, use_distinct
+
+        qs = qs.annotate(
+            position=Case(
+                When(Q(term__iexact=search_term), then=Value(1)),
+                When(Q(term__istartswith=search_term), then=Value(2)),
+                When(Q(term__icontains=search_term), then=Value(3)), 
+                When(Q(utländsk_term__icontains=search_term), then=Value(4)),
+                When(Q(definition__icontains=search_term), then=Value(5)), 
+                default=Value(6), output_field=IntegerField()
+            )
+        )
+
+        order_by = []
+        if qs.filter(position=1).exists():
+            order_by.append('position')
+
+        if order_by:
+            qs = qs.order_by(*order_by)
+
+        return qs, use_distinct
+
+
+class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     class Media:
         css = {
@@ -64,12 +105,15 @@ class BegreppAdmin(admin.ModelAdmin):
                     'term_i_system',
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
-                    'beställare',
+                    ('beställare','beställare__beställare_epost'),
                     'kommentar_handläggning']
         }]
     ]
 
-    readonly_fields = ('datum_skapat','begrepp_version_nummer',)
+    readonly_fields = ['begrepp_version_nummer','datum_skapat','beställare__beställare_epost']
+
+    def beställare__beställare_epost(self, obj):
+        return obj.beställare.beställare_email
 
     save_on_top = True
 
@@ -91,11 +135,8 @@ class BegreppAdmin(admin.ModelAdmin):
                     'definition',
                     'begrepp_kontext',    
                     'annan_ordlista',
-                    'term',
                     'utländsk_definition',
-                    'utländsk_term',
-                    'begrepp_version_nummer',
-                    'status')
+                    'utländsk_term')
 
     date_hierarchy = 'begrepp_version_nummer'
 
