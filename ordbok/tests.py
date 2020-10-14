@@ -18,3 +18,4 @@ class HomePageTest(TestCase):
         self.assertIn(b'function populate_request_form(requested_term)', msg='cannot find this function in the HTML', container=response.content)
         self.assertIn(b'function scrollToHelp()', msg='cannot find this function in the HTML', container=response.content)
         self.assertIn(b'function clear_mittenspanrow()', msg='cannot find this function in the HTML', container=response.content)
+        

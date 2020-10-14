@@ -87,15 +87,12 @@ class NewSearch(unittest.TestCase):
         self.browser.find_element_by_xpath('//*[@id="id_önskad_datum"]').send_keys(year)
         self.browser.find_element_by_xpath('//*[@id="id_önskad_datum"]').send_keys(Keys.TAB)
         self.browser.find_element_by_xpath('//*[@id="id_önskad_datum"]').send_keys(month)
-        #self.browser.find_element_by_xpath('//*[@id="id_önskad_datum"]').send_keys(Keys.TAB)
         self.browser.find_element_by_xpath('//*[@id="id_önskad_datum"]').send_keys(day)
 
         # submit a name        
-        
         name_field = self.browser.find_elements_by_id('id_namn')
         test_name = get_random_string(8)+'_testname'
         name_field[0].send_keys(test_name)
-
         
         # submit an email addrress
         epost_field = self.browser.find_elements_by_id('id_epost')
