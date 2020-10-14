@@ -170,13 +170,18 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
 
     #create a set as there are duplicates in the database
     term_def_set = set([(concepts,definition) for concepts,definition in term_def_dict])
-    term_def_dict = {concept:f'''<div class="definitiontooltip">{concept}<div class="definitiontooltiptext">{definition}</div></div>''' for concept, definition in term_def_set}
+    # create a dictionary with the term as key and definition containing the HTML needed to show the hover definition
+    term_def_dict = {concept:f'''<div class="definitiontooltip">{concept}<div class="definitiontooltiptext">{'&nbsp;'+definition+'&nbsp;'}</div></div>''' for concept, definition in term_def_set}
     
+    # Instantiate the Xlator class
     translator = Xlator(term_def_dict)
-    # possibly better to join with another string character that is never used, perhaps a special ASCII character?
+    # loop through each definition in the begrepp_dict_list and make one string with all the
+    # definitions separated by the ½ character. Send this string to the instantiation, and 
+    # replace all the occurrences of begrepp in definitions with a hover tooltip text.
     altered_strings = translator.xlat('½'.join([i.get('definition') for i in begrepp_dict_list]))
+    # resplit the now altered text
     resplit_altered_strings = altered_strings.split('½')
-
+    
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
            begrepp_dict_list[index]['definition'] = format_html(resplit_altered_strings[index])
@@ -203,6 +208,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     for return_result in synonym:
         return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
 
+    # this is all the terms and definitions from the DB
     term_def_dict = return_list_of_term_and_definition()
     
     return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,
