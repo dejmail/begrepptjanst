@@ -10,34 +10,38 @@ logger = logging.getLogger(__name__)
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME' : 'ordlist_databas.sqlite3'
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME' : 'ordlist_databas.sqlite3'
 
-    }
-}
+#     }
+# }
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 INTERNAL_IPS = ['127.0.0.1',]
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql', 
-#         'NAME': 'vgrinfor_begrepp_prod',
-#         'USER': 'vgrinfor_admin',
-#         'PASSWORD': 'YqvyYGm5cJMLmzt',
-#         'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
-#         'PORT': '3306',
-#         #'DEFAULT-CHARACTER-SET' : 'utf8',
-#         'OPTIONS': {
-#             # Tell MySQLdb to connect with 'utf8mb4' character set
-#             'charset': 'utf8mb4',
-#         },
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql', 
+        'NAME': 'vgrinfor_begrepp_backup',
+        'USER': 'vgrinfor_admin',
+        'PASSWORD': 'YqvyYGm5cJMLmzt',
+        'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
+        'PORT': '3306',
+        #'DEFAULT-CHARACTER-SET' : 'utf8',
+        'OPTIONS': {
+            # Tell MySQLdb to connect with 'utf8mb4' character set
+            'charset': 'utf8mb4',
+        },
+        'TEST' : {
+            'NAME' : 'vgrinfor_test'
+        }
+        
+    }
+}
 
 
 #INSTALLED_APPS.append('debug_toolbar')
