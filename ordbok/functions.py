@@ -44,7 +44,7 @@ def skicka_epost_till_beställaren(queryset):
         text_content = f'''Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
         <p>Om du vill läsa mer detaljer, vänligen navigera till OLLI och söka på termen.</p>
 
-        <p><a href="http://vgrinformatik.se/begreppstjanst">OLLI Begreppstjanst</a></p>
+        <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Klicka här för att komma direkt till ditt efterfrågade begrepp</a></p>
 
         '''
         html_content = f'<p>{text_content}</p>'
