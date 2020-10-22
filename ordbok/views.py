@@ -176,11 +176,14 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     # Instantiate the Xlator class
     translator = Xlator(term_def_dict)
     # loop through each definition in the begrepp_dict_list and make one string with all the
-    # definitions separated by the ½ character. Send this string to the instantiation, and 
-    # replace all the occurrences of begrepp in definitions with a hover tooltip text.
-    altered_strings = translator.xlat('½'.join([i.get('definition') for i in begrepp_dict_list]))
+    # definitions separated by the ' ½ ' string. Without the spaces, certain instances of words
+    # are not detected at the boundaries. Send this string to the instantiation, and replace all 
+    # the occurrences of begrepp in definitions with a hover tooltip text.
+
+    joined_definitions = ' ½ '.join([i.get('definition') for i in begrepp_dict_list])
+    altered_strings = translator.xlat(joined_definitions)
     # resplit the now altered text
-    resplit_altered_strings = altered_strings.split('½')
+    resplit_altered_strings = altered_strings.split(' ½ ')
     
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
