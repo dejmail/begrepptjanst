@@ -5,8 +5,6 @@ from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, send_mail
 import re
 
-
-
 def besökare_ip_adress(request):
 
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -55,6 +53,10 @@ def skicka_epost_till_beställaren(queryset):
     with mail.get_connection() as connection:
         connection.send_messages(email_list)
         connection.close()
+
+def nbsp2space(string_with_bad_values):
+    
+    return re.sub('\\xa0', ' ', string_with_bad_values, flags=re.IGNORECASE|re.UNICODE)
 
 class Xlator(dict):
     """ All-in-one multiple-string-substitution class
