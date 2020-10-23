@@ -74,13 +74,6 @@ class Xlator(dict):
         
         return compiled_re
 
-        # map - 
-        # re.escape(string) Return string with all non-alphanumerics backslashed; this is useful if you want to match an arbitrary literal string that may have regular expression metacharacters in it.
-        # re.compile compiles the patterns into regex byte code
-        #return re.compile(
-        #  r'\b'+r'\b|\b'.join(map(re.escape, self.keys()))+r'\b')
-
-
     def __call__(self, match):
         """ Handler invoked for each regex match """
         return self[match.group(0)]
@@ -88,4 +81,3 @@ class Xlator(dict):
     def xlat(self, text):
         """ Translate text, returns the modified text. """
         return self._make_regex().sub(self, text)
-        #return regex.sub(lambda match: adict[match.group(0)], text)
