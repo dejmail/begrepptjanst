@@ -10,7 +10,7 @@
     <p style="font-family:garamond;font-size: 18px;">Bekräfta att begreppet används inom en kontext som du arbetar med. Fyll i e-postadress och ange den kontexten.</p>
     <form id="bekräfta_term_form" action="{% url 'bekräfta_term' %}", method='POST'>{% csrf_token %}
         {{ bekräfta|crispy }}
-    <input type="submit" value="Skicka" id="bekräfta_button">
+    <input type="submit" value="Skicka" id="bekräfta_button" class="btn btn-light-blue" style="color: white;font-family:frutiger; background-color:#006298;">
     </form>
 </div>
 {% endblock mitten_span %}

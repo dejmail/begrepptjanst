@@ -11,6 +11,7 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Beslutad', 'Beslutad'), 
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
+              ('För validering', 'För validering'),
               ('Preliminär', 'Preliminär'),
               (DEFAULT_STATUS1, DEFAULT_STATUS1),
               (DEFAULT_STATUS, DEFAULT_STATUS))
