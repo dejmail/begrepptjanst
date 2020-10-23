@@ -1,6 +1,7 @@
 import json
 from pdb import set_trace
 
+
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -16,7 +17,7 @@ from django.conf import settings
 from ordbok.models import *
 from ordbok import models
 from .forms import TermRequestForm, TermRequestTranslateForm, BekräftaTermForm, OpponeraTermForm
-from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator
+from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space
 
 import re
 import logging
@@ -166,17 +167,42 @@ def return_list_of_term_and_definition():
 
     return result
 
+def clean_dict_of_extra_characters(incoming_dict):
+
+    clean_dict = {}
+    for keys,values in incoming_dict.items():
+        clean_dict[keys.strip()] = re.sub('\xa0', ' ', values)
+    return clean_dict
+
 def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list, term_def_dict):
 
     #create a set as there are duplicates in the database
     term_def_set = set([(concepts,definition) for concepts,definition in term_def_dict])
-    term_def_dict = {concept:f'''<div class="definitiontooltip">{concept}<div class="definitiontooltiptext">{definition}</div></div>''' for concept, definition in term_def_set}
+    # create a dictionary with the term as key and definition containing the HTML needed to show the hover definition
+    term_def_dict_uncleaned = {concept:f'''<div class="definitiontooltip">{concept.strip()}<div class="definitiontooltiptext">{definition}</div></div>''' for concept, definition in term_def_set}
     
-    translator = Xlator(term_def_dict)
-    # possibly better to join with another string character that is never used, perhaps a special ASCII character?
-    altered_strings = translator.xlat('½'.join([i.get('definition') for i in begrepp_dict_list]))
-    resplit_altered_strings = altered_strings.split('½')
+    term_def_dict = clean_dict_of_extra_characters(term_def_dict_uncleaned)
 
+    # Would be good to be able to send a list of plurals that we could 
+    # group togther in the pattern creation, but as Xlator is a dict
+    # class, I'm not sure how to do that-
+
+    #plurals = {'hälso- och sjukvårdsaktivitet' : 'er'}
+
+    translator = Xlator(term_def_dict)
+    
+    # loop through each definition in the begrepp_dict_list and make one string with all the
+    # definitions separated by the ' ½ ' string. Without the spaces, certain instances of words
+    # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all 
+    # the occurrences of begrepp in definitions with a hover tooltip text.
+
+    joined_definitions = ' ½ '.join([i.get('definition') for i in begrepp_dict_list])
+    joined_definitions_minus_nbsp = nbsp2space(joined_definitions)
+    # only here are the regex patterns created in Xlator, couple to the substitution 
+    altered_strings = translator.xlat(joined_definitions_minus_nbsp)
+    # resplit the now altered string back into a list
+    resplit_altered_strings = altered_strings.split(' ½ ')
+    
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
            begrepp_dict_list[index]['definition'] = format_html(resplit_altered_strings[index])
@@ -203,6 +229,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     for return_result in synonym:
         return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
 
+    # this is all the terms and definitions from the DB
     term_def_dict = return_list_of_term_and_definition()
     
     return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,

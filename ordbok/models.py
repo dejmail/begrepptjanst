@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.db import models
 from pdb import set_trace
+from django.conf import settings
 
 DEFAULT_STATUS = "Ej Påbörjad"
 DEFAULT_STATUS1 ="Översättning"
@@ -48,11 +49,10 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
-    support_file = models.FileField(blank=True, null=True, upload_to='uploads')
-    
+    support_file = models.FileField(blank=True, null=True, upload_to='')
+
     def __str__(self):
         return str(self.support_file)
-
 
 class Bestallare(models.Model):
     class Meta:
@@ -101,7 +101,7 @@ class OpponeraBegreppDefinition(models.Model):
     class Meta:
         verbose_name_plural = 'Kommenterade Begrepp'
     
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.PROTECT, blank=True, null=True)
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
     begrepp_kontext = models.TextField()
     datum = models.DateTimeField(auto_now_add=True)
     epost = models.EmailField()

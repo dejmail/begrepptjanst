@@ -1,6 +1,4 @@
 from pdb import set_trace
-from .models import SökData, SökFörklaring
-
 from .models import SökData, SökFörklaring, Bestallare
 
 from django.core import mail
@@ -56,13 +54,25 @@ def skicka_epost_till_beställaren(queryset):
         connection.send_messages(email_list)
         connection.close()
 
+def nbsp2space(string_with_bad_values):
+    
+    return re.sub('\\xa0', ' ', string_with_bad_values, flags=re.IGNORECASE|re.UNICODE)
+
 class Xlator(dict):
     """ All-in-one multiple-string-substitution class
         a version to substitute only entire words """
 
+    def escape_keys(self):
+        
+        return [re.escape(i) for i in self.keys()]
+
     def _make_regex(self):
-        return re.compile(
-          r'\b'+r'\b|\b'.join(map(re.escape, self.keys(  )))+r'\b')
+        
+        escaped_keys = self.escape_keys()
+        joined_keys = r'\b'+r'\b|\b'.join(escaped_keys)
+        compiled_re = re.compile(joined_keys+r'\b')
+        
+        return compiled_re
 
     def __call__(self, match):
         """ Handler invoked for each regex match """
@@ -70,6 +80,4 @@ class Xlator(dict):
 
     def xlat(self, text):
         """ Translate text, returns the modified text. """
-        return self._make_regex(  ).sub(self, text)
-        return regex.sub(lambda match: adict[match.group(0)], text)
-
+        return self._make_regex().sub(self, text)

@@ -85,7 +85,7 @@ class TermRequestTranslateForm(forms.Form):
         return self.cleaned_data.get('namn')
 
     def clean_begrepp(self):
-        if self.cleaned_data.get('begrepp') is '':
+        if self.cleaned_data.get('begrepp') == '':
             return "[Finns ingen översättning]"
         else:
             return self.cleaned_data.get('begrepp')
