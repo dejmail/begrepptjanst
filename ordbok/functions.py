@@ -4,6 +4,7 @@ from .models import SökData, SökFörklaring, Bestallare
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, send_mail
 import re
+import datetime
 
 def besökare_ip_adress(request):
 
@@ -32,7 +33,7 @@ def mäta_förklaring_träff(sök_term, request):
     ny_sök.ip_adress = besökare_ip_adress(request)
     ny_sök.save()
 
-def skicka_epost_till_beställaren(queryset):
+def skicka_epost_till_beställaren_status(queryset):
 
     email_list = []
 
@@ -40,10 +41,75 @@ def skicka_epost_till_beställaren(queryset):
         beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Uppdatering av term status', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
-        <p>Om du vill läsa mer detaljer, vänligen navigera till OLLI och söka på termen.</p>
+        
 
         <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Klicka här för att komma direkt till ditt efterfrågade begrepp</a></p>
 
+        '''
+        html_content = f'<p>{text_content}</p>'
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        msg.attach_alternative(html_content, "text/html")
+        email_list.append(msg)
+
+    with mail.get_connection() as connection:
+        connection.send_messages(email_list)
+        connection.close()
+
+def skicka_epost_till_beställaren_validate(queryset):
+
+    email_list = []
+
+    for enskilda_term in queryset.select_related():
+        beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
+        subject, from_email, to = 'Begrepp för validering i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
+        text_content = f'''Hej! 
+
+Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikprojektet och vi önskar validering från verksamheten innan det beslutas. Du som framfört önskemål om begreppet ansvarar för förankring i verksamheten och vi ber dig därför gå igenom begreppet i OLLI och kontrollera om du tycker att det stämmer överens med hur verksamheten vill använda begreppet. 
+
+<br><br>[Eventuell text från OLLI]<br><br>  
+
+Eventuella synpunkter lämnas som svar på detta mejl. 
+
+Om inga synpunkter inkommit senast Om inga synpunkter inkommit senast {(datetime.datetime.now() + datetime.timedelta(days=7)).date()} kommer informatikprojektet att besluta enligt vad som står i OLLI.  kommer informatikprojektet att besluta enligt vad som står i OLLI. 
+
+<p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p>
+
+Tack för din hjälp! 
+
+ 
+
+Med vänlig hälsning 
+
+Projekt för informatik inom vård och omsorg i Västra Götaland
+        '''
+        html_content = f'<p>{text_content}</p>'
+        msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
+        msg.attach_alternative(html_content, "text/html")
+        email_list.append(msg)
+    with mail.get_connection() as connection:
+        connection.send_messages(email_list)
+        connection.close()
+
+def skicka_epost_till_beställaren_beslutad(queryset):
+
+    email_list = []
+
+    for enskilda_term in queryset.select_related():
+        beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
+        subject, from_email, to = 'Beslutat begrepp i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
+        text_content = f'''  
+
+Hej! 
+
+Begreppet {enskilda_term.term} har definierats och beslutats i OLLI. 
+
+<br><br>[Eventuell text från OLLI]<br><br> 
+
+<p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p> 
+
+Med vänlig hälsning 
+
+Projekt för informatik inom vård och omsorg i Västra Götaland 
         '''
         html_content = f'<p>{text_content}</p>'
         msg = EmailMultiAlternatives(subject, text_content, from_email, [to])
