@@ -41,9 +41,12 @@ def skicka_epost_till_beställaren_status(queryset):
         beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Uppdatering av term status', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
+        <br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
+
         
 
         <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Klicka här för att komma direkt till ditt efterfrågade begrepp</a></p>
+        
         
 <br>Med vänlig hälsning <br>
 
