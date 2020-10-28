@@ -43,6 +43,8 @@ class BegreppExternalFilesInline(admin.StackedInline):
 
 
 
+
+
 class BegreppSearchResultsAdminMixin(object):
 
     def get_search_results(self, request, queryset, search_term):
@@ -104,6 +106,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'utländsk_term',
                     'utländsk_definition',
                     'term_i_system',
+                    'email_extra',
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
                     ('beställare','beställare__beställare_epost'),
@@ -144,16 +147,19 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
     actions = ['skicka_epost_till_beställaren_beslutad','skicka_epost_till_beställaren_status','skicka_epost_till_beställaren_validate',]
     def skicka_epost_till_beställaren_beslutad(self, request, queryset):
         skicka_epost_till_beställaren_beslutad(queryset)
+        self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_beslutad.short_description = "Skicka epost till beställaren: Beslutat"
 
     
     def skicka_epost_till_beställaren_status(self, request, queryset):
         skicka_epost_till_beställaren_status(queryset)
+        self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_status.short_description = "Skicka epost till beställaren: Status"
 
     
     def skicka_epost_till_beställaren_validate(self, request, queryset):
         skicka_epost_till_beställaren_validate(queryset)
+        self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_validate.short_description = "Skicka epost till beställaren: Validera"
 
     def önskad_slutdatum(self, obj):

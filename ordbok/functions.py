@@ -44,6 +44,10 @@ def skicka_epost_till_beställaren_status(queryset):
         
 
         <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Klicka här för att komma direkt till ditt efterfrågade begrepp</a></p>
+        
+Med vänlig hälsning <br>
+
+Projekt för informatik inom vård och omsorg i Västra Götaland
 
         '''
         html_content = f'<p>{text_content}</p>'
@@ -66,7 +70,7 @@ def skicka_epost_till_beställaren_validate(queryset):
 
 Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikprojektet och vi önskar validering från verksamheten innan det beslutas. Du som framfört önskemål om begreppet ansvarar för förankring i verksamheten och vi ber dig därför gå igenom begreppet i OLLI och kontrollera om du tycker att det stämmer överens med hur verksamheten vill använda begreppet. 
 
-<br><br>[Eventuell text från OLLI]<br><br>  
+<br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>  
 
 Eventuella synpunkter lämnas som svar på detta mejl. 
 
@@ -78,7 +82,7 @@ Tack för din hjälp!
 
  
 
-Med vänlig hälsning 
+Med vänlig hälsning <br>
 
 Projekt för informatik inom vård och omsorg i Västra Götaland
         '''
@@ -103,11 +107,11 @@ Hej!
 
 Begreppet {enskilda_term.term} har definierats och beslutats i OLLI. 
 
-<br><br>[Eventuell text från OLLI]<br><br> 
+<br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
 
 <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p> 
 
-Med vänlig hälsning 
+Med vänlig hälsning <br>
 
 Projekt för informatik inom vård och omsorg i Västra Götaland 
         '''
