@@ -45,7 +45,7 @@ def skicka_epost_till_beställaren_status(queryset):
 
         <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Klicka här för att komma direkt till ditt efterfrågade begrepp</a></p>
         
-Med vänlig hälsning <br>
+<br>Med vänlig hälsning <br>
 
 Projekt för informatik inom vård och omsorg i Västra Götaland
 
@@ -78,7 +78,7 @@ Om inga synpunkter inkommit senast Om inga synpunkter inkommit senast {(datetime
 
 <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p>
 
-Tack för din hjälp! 
+Tack för din hjälp! <br>
 
  
 
@@ -110,7 +110,7 @@ Begreppet {enskilda_term.term} har definierats och beslutats i OLLI.
 <br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
 
 <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p> 
-
+ <br>
 Med vänlig hälsning <br>
 
 Projekt för informatik inom vård och omsorg i Västra Götaland 
