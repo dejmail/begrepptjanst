@@ -1,7 +1,14 @@
+import os
+
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import Select, WebDriverWait
+from selenium.webdriver.common.by import By
+
+
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import *
 
 import unittest
 import random
@@ -33,6 +40,7 @@ class NewSearch(unittest.TestCase):
         
         chrome_options = Options()
         chrome_options.add_argument("--disable-extensions")
+        #chrome_options.add_argument("--headless")
         self.browser = webdriver.Chrome(executable_path="C:/Users/liath1/coding/chromedriver/chromedriver.exe",
                                         chrome_options=chrome_options)
         self.browser.implicitly_wait(2)
@@ -98,17 +106,30 @@ class NewSearch(unittest.TestCase):
         epost_field = self.browser.find_elements_by_id('id_epost')
         epost_field[0].send_keys(get_random_string(8)+'@hairyhat.se')
 
-        set_trace()
         # submit either skype or telephone number
-        contact_details = (randint(10), get_random_string(7))
+        contact_details = (randint(1000000000, 9999999999), get_random_string(7))
         contact_field = self.browser.find_elements_by_id('id_telefon')
         contact_field[0].send_keys(random.choice(contact_details))
+        
+        # create a nonsense test file
+        f = open("ordbok/tests/test_fil.txt", "w")
+        f.write(lorem.paragraph())
+        f.close()
 
         # attach a file
-        attach_file = browser.find_element_by_xpath('//*[@id="id_file_field"]').click()
+        attach_file = self.browser.find_element_by_xpath('//*[@id="id_file_field"]')
+        attach_file.send_keys(os.path.abspath('./ordbok/tests/test_fil.txt'))
 
-        set_trace()
+        # submit    
+        self.browser.find_elements_by_xpath('//*[@id="beställ_form"]/input[2]')[0].click()
+
+        # assert that reply message is displayed
+        return_message = WebDriverWait(self.browser, 10).until(
+        EC.presence_of_element_located((By.ID, "ajax_response_message"))
+            )
+        assert return_message.text == 'Tack! Begrepp skickades in för granskning.', 'return message not found or not correct'
+        assert return_message.get_attribute('class') == 'alert alert-success text-center', 'return message not found or not correct'
+        
 if __name__ == '__main__':
     unittest.main(warnings='ignore')
-    set_trace()
     
