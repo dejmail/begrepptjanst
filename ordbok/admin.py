@@ -14,6 +14,7 @@ from ordbok.models import *
 from .functions import skicka_epost_till_beställaren_beslutad
 from .functions import skicka_epost_till_beställaren_status
 from .functions import skicka_epost_till_beställaren_validate
+from django import forms
 import re
 
 admin.site.site_header = "OLLI Begreppstjänst Admin"
