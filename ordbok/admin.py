@@ -31,8 +31,20 @@ def add_non_breaking_space_to_status(status_item):
             status_item = '&nbsp;' + status_item
     return mark_safe(status_item)
 
+class SynonymInlineForm(forms.ModelForm):
+
+    class Meta:
+        model = Synonym
+        fields = "__all__"
+
+    def clean(self):
+        super(SynonymInlineForm, self).clean()
+        if self.cleaned_data.get('synonym') == None:
+            self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
+
 class SynonymInline(admin.StackedInline):
     model = Synonym
+    form = SynonymInlineForm
     extra = 1
 
 class BegreppExternalFilesInline(admin.StackedInline):
@@ -40,10 +52,6 @@ class BegreppExternalFilesInline(admin.StackedInline):
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
-
-
-
-
 
 class BegreppSearchResultsAdminMixin(object):
 
@@ -145,6 +153,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
     date_hierarchy = 'begrepp_version_nummer'
 
     actions = ['skicka_epost_till_beställaren_beslutad','skicka_epost_till_beställaren_status','skicka_epost_till_beställaren_validate',]
+
     def skicka_epost_till_beställaren_beslutad(self, request, queryset):
         skicka_epost_till_beställaren_beslutad(queryset)
         self.message_user(request, 'Mail skickat till beställaren.')
@@ -258,7 +267,7 @@ class SynonymAdmin(admin.ModelAdmin):
         if db_field.name == "begrepp":
             kwargs["queryset"] = Begrepp.objects.filter().order_by(Lower('term'))
         return super(SynonymAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-    
+
     ordering = ['begrepp__term']
     list_display = ('begrepp',
                     'synonym',
@@ -268,7 +277,7 @@ class SynonymAdmin(admin.ModelAdmin):
         'begrepp',
     )
     list_filter = ("synonym_status",)
-    search_fields = ("begrepp__term", "synonym")    
+    search_fields = ("begrepp__term", "synonym")
 
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
