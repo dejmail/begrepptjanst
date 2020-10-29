@@ -37,3 +37,8 @@ STATIC_URL = '/begreppstjanst-dev/static/'
 # media files 
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
+EMAIL_HOST = 'mail.vgrinformatik.se'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'info@vgrinformatik.se'
+EMAIL_HOST_PASSWORD = os.getenv('OLLI_EMAIL_PASSWORD')
+EMAIL_USE_TLS = True

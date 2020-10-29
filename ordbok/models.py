@@ -43,6 +43,7 @@ class Begrepp(models.Model):
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
+    email_extra = models.TextField(null=True)
 
     def __str__(self):
         return self.term

@@ -11,8 +11,9 @@ from django.db.models.functions import Cast, StrIndex, Substr
 
 from django.contrib import admin
 from ordbok.models import *
-from .functions import skicka_epost_till_beställaren
-
+from .functions import skicka_epost_till_beställaren_beslutad
+from .functions import skicka_epost_till_beställaren_status
+from .functions import skicka_epost_till_beställaren_validate
 import re
 
 admin.site.site_header = "OLLI Begreppstjänst Admin"
@@ -39,6 +40,8 @@ class BegreppExternalFilesInline(admin.StackedInline):
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
+
+
 
 
 
@@ -103,6 +106,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'utländsk_term',
                     'utländsk_definition',
                     'term_i_system',
+                    'email_extra',
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
                     ('beställare','beställare__beställare_epost'),
@@ -140,13 +144,23 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
-    actions = ['skicka_epost_till_beställaren',]
+    actions = ['skicka_epost_till_beställaren_beslutad','skicka_epost_till_beställaren_status','skicka_epost_till_beställaren_validate',]
+    def skicka_epost_till_beställaren_beslutad(self, request, queryset):
+        skicka_epost_till_beställaren_beslutad(queryset)
+        self.message_user(request, 'Mail skickat till beställaren.')
+    skicka_epost_till_beställaren_beslutad.short_description = "Skicka epost till beställaren: Beslutat"
 
-    def skicka_epost_till_beställaren(self, request, queryset):
+    
+    def skicka_epost_till_beställaren_status(self, request, queryset):
+        skicka_epost_till_beställaren_status(queryset)
+        self.message_user(request, 'Mail skickat till beställaren.')
+    skicka_epost_till_beställaren_status.short_description = "Skicka epost till beställaren: Status"
 
-        skicka_epost_till_beställaren(queryset)
-
-    skicka_epost_till_beställaren.short_description = "Skicka epost till beställaren"
+    
+    def skicka_epost_till_beställaren_validate(self, request, queryset):
+        skicka_epost_till_beställaren_validate(queryset)
+        self.message_user(request, 'Mail skickat till beställaren.')
+    skicka_epost_till_beställaren_validate.short_description = "Skicka epost till beställaren: Validera"
 
     def önskad_slutdatum(self, obj):
         
