@@ -17,7 +17,7 @@ from .functions import skicka_epost_till_beställaren_validate
 from django import forms
 import re
 
-admin.site.site_header = "OLLI Begreppstjänst Admin"
+admin.site.site_header = "OLLI Begreppstjänst Admin - För fakta i livet"
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
