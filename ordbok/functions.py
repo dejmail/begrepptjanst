@@ -77,7 +77,6 @@ Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikpr
 
 Eventuella synpunkter lämnas som svar på detta mejl. 
 
-Om inga synpunkter inkommit senast Om inga synpunkter inkommit senast {(datetime.datetime.now() + datetime.timedelta(days=7)).date()} kommer informatikprojektet att besluta enligt vad som står i OLLI.  kommer informatikprojektet att besluta enligt vad som står i OLLI. 
 
 <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p>
 
