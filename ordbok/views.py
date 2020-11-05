@@ -379,7 +379,7 @@ def hantera_request_term(request):
                 inkommande_domän.save()
 
 
-                return HttpResponse('''<div class="alert alert-success text-center">
+                return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
                                     Tack! Begrepp skickades in för översättning.
                                     </div>''')
 
@@ -398,7 +398,7 @@ def hantera_request_term(request):
                 
                 if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
                         
-                    return HttpResponse('''<div class="alert alert-danger text-center">
+                    return HttpResponse('''<div class="alert alert-danger text-center" id="ajax_response_message">
                                 Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
                                 </div>''')
                 else:
@@ -433,7 +433,7 @@ def hantera_request_term(request):
                         new_file.support_file = filename
                         new_file.save()
 
-                    return HttpResponse('''<div class="alert alert-success text-center">
+                    return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
                                     Tack! Begrepp skickades in för granskning.
                                     </div>''')
 

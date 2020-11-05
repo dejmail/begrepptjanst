@@ -31,6 +31,7 @@ DATABASES = {
         'PASSWORD': 'YqvyYGm5cJMLmzt',
         'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
+
         'OPTIONS': {
             # Tell MySQLdb to connect with 'utf8mb4' character set
             'charset': 'utf8mb4',
