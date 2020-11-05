@@ -7,7 +7,7 @@ DEFAULT_STATUS = "Ej Påbörjad"
 DEFAULT_STATUS1 ="Översättning"
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Definiera ej', 'Definiera ej'), 
-              ('Inte definierad', 'Inte definierad'), 
+              ('För validering', 'För validering'), 
               ('Beslutad', 'Beslutad'), 
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
