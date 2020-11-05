@@ -39,8 +39,8 @@ def skicka_epost_till_beställaren_status(queryset):
 
     for enskilda_term in queryset.select_related():
         beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
-        subject, from_email, to = 'Uppdatering av term status', 'info@vgrinformatik.se', beställare.beställare_email
-        text_content = f'''Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
+        subject, from_email, to = 'Uppdatering av term status i Olli', 'info@vgrinformatik.se', beställare.beställare_email
+        text_content = f'''Hej!<br>Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
         <br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
 
         
@@ -69,7 +69,7 @@ def skicka_epost_till_beställaren_validate(queryset):
     for enskilda_term in queryset.select_related():
         beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Begrepp för validering i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
-        text_content = f'''Hej! 
+        text_content = f'''Hej! <br>
 
 Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikprojektet och vi önskar validering från verksamheten innan det beslutas. Du som framfört önskemål om begreppet ansvarar för förankring i verksamheten och vi ber dig därför gå igenom begreppet i OLLI och kontrollera om du tycker att det stämmer överens med hur verksamheten vill använda begreppet. 
 
@@ -105,7 +105,7 @@ def skicka_epost_till_beställaren_beslutad(queryset):
         subject, from_email, to = 'Beslutat begrepp i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''  
 
-Hej! 
+Hej! <br>
 
 Begreppet {enskilda_term.term} har definierats och beslutats i OLLI. 
 
