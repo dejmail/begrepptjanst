@@ -110,6 +110,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         'fields' : ['term',
                     'definition',
                     'källa',
+                    'validated_by',
                     'alternativ_definition',
                     'anmärkningar',
                     'utländsk_term',

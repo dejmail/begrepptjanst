@@ -68,6 +68,14 @@
                     {% endif %}
                 </tr>
                 <tr class="{{färg_status.begrepp}}">
+                    <td>Validerad av</td>
+                    {% if begrepp_full.status == "Avråds" %}
+                        <td><s class="text-danger">{{begrepp_full.validated_by}}</s></td>
+                    {% else %}
+                        <td>{{begrepp_full.validated_by}}</td>
+                    {% endif %}
+                </tr>
+                <tr class="{{färg_status.begrepp}}">
                     <td>Anmärkning</td>
                     {% if begrepp_full.status == "Avråds" %}
                         <td><s class="text-danger">{{begrepp_full.anmärkningar|default_if_none:'-'}}</s></td>

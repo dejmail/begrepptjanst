@@ -99,7 +99,8 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             begrepp_version_nummer,\
                             definition,\
                             källa,\
-                            term_i_system, \
+                            validated_by,\
+                            term_i_system,\
                             externt_id,\
                             annan_ordlista,\
                             status,\
@@ -284,12 +285,13 @@ def begrepp_förklaring_view(request):
         begrepp_full = extract_columns_from_query_and_return_set(exact_term_request, 0, -5)
         synonym_full = extract_columns_from_query_and_return_set(exact_term_request, -5, -2)
         domän_full = extract_columns_from_query_and_return_set(exact_term_request, -2, 0)
-
+        
         result_column_names = ['begrepp_id',
                                'begrepp_kontext',
                                'begrepp_version_nummer',
                                'definition',
                                'källa',
+                               'validated_by',
                                'term_i_system',
                                'externt_id',
                                'externt_register',
