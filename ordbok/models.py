@@ -11,6 +11,7 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Beslutad', 'Beslutad'), 
               ('Pågår', 'Pågår'), 
               ('Publicera ej', 'Publicera ej'),
+              ('För validering', 'För validering'),
               ('Preliminär', 'Preliminär'),
               (DEFAULT_STATUS1, DEFAULT_STATUS1),
               (DEFAULT_STATUS, DEFAULT_STATUS))
@@ -26,11 +27,11 @@ class Begrepp(models.Model):
         verbose_name_plural = "Begrepp"
 
     begrepp_kontext = models.TextField(default='Inte definierad')
-    begrepp_version_nummer = models.DateTimeField(auto_now_add=True, verbose_name='Senaste ändring')
+    begrepp_version_nummer = models.DateTimeField(auto_now=True, verbose_name='Senaste ändring')
     datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
-    definition = models.TextField()
-    alternativ_definition = models.TextField(null=True)
+    definition = models.TextField(blank=True)
+    alternativ_definition = models.TextField(blank=True, null=True)
     externt_id = models.CharField(max_length=255, null=True, default='Inte definierad', verbose_name="Kod")
     källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     annan_ordlista = models.CharField(max_length=255, null=True, default='Inte definierad')
@@ -42,6 +43,8 @@ class Begrepp(models.Model):
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
+    email_extra = models.TextField(null=True, blank=True)
+    validated_by = models.CharField(verbose_name="Validerad av",max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.term

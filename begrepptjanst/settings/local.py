@@ -31,15 +31,15 @@ DATABASES = {
         'PASSWORD': 'YqvyYGm5cJMLmzt',
         'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
-        #'DEFAULT-CHARACTER-SET' : 'utf8',
+
         'OPTIONS': {
             # Tell MySQLdb to connect with 'utf8mb4' character set
             'charset': 'utf8mb4',
+            'sql_mode' : 'traditional',
         },
-        'TEST' : {
-            'NAME' : 'vgrinfor_test'
-        }
-        
+         'TEST': {
+            'NAME': 'vgrinfor_begrepp_test',
+        },
     }
 }
 
@@ -53,7 +53,7 @@ logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
 TEMPLATE_DIRS = ['/templates/',]
 
 MEDIA_URL = '/begrepptjanst/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = 'media'
 
 # if settings.DEBUG:
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
