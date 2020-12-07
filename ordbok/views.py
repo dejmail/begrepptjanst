@@ -69,10 +69,11 @@ def retur_general_sök(url_parameter):
                                 ON ordbok_begrepp.id = ordbok_synonym.begrepp_id\
                             LEFT JOIN ordbok_doman\
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
-                        WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%" AND NOT ordbok_begrepp.status = 'Publicera ej')\
-                        OR (ordbok_begrepp.definition LIKE "%{url_parameter}%" AND NOT ordbok_begrepp.status = 'Publicera ej')\
+                        WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%"\
+                        OR ordbok_begrepp.definition LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
-                        OR ordbok_synonym.synonym LIKE "%{url_parameter}%";'''
+                        OR ordbok_synonym.synonym LIKE "%{url_parameter}%")
+                        AND NOT ordbok_begrepp.status = 'Publicera ej';'''
     
     column_names = ['begrepp_id',
                     'definition',
@@ -82,6 +83,7 @@ def retur_general_sök(url_parameter):
                     'synonym_begrepp_id',
                     'synonym',
                     'synonym_status']
+
 
     clean_statement = re.sub(re_pattern, ' ', sql_statement)
     cursor.execute(clean_statement)
