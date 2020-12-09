@@ -109,7 +109,8 @@ Hej! <br>
 
 Begreppet {enskilda_term.term} har definierats och beslutats i OLLI. 
 
-<br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
+<br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br><br>
+Om ni har synpunkter på definitionen vänligen återkoppla till informatik genom att svara på detta mail.<br>
 
 <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p> 
  <br>
