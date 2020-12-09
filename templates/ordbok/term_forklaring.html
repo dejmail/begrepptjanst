@@ -53,14 +53,16 @@
                         <td>{{begrepp_full.källa}}</td>
                     {% endif %}
                 </tr>
+
                 <tr class="{{färg_status.begrepp}}">
                     <td>Validerad av</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.validated_by|default_if_none:'-'}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.validated_by|default_if_none:'-'}}</td>
-                    {% endif %}
+                    
+                    <td>{% for domän in domän_full %}
+                            {{domän.domän_namn|default_if_none:'-'}}<br>
+                        {% endfor %}
+                    </td>
                 </tr>
+
                 <tr class="{{färg_status.begrepp}}">
                     <td>Anmärkning</td>
                     {% if begrepp_full.status == "Avråds" %}
@@ -93,14 +95,7 @@
                     <td>Kod</td>
                     <td>{{begrepp_full.externt_id}}</td>
                 </tr>
-                <tr>
-                    <td>Verifierad användning</td>
-                    
-                    <td>{% for domän in domän_full %}
-                        - {{domän.domän_namn}}<br>
-                        {% endfor %}
-                    </td>
-                </tr>
+
 
                 <tr>
                     <td><button class="btn btn-warning" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button></td>

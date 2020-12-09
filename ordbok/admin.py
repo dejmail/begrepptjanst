@@ -44,15 +44,25 @@ class SynonymInlineForm(forms.ModelForm):
             self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
 
 class SynonymInline(admin.StackedInline):
+
     model = Synonym
     form = SynonymInlineForm
     extra = 1
 
 class BegreppExternalFilesInline(admin.StackedInline):
+
     model = BegreppExternalFiles
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
+
+class ValideradAvDomänerInline(admin.StackedInline):
+    
+    model = Doman
+    extra = 1
+    verbose_name = "Validerad av"
+    verbose_name_plural = "Validerad av"
+    exclude = ['domän_kontext']
 
 class BegreppSearchResultsAdminMixin(object):
 
@@ -99,7 +109,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                )
          }
     
-    inlines = [BegreppExternalFilesInline, SynonymInline]
+    inlines = [BegreppExternalFilesInline, SynonymInline, ValideradAvDomänerInline]
 
     fieldsets = [
         ['Main', {
@@ -110,7 +120,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         'fields' : ['term',
                     'definition',
                     'källa',
-                    'validated_by',
                     'alternativ_definition',
                     'anmärkningar',
                     'utländsk_term',
@@ -135,7 +144,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'synonym',
                     'definition',
                     'utländsk_term',
-                    'utländsk_definition',
+                    'get_domäner',
                     'status_button',
                     #'visa_html_i_begrepp_kontext',    
                     'annan_ordlista',
@@ -190,6 +199,18 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
             return mark_safe(display_text)
         return "-"
 
+    def get_queryset(self, obj):
+        qs = super(BegreppAdmin, self).get_queryset(obj)
+        return qs.prefetch_related('begrepp_fk')
+
+    def get_domäner(self, obj):
+        domäner = Doman.objects.filter(begrepp_id=obj.pk)
+        return list(domäner)
+
+    get_domäner.short_description = 'Validerad av'
+
+
+    
     # def visa_html_i_begrepp_kontext(self, obj):
         
     #     set_trace()

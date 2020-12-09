@@ -44,7 +44,7 @@ class Begrepp(models.Model):
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
     email_extra = models.TextField(null=True, blank=True)
-    validated_by = models.CharField(verbose_name="Validerad av",max_length=255, null=True, blank=True)
+    
 
     def __str__(self):
         return self.term
@@ -73,9 +73,9 @@ class Doman(models.Model):
     class Meta:     
         verbose_name_plural = "Domäner"
 
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True )
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name='begrepp_fk')
     domän_id = models.AutoField(primary_key=True)
-    domän_kontext = models.TextField()
+    domän_kontext = models.TextField(blank=True, null=True)
     domän_namn = models.CharField(max_length=255)       
 
     def __str__(self):

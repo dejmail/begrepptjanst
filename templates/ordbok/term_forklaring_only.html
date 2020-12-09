@@ -69,11 +69,11 @@
                 </tr>
                 <tr class="{{färg_status.begrepp}}">
                     <td>Validerad av</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.validated_by}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.validated_by}}</td>
-                    {% endif %}
+                    
+                    <td>{% for domän in domän_full %}
+                            {{domän.domän_namn}}<br>
+                        {% endfor %}
+                    </td>
                 </tr>
                 <tr class="{{färg_status.begrepp}}">
                     <td>Anmärkning</td>
@@ -107,14 +107,7 @@
                     <td>Kod</td>
                     <td>{{begrepp_full.externt_id}}</td>
                 </tr>
-                <tr>
-                    <td>Verifierad användning</td>
-                    
-                    <td>{% for domän in domän_full %}
-                        - {{domän.domän_namn}}<br>
-                        {% endfor %}
-                    </td>
-                </tr>
+                
             </tbody>
         </table> 
         
