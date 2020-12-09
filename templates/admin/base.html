@@ -17,8 +17,10 @@ function change_link_anchor_text(data) {
 			return this.innerHTML == 'Kommenterade Begrepp';});
 			if (data.unreadcomments == 0) {
 					return inner_html
-				} else {
-					return inner_html.after('<span class="text-danger"> - ' + data.unreadcomments + "/" + data.totalcomments + " Oberarbetade kommentarer</span>");
+				} else if (data.unreadcomments == 1) {
+					return inner_html.after('<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetad kommentar</span>");
+				} else if (data.unreadcomments > 1) {
+					return inner_html.after('<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetade kommentarer</span>");
 				};
 }
 
