@@ -38,7 +38,8 @@ class TermRequestForm(forms.Form):
         workstream = cleaned_data.get("workstream")
         other = cleaned_data.get("other")
         
-        if (workstream == 'Övrigt/Annan') and (other is None) or (other == ''):
+        if (workstream == 'Övrigt/Annan') and (other is None or other == ''):
+            set_trace()
         # Only do something if both fields are valid so far.
             self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
             )
@@ -64,8 +65,8 @@ class TermRequestForm(forms.Form):
     def clean_önskad_datum(self):
 	    return self.cleaned_data.get('önskad_datum')
 
-    def not_previously_mentionend_in_workstream(self):
-        övrig = self.cleaned_data.get('other')
+    def clean_not_previously_mentioned_in_workstream(self):        
+        return self.cleaned_data.get('other')
 
     def clean_önskad_datum(self):
         önskad_datum = self.cleaned_data.get('önskad_datum')
@@ -103,10 +104,14 @@ class TermRequestTranslateForm(forms.Form):
         cleaned_data = super().clean()
         workstream = cleaned_data.get("workstream")
         other = cleaned_data.get("other")
-
-        if (workstream == 'Övrigt/Annan') and (other is None):
+        
+        if (workstream == 'Övrigt/Annan') and (other is None or other == ''):
         # Only do something if both fields are valid so far.
-            raise self.add_error('id_other', "Måste ge var begreppet används om du har valt Övrigt/Annan")
+            self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
+            )
+            raise ValidationError("Måste ge var begreppet används om du har valt Övrigt/Annan")
+        
+        return cleaned_data
 
     def clean_name(self):
         return self.cleaned_data.get('namn')
@@ -123,7 +128,7 @@ class TermRequestTranslateForm(forms.Form):
     def clean_kontext(self):
         return self.cleaned_data.get('kontext')
 
-    def clean_not_previously_mentionend_in_workstream(self):
+    def clean_not_previously_mentioned_in_workstream(self):
         return self.cleaned_data.get('other')
 
     def clean_workstream(self):

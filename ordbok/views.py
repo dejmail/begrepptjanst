@@ -255,7 +255,6 @@ def begrepp_view(request):
     
     url_parameter = request.GET.get("q")
     
-    #set_trace()
     if request.is_ajax():
         data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)        
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
@@ -354,8 +353,7 @@ def hantera_request_term(request):
     if request.method == 'POST':
         
         type_of_request = request.get_raw_uri().split('?')[-1].split('=')
-
-
+        
         if 'requestTranslate' in type_of_request:
             form = TermRequestTranslateForm(request.POST)
             if form.is_valid():
@@ -377,28 +375,33 @@ def hantera_request_term(request):
                 if form.cleaned_data.get('workstream') == "Övrigt/Annan":
                     ny_domän = form.clean_not_previously_mentioned_in_workstream()
                     if (ny_domän is not None) and (ny_domän != ''):
+                        inkommande_domän.begrepp = ny_term
                         inkommande_domän.domän_namn = ny_domän
                         inkommande_domän.save()
                 elif form.cleaned_data.get('workstream') == 'Inte relevant':
                     pass
                 else:
+                    inkommande_domän.begrepp = ny_term
                     inkommande_domän.domän_namn = form.clean_workstream()
-                    inkommande_domän.save()
-                
-                
+                    inkommande_domän.save()                
 
                 return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
                                     Tack! Begrepp skickades in för översättning.
                                     </div>''')
+
+            else:                
+                return render(request, 'requestTerm.html', {'form': form,
+                                                                 'whichTemplate' : 'requestTranslate'}, 
+                                                                 status=500)
 
         else:
             form = TermRequestForm(request.POST, request.FILES)
 
             
             if form.is_valid():
-            
-                if request.FILES is not None:
-                    file_list = []
+
+                file_list = []
+                if len(request.FILES) != 0:
                     for file in request.FILES.getlist('file_field'):
                         fs = FileSystemStorage()
                         filename = fs.save(content=file, name=file.name)
@@ -428,7 +431,7 @@ def hantera_request_term(request):
                     
                     inkommande_domän = Doman()
 
-                    if form.cleaned_data.get('other') == "Övrigt/Annan":
+                    if form.cleaned_data.get('workstream') == "Övrigt/Annan":
                         ny_domän = form.clean_not_previously_mentioned_in_workstream()
                         if (ny_domän is not None) and (ny_domän != ''):
                             inkommande_domän.domän_namn = ny_domän
@@ -451,8 +454,10 @@ def hantera_request_term(request):
                                     Tack! Begrepp skickades in för granskning.
                                     </div>''')
             else:
+                
                 return render(request, 'requestTerm.html', {'form': form,
-                                                            'whichTemplate' : 'requestTranslate',}, status=500)
+                                                            'whichTemplate' : 'requestTerm'}, 
+                                                            status=500)
 
     elif request.is_ajax():
        #request.GET.get
@@ -543,7 +548,6 @@ def return_number_of_recent_comments(request):
 def whatDoYouWant(request):
 
     url_parameter = request.GET.get("q")
-    #set_trace()
     if request.method == 'GET':
         
          return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
