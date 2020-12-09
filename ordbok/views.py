@@ -101,7 +101,6 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             begrepp_version_nummer,\
                             definition,\
                             källa,\
-                            validated_by,\
                             term_i_system,\
                             externt_id,\
                             annan_ordlista,\
@@ -293,7 +292,6 @@ def begrepp_förklaring_view(request):
                                'begrepp_version_nummer',
                                'definition',
                                'källa',
-                               'validated_by',
                                'term_i_system',
                                'externt_id',
                                'externt_register',
@@ -351,7 +349,8 @@ def begrepp_förklaring_view(request):
     return render(request, "base.html", context={})
 
 def hantera_request_term(request):
-       
+    
+    
     if request.method == 'POST':
         
         type_of_request = request.get_raw_uri().split('?')[-1].split('=')
@@ -374,12 +373,19 @@ def hantera_request_term(request):
                 ny_term.save()
 
                 inkommande_domän = Doman()
-                if form.cleaned_data.get('other') == "Övrigt/Annan":
-                    inkommande_domän.domän_namn = form.clean_not_previously_mentioned_in_workstream()
+                
+                if form.cleaned_data.get('workstream') == "Övrigt/Annan":
+                    ny_domän = form.clean_not_previously_mentioned_in_workstream()
+                    if (ny_domän is not None) and (ny_domän != ''):
+                        inkommande_domän.domän_namn = ny_domän
+                        inkommande_domän.save()
+                elif form.cleaned_data.get('workstream') == 'Inte relevant':
+                    pass
                 else:
                     inkommande_domän.domän_namn = form.clean_workstream()
-                inkommande_domän.save()
-
+                    inkommande_domän.save()
+                
+                
 
                 return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
                                     Tack! Begrepp skickades in för översättning.
@@ -388,6 +394,7 @@ def hantera_request_term(request):
         else:
             form = TermRequestForm(request.POST, request.FILES)
 
+            
             if form.is_valid():
             
                 if request.FILES is not None:
@@ -420,14 +427,19 @@ def hantera_request_term(request):
                     ny_term.save()
                     
                     inkommande_domän = Doman()
-                    inkommande_domän.save()
 
                     if form.cleaned_data.get('other') == "Övrigt/Annan":
-                        inkommande_domän.domän_namn = form.clean_not_previously_mentioned_in_workstream()
+                        ny_domän = form.clean_not_previously_mentioned_in_workstream()
+                        if (ny_domän is not None) and (ny_domän != ''):
+                            inkommande_domän.domän_namn = ny_domän
+                            inkommande_domän.begrepp = ny_term
+                            inkommande_domän.save()
+                    elif form.cleaned_data.get('workstream') == 'Inte relevant':
+                        pass
                     else:
                         inkommande_domän.domän_namn = form.clean_workstream()
-                    
-                    inkommande_domän.begrepp = ny_term
+                        inkommande_domän.begrepp = ny_term
+                        inkommande_domän.save()
 
                     for filename in file_list:
                         new_file = BegreppExternalFiles()
@@ -438,6 +450,9 @@ def hantera_request_term(request):
                     return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
                                     Tack! Begrepp skickades in för granskning.
                                     </div>''')
+            else:
+                return render(request, 'requestTerm.html', {'form': form,
+                                                            'whichTemplate' : 'requestTranslate',}, status=500)
 
     elif request.is_ajax():
        #request.GET.get
@@ -453,7 +468,7 @@ def hantera_request_term(request):
                                                     'whichTemplate' : 'requestTerm',
                                                     'header' : 'Önskemål om nytt begrepp'})
 
-    elif request.method == 'GET':
+    else:
         return render(request, 'term.html', {})
 
 def opponera_term(request):
@@ -497,10 +512,13 @@ def bekräfta_term(request):
         if form.is_valid():
             kopplad_domän = Doman()
             kopplad_domän.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
-            kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
+
+            if form.cleaned_data.get('workstream') is not None:
+                kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
+            elif (kopplad_domän.domän_namn == 'Övrigt/Annan') and (kopplad_domän.other is not None):
+                kopplad_domän.domän_namn = form.cleaned_data.get('other')
             if kopplad_domän.domän_namn == 'Inte relevant':
                 kopplad_domän.domän_namn = form.cleaned_data.get('kontext')
-                kopplad_domän.domän_kontext = '-'
             else:
                 kopplad_domän.domän_namn = form.cleaned_data.get('kontext')
 

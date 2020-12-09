@@ -3,6 +3,8 @@ from .models import Doman, Begrepp
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
+from django.core.exceptions import ValidationError
+from pdb import set_trace
 
 from .models import STATUS_VAL, DEFAULT_STATUS1
 
@@ -30,6 +32,19 @@ class CustomDateInput(forms.DateInput):
     input_type = 'date'
 
 class TermRequestForm(forms.Form):
+
+    def clean(self):
+        cleaned_data = super().clean()
+        workstream = cleaned_data.get("workstream")
+        other = cleaned_data.get("other")
+        
+        if (workstream == 'Övrigt/Annan') and (other is None) or (other == ''):
+        # Only do something if both fields are valid so far.
+            self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
+            )
+            raise ValidationError("Måste ge var begreppet används om du har valt Övrigt/Annan")
+        
+        return cleaned_data
 
     def clean_name(self):
         namn =  self.cleaned_data.get('namn')
@@ -59,12 +74,15 @@ class TermRequestForm(forms.Form):
     def clean_kontext(self):
         kontext = self.cleaned_data.get('kontext')
         return kontext
+
     def clean_utländsk_term(self):
         utländsk_term = self.cleaned_data.get('utländsk_term')
         return utländsk_term
+
     def clean_begrepp(self):
         begrepp = self.cleaned_data.get('begrepp')
         return begrepp
+
     def clean_workstream(self):
         return self.cleaned_data.get('workstream')
 
@@ -80,6 +98,15 @@ class TermRequestForm(forms.Form):
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
 
 class TermRequestTranslateForm(forms.Form):
+
+    def clean(self):
+        cleaned_data = super().clean()
+        workstream = cleaned_data.get("workstream")
+        other = cleaned_data.get("other")
+
+        if (workstream == 'Övrigt/Annan') and (other is None):
+        # Only do something if both fields are valid so far.
+            raise self.add_error('id_other', "Måste ge var begreppet används om du har valt Övrigt/Annan")
 
     def clean_name(self):
         return self.cleaned_data.get('namn')
@@ -129,8 +156,20 @@ class OpponeraTermForm(forms.Form):
 
 class BekräftaTermForm(forms.Form):
 
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     workstream = cleaned_data.get("workstream")
+    #     other = cleaned_data.get("other")
+
+    #     if (workstream == 'Övrigt/Annan') and (other is None):
+    #     # Only do something if both fields are valid so far.
+    #         raise ValidationError(
+    #             "Måste ge var begreppet används om du har valt Övrigt/Annan"
+    #             )
+
     term = forms.CharField(widget=forms.HiddenInput())  
     epost = forms.EmailField()
     telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
+    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
     kontext = forms.CharField(label='Specificera var begreppet används')
