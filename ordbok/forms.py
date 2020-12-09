@@ -39,7 +39,6 @@ class TermRequestForm(forms.Form):
         other = cleaned_data.get("other")
         
         if (workstream == 'Övrigt/Annan') and (other is None or other == ''):
-            set_trace()
         # Only do something if both fields are valid so far.
             self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
             )
