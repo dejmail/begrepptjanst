@@ -550,7 +550,8 @@ def whatDoYouWant(request):
          return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
      # return render(request, "term.html", context={'begrepp' : begrepp})
  
-class beslutade(ListView):
-    model = Begrepp
-    query_set = Begrepp.objects.filter(status__exact='Beslutad').values('term', 'definition').order_by('-datum_skapat', 'definition')
+class Beslutade(ListView):
+
+    context_object_name = 'begrepp_list'
+    queryset = Begrepp.objects.filter(status='Beslutad').order_by('-datum_skapat')
     template_name = 'beslutade.html'
