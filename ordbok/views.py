@@ -1,9 +1,6 @@
 import json
 from pdb import set_trace
 from urllib.parse import unquote
-
-
-
 from django.forms.models import model_to_dict
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
@@ -12,7 +9,6 @@ from datetime import datetime
 from django.db import connection, transaction
 from django.db.models import Q
 from django.core.mail import EmailMessage
-
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.utils.safestring import mark_safe
@@ -26,6 +22,7 @@ import re
 import logging
 from begrepptjanst.logs import setup_logging
 from django.utils.html import format_html
+from django.views.generic import ListView
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +91,7 @@ def retur_general_sök(url_parameter):
     result = cursor.fetchall()
     
     return result
-    
+
 
 def retur_komplett_förklaring_custom_sql(url_parameter):
     
@@ -144,6 +141,7 @@ def run_sql_statement(sql_statement):
         result = cursor.fetchall()
 
         return result
+
 
 
 def sort_returned_sql_search_according_to_search_term_position(lines, delim, position=1):

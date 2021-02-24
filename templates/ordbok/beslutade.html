@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block preamble %}
+{% block header_row1 %}
+{% endblock header_row1 %}
+
+{% endblock preamble %}
+
+{% block mitten-span %}
+{{ block.super }}
+
+
+{% block content %}
+    <h2>Beslutade begrepp</h2>
+    <table style="border: black;"><tr><th>Term</th><th>Definition</th><th>datum</th></tr>
+        {% for begrepp in begrepp_list %}
+            <tr><td>{{ begrepp.term }}</td><td>{{ begrepp.definition }}</td><td>{{ begrepp.datum_skapat }}</td></tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+{% endblock %}
