@@ -208,7 +208,7 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
            begrepp_dict_list[index]['definition'] = format_html(resplit_altered_strings[index])
-        except re.error as e:
+        except (re.error, KeyError) as e:
            print(e)
 
     return begrepp_dict_list
@@ -236,7 +236,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     
     return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,
                                              term_def_dict=term_def_dict)
-
+    
     return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
@@ -553,3 +553,39 @@ def whatDoYouWant(request):
          return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
      # return render(request, "term.html", context={'begrepp' : begrepp})
  
+def autocomplete_suggestions(request):
+
+    queryset = Begrepp.objects.all()
+    # filter(Q(term__isnull=False),
+    #                                   Q(källa__isnull=False),
+    #                                   Q(synonym__synonym__isnull=False),
+    #                                   Q(beställare__beställare_namn__isnull=False))
+    
+    suggestion_dict = {}
+    
+    for entry in queryset:
+        for field in ['term','källa']:
+            if suggestion_dict.get(field) is None:
+                suggestion_dict[field] = [getattr(entry, field)]
+            else:
+                suggestion_dict[field].append(getattr(entry, field))
+
+        field = 'synonym'
+        all_synonyms = entry.synonym_set.all().values()
+        if len(all_synonyms) > 0:
+            if suggestion_dict.get(field) is None:
+                suggestion_dict[field] = [i.get('synonym') for i in all_synonyms]
+            else:
+                suggestion_dict[field].extend([i.get('synonym') for i in all_synonyms])
+
+        field = "beställare"
+        if suggestion_dict.get(field) is None:
+            suggestion_dict[field] = [entry.beställare.beställare_namn]
+        else:
+                suggestion_dict[field].append(entry.beställare.beställare_namn)
+
+    for key,values in suggestion_dict.items():
+        value_set = set(values)
+        suggestion_dict[key] = list(value_set)
+        
+    return JsonResponse(suggestion_dict, safe=True)
