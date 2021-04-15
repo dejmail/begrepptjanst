@@ -9,13 +9,30 @@
     <h4>Om Olli</h4>
       <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;">
-          OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. 
-          Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, 
-          allt från rent klinisk terminologi till olika administrativa och tekniska begrepp. OLLI är tänkt 
-          att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra 
-          till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar 
-          i regionen och olika verksamheter samt personal med administrativa uppgifter och andra stödfunktioner.
+        OLLI är VGR:s begreppstjänst, en ordlista över termer som används 
+        inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser 
+        inom olika verksamheter som är relaterade till vården, allt från 
+        rent klinisk terminologi till olika administrativa och tekniska begrepp. 
+        OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt 
+        språk inom regionen. OLLI kan bidra till en bättre förståelse inom 
+        hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i
+         regionen och olika verksamheter samt personal med administrativa uppgifter
+          eller andra stödfunktioner.
       </div>
+    </div>
+
+    <div class="row top-buffer-15">
+     
+      <div class="col-sm">
+          <h4>Demo av Olli</h4>
+          <div class="text-center">
+            <video id="hjälp_video" preload="metadata" width="720px" height="410px" controls>
+                <source src="{% static '/images/infomercial.mp4'%}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+          </div>
+      </div>
+     
     </div>
 </div>
 <!-- <div class="col-sm">
@@ -27,13 +44,118 @@
     <h4>Använda Olli</h4>
     <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;" ><p>
-          Skriv in början på den textsträng du söker i sökfältet. En lista med begrepp som innehåller strängen 
-          visas under sökfältet. När ett begrepp dyker upp kan man se begreppets term, en definition och eventuella 
-          synonymer i listan.     När man söker i OLLI görs sökningen på hela begreppet, det vill säga inte bara på 
-          begreppets term utan även på eventuell term på annat språk och synonymer. Sökfunktionen kontrollerar också 
-          om den textsträng du söker finns i definitionen, den svenska eller annat språk. Sökresultatet kan därför 
-          visa begrepp där söksträngen inte syns i listan som visas automatiskt. Man får då klicka in sig på begreppet 
-          för att se mer information om begreppet och den sträng som är eftersökt.
+        Skriv in början på den textsträng du söker i sökfältet. En lista med begrepp 
+        som innehåller strängen visas under sökfältet. När ett begrepp dyker upp kan 
+        man se begreppets term, ev term på annat språk, en definition och eventuella 
+        synonymer i listan. När man söker i OLLI görs sökningen på hela begreppet, 
+        det vill säga inte bara på begreppets term utan även på eventuell term på 
+        annat språk och synonymer. Sökfunktionen kontrollerar också om den textsträng 
+        du söker finns i definitionen, den svenska eller annat språk. Sökresultatet 
+        kan därför visa begrepp där söksträngen inte syns i listan som visas automatiskt. 
+        Man får då klicka in sig på begreppet för att se mer information och den 
+        sträng som är eftersökt. 
+
+        Vid sökning kommer sökt sträng markeras med gul överstrykning.
+        
+        Understrukna begrepp i definitionen markera att detta är ett begrepp som finns i OLLI. 
+        Håll pekaren över begreppet så visas definitionen på detta begrepp.
+
+        <table class="table table-striped table-bordered">
+          <tbody>
+              <tr>
+                  <td>
+                      <p>Status</p>
+                  </td>
+                  <td>
+                      <p>Kan vara:</p>
+                      <p><span class="btn-grön">Beslutad</span> - ett rekommenderat begrepp<br />
+                        <span class="btn-gul">Preliminär</span> - kan användas i väntan på terminologiskt beslut<br />
+                        <span class="btn-översättning">Översättning</span> - Begrepp på annat språk med rekommenderad översättning<br />
+                        <span class="btn-white">Pågår</span> - ett begrepp som är under handläggning<br />
+                        <span class="btn-white">Ej påbörjad</span> - begrepp som efterfrågats men där handläggningen ännu inte påbörjats<br />
+                        <span class="btn-white">Önskad Översättning</span> - Begrepp på annat språk som man önskar översatt<br />
+                        <span class="btn-white">Definieras ej</span> - allmänspråkligt begrepp som inte definieras av VGR<br />
+                        <span class="btn-avrådd"><s>Avråds</s></span> (röd genomstruken text på rosa bakgrund) - ett begrepp som inte ska användas</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Term</p>
+                  </td>
+                  <td>
+                      <p>Det rekommenderade ord som representerar begreppet</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Synonym</p>
+                  </td>
+                  <td>
+                      <p>Eventuella synonymer som kan användas som alternativ term. Här anges även om en synonym är tillåten eller avråds</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Definition</p>
+                  </td>
+                  <td>
+                      <p>En formell definition av begreppets innebörd. Definitionen kan ersättas av beskrivning när en formel definition inte finns.</p>
+                      <p>Inleds en definition med &lt;<em>exempel</em>&gt; betyder det att definitionen som följer begränsas till en viss domän eller sammanhang.</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Källa</p>
+                  </td>
+                  <td>
+                      <p>Källa för definitionen</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Anmärkning</p>
+                  </td>
+                  <td>
+                      <p>Ev anmärkningar, kommentarer och exempel som förtydligar eller avgränsar begreppets användning</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Term på annat språk</p>
+                  </td>
+                  <td>
+                      <p>Ev term på annat språk, t ex engelska eller latin</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Definition på annat språk</p>
+                  </td>
+                  <td>
+                      <p>Ev definition på annat språk</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Annan referens</p>
+                  </td>
+                  <td>
+                      <p>Ev annan klassifikation eller kodverk som begreppet hämtas från eller är synonymt med.</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      <p>Annan kod/Id</p>
+                  </td>
+                  <td>
+                      <p>Ev Id från annan klassifikation eller kodverk, t ex Snomed CT eller ICF.</p>
+                  </td>
+              </tr>
+          </tbody>
+      </table>
+
+
+        
       </div>
   </div>
 </div>
@@ -51,7 +173,8 @@
         <div class="btn-grön text-justify border border-dark"><p style="text-align: center;">Beslutad</p></div><br>
         <div class="btn-gul text-justify border border-dark"><p style="text-align: center;">Preliminärt beslutad</p></div><br>
         <div class="btn-avrådd border border-dark"><p style="text-align: center;">Term avrådd</p></div><br>
-        <div class="bg-white text-dark border border-dark rounded";><p style="text-align: center;">Inte definerad av VGR</p></div>
+        <div class="btn-översättning border border-dark"><p style="text-align: center;">Översättning</p></div><br>
+        <div class="bg-white text-dark border border-dark rounded";><p style="text-align: center;">Pågår, Önska översättning, Definieras ej</p></div>
 </p></div></div>
     </div>
   </div>
@@ -59,19 +182,7 @@
   
   <div class="col-sm-1"></div> 
   </div>
-  <div class="row top-buffer-15">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-10">
-        <h4 style="text-align: center;">Demo av Olli</h4>
-        <div class="text-center">
-          <video id="hjälp_video" preload="metadata" width="720px" height="410px" controls>
-              <source src="{% static '/images/infomercial.mp4'%}" type="video/mp4">
-              Your browser does not support the video tag.
-          </video>
-        </div>
-    </div>
-    <div class="col-sm-1"></div>
-  </div>
+  
 </div>
 </div>
 </body>

@@ -60,6 +60,20 @@ nav {
       border-radius: 4px;
     }
 
+  .btn-översättning {
+      border-color: #8eaadb;
+      background-color: #8eaadb;
+      color: white;
+      border-radius: 4px;
+    }
+
+  .btn-white {
+      border-color: black;
+      background-color: white;
+      color: black;
+      border-radius: 4px;
+    }
+
 .btn-grön {
       border-color: rgb(105, 189, 27);
       background-color: rgb(105, 189, 27);
@@ -110,6 +124,17 @@ nav {
     padding: 0;
   }
 
+  .table-avrådd{
+    background-color: #f496a3;
+  }
+
+  .table-översättning{
+    background-color: #8eaadb;
+  }
+
+  .table-önskad-översättning{
+    background-color: white;
+  }
 
   
   
