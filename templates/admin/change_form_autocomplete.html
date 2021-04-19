@@ -1,0 +1,55 @@
+{% extends 'admin/change_form.html' %}
+{% load static %}
+
+{% block responsive %}
+{{ block.super }}
+
+<link rel="stylesheet" href="{% static 'css/jquery-ui.min.css' %}" />
+
+
+
+<script type="text/javascript" src="{% static 'javascript/jquery-ui.js' %}"></script>
+
+<script>
+    (function($) {
+        $(document).ready(function($) {
+
+            term_elem = document.getElementById("id_term")
+            if(term_elem){
+                term_elem.addEventListener('focus', function() { 
+                suggestPreviousValues('id_term');
+                })
+            };           
+            
+            källa_elem = document.getElementById("id_källa")
+            
+            if(källa_elem){
+                källa_elem.addEventListener('focus', function() { 
+                suggestPreviousValues('id_källa');
+                })
+            };
+
+            function suggestPreviousValues(id_attr) {
+            
+            $(`#${id_attr}`).autocomplete({source: function (request, response) {
+                                            var attribute = this.bindings[0].id.split('_')[1];
+                                            var id = this.bindings[0].id;
+                                            var url = '/autocomplete_suggestions/' + attribute + '/' + request.term;
+                                            console.log(attribute, typeof(attribute), id, typeof(id), url);
+
+                                            var req = new XMLHttpRequest();
+                                            req.responseType = 'json';                                         
+                                            req.open('GET', url, true);
+                                            req.onload  = function() {                                            
+                                                response = req.response;
+                                            }   
+                                            req.send(null);
+                                            
+                                             }});
+        };        
+        
+        });
+        
+    })(django.jQuery);
+</script>
+{% endblock responsive %}

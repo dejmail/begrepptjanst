@@ -553,39 +553,31 @@ def whatDoYouWant(request):
          return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
      # return render(request, "term.html", context={'begrepp' : begrepp})
  
-def autocomplete_suggestions(request):
+def autocomplete_suggestions(request, attribute, search_term):
 
-    queryset = Begrepp.objects.all()
-    # filter(Q(term__isnull=False),
-    #                                   Q(källa__isnull=False),
-    #                                   Q(synonym__synonym__isnull=False),
-    #                                   Q(beställare__beställare_namn__isnull=False))
+    custom_filter = {}
+    custom_filter[attribute+'__icontains'] = search_term
+
+    queryset = Begrepp.objects.filter(**custom_filter)
     
     suggestion_dict = {}
     
-    for entry in queryset:
-        for field in ['term','källa']:
-            if suggestion_dict.get(field) is None:
-                suggestion_dict[field] = [getattr(entry, field)]
+    if not queryset:
+        suggestions = ['']
+    else:
+        for entry in queryset:
+            if suggestion_dict.get(attribute) is None:
+                suggestion_dict[attribute] = [getattr(entry, attribute)]
             else:
-                suggestion_dict[field].append(getattr(entry, field))
+                suggestion_dict[attribute].append(getattr(entry, attribute))
 
-        field = 'synonym'
-        all_synonyms = entry.synonym_set.all().values()
-        if len(all_synonyms) > 0:
-            if suggestion_dict.get(field) is None:
-                suggestion_dict[field] = [i.get('synonym') for i in all_synonyms]
-            else:
-                suggestion_dict[field].extend([i.get('synonym') for i in all_synonyms])
-
-        field = "beställare"
-        if suggestion_dict.get(field) is None:
-            suggestion_dict[field] = [entry.beställare.beställare_namn]
-        else:
-                suggestion_dict[field].append(entry.beställare.beställare_namn)
-
-    for key,values in suggestion_dict.items():
-        value_set = set(values)
-        suggestion_dict[key] = list(value_set)
+        suggestions = suggestion_dict.values()
         
-    return JsonResponse(suggestion_dict, safe=True)
+        suggestions = list(set([i for i in suggestions][0]))
+        
+        suggestions = sorted(suggestions, key=len)[0:10]
+        
+        suggestions_dict = {attribute : suggestions}
+        
+
+    return JsonResponse(suggestions_dict, safe=False)

@@ -11,7 +11,7 @@ urlpatterns = [
     path('requesttermform/', ordbok_views.hantera_request_term, name='hantera_term_request'),
     path('unread_comments/', ordbok_views.return_number_of_recent_comments, name='unread_comments'),
     path('whatDoYouWant/', ordbok_views.whatDoYouWant, name='whatDoYouWant'),
-    path('autocomplete_suggestions/', ordbok_views.autocomplete_suggestions, name='autocomplete_suggestions'),
+    path('autocomplete_suggestions/<attribute>/<search_term>/', ordbok_views.autocomplete_suggestions, name='autocomplete_suggestions'),
     
     
 ]

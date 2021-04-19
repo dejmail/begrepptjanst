@@ -111,6 +111,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
     
     inlines = [BegreppExternalFilesInline, SynonymInline, ValideradAvDomänerInline]
 
+    change_form_template = 'change_form_autocomplete.html'
+
     fieldsets = [
         ['Main', {
         'fields': [('datum_skapat','begrepp_version_nummer'), ('status', 'id_vgr',)],
