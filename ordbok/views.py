@@ -575,9 +575,6 @@ def autocomplete_suggestions(request, attribute, search_term):
         
         suggestions = list(set([i for i in suggestions][0]))
         
-        suggestions = sorted(suggestions, key=len)[0:10]
-        
-        suggestions_dict = {attribute : suggestions}
-        
+        suggestions = sorted(suggestions, key=len)[0:6]
 
-    return JsonResponse(suggestions_dict, safe=False)
+    return JsonResponse(suggestions, safe=False)
