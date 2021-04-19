@@ -1,45 +1,51 @@
-
 {% extends 'admin/base.html' %}
 {% load static %}
 
 {% block responsive %}
 {{ block.super }}
 
-<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<link rel="stylesheet" type="text/css" href="{% static '/css/admin_bootstrap_text_danger.css' %}">
 
+<link rel="stylesheet" type="text/css" href="{% static '/css/admin_bootstrap_text_danger.css' %}">
 
 <script>
 
-function change_link_anchor_text(data) {
-	
-    var inner_html = $('a').filter(function(data){
-			return this.innerHTML == 'Kommenterade Begrepp';});
-			if (data.unreadcomments == 0) {
-					return inner_html
-				} else if (data.unreadcomments == 1) {
-					return inner_html.after('<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetad kommentar</span>");
-				} else if (data.unreadcomments > 1) {
-					return inner_html.after('<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetade kommentarer</span>");
-				};
-}
+window.addEventListener("load", function() {
 
-function check_number_of_recent_comments() {
+	if (document.body.innerHTML.search("Välkommen till OLLI Begreppstjänst Portalen") > -1) {
 
-$.ajax({
-		type: "GET",
-		dataType: "json",
-		url: "{% url 'unread_comments' %}",
-	}).done(function(data, textStatus, jqXHR) {
-		change_link_anchor_text(data);
-	}).fail(function(data,textStatus,jqXHR) {        
-		error: console.log('Unable to update unread comments', response);
+	function change_link_anchor_text(data) {
+		
+		var inner_html = document.querySelectorAll( 'a' );
+
+		const element = [...inner_html].filter(elem => {
+			return elem.innerHTML == 'Kommenterade Begrepp'
 		});
+
+		if (data.unreadcomments == 0) {
+			return element[0]
+		} else if (data.unreadcomments == 1) {
+			return element[0].innerHTML += '<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetad kommentar</span>";
+		} else if (data.unreadcomments > 1) {
+			return element[0].innerHTML += '<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetade kommentarer</span>";
+		};
 	}
 
-$( document ).ready(function() {
-	check_number_of_recent_comments();
-});
+	function check_number_of_recent_comments() {
+			
+		var req = new XMLHttpRequest();
+		req.responseType = 'json';
+		req.open('GET', "{% url 'unread_comments' %}", true);
+		req.onload  = function() {
+			change_link_anchor_text(req.response);
+		};
+		req.send(null);
+			
+		};
 
+		check_number_of_recent_comments();
+		
+	}
+})
 </script>
 {% endblock responsive %}
+

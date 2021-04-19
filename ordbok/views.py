@@ -208,7 +208,7 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
            begrepp_dict_list[index]['definition'] = format_html(resplit_altered_strings[index])
-        except re.error as e:
+        except (re.error, KeyError) as e:
            print(e)
 
     return begrepp_dict_list
@@ -236,7 +236,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     
     return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,
                                              term_def_dict=term_def_dict)
-
+    
     return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
@@ -553,3 +553,28 @@ def whatDoYouWant(request):
          return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
      # return render(request, "term.html", context={'begrepp' : begrepp})
  
+def autocomplete_suggestions(request, attribute, search_term):
+
+    custom_filter = {}
+    custom_filter[attribute+'__icontains'] = search_term
+
+    queryset = Begrepp.objects.filter(**custom_filter)
+    
+    suggestion_dict = {}
+    
+    if not queryset:
+        suggestions = ['']
+    else:
+        for entry in queryset:
+            if suggestion_dict.get(attribute) is None:
+                suggestion_dict[attribute] = [getattr(entry, attribute)]
+            else:
+                suggestion_dict[attribute].append(getattr(entry, attribute))
+
+        suggestions = suggestion_dict.values()
+        
+        suggestions = list(set([i for i in suggestions][0]))
+        
+        suggestions = sorted(suggestions, key=len)[0:6]
+
+    return JsonResponse(suggestions, safe=False)
