@@ -34,9 +34,12 @@
             $(`#${id_attr}`).autocomplete({source: function (request, response) {
 
                 var attribute = this.bindings[0].id.split('_')[1];
-                var field_id = this.bindings[0].id
-                var url = '/autocomplete_suggestions/' + attribute + '/' + request.term;
-                                            
+                var field_id = this.bindings[0].id;
+                var url_parts = window.location.pathname.split('/');
+                var sub_url = url_parts[1];
+                console.log('site sub_url' + sub_url);
+                var url = '/' + sub_url + '/autocomplete_suggestions/' + attribute + '/' + request.term;
+                console.log('getting suggestions from ' + url);
                 var req = new XMLHttpRequest();
                 req.responseType = 'json';                                         
                 req.open('GET', url, true);
