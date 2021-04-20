@@ -177,3 +177,13 @@ class BekräftaTermForm(forms.Form):
     workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
     kontext = forms.CharField(label='Specificera var begreppet används')
+
+class BegreppForm(forms.ModelForm):
+    
+    class Meta:
+        model = Begrepp
+        exclude = ()
+        help_texts = {'term': 'Rullistan visar termer redan i DB',
+                      'källa': 'Rullistan visar termer redan i DB'}
+        
+    

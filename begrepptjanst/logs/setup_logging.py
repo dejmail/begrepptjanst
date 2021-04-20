@@ -34,9 +34,16 @@ logging.config.dictConfig({
         }
     },
     'loggers': {
+        'asyncio': {
+            'level': 'WARNING',
+        },
+        'django.utils.autoreload': {
+           'level': 'INFO',
+        },
         '': {
             'level': 'DEBUG',
             'handlers': ['file']
-        }
+        },
+
     }
 })
