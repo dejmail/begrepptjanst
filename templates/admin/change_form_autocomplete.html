@@ -37,8 +37,12 @@
                 var field_id = this.bindings[0].id;
                 var url_parts = window.location.pathname.split('/');
                 var sub_url = url_parts[1];
+                if (sub_url == 'admin') {
+                    var url = '/autocomplete_suggestions/' + attribute + '/' + request.term;    
+                } else {
+                    var url = '/' + sub_url + '/autocomplete_suggestions/' + attribute + '/' + request.term;    
+                }
                 console.log('site sub_url' + sub_url);
-                var url = '/' + sub_url + '/autocomplete_suggestions/' + attribute + '/' + request.term;
                 console.log('getting suggestions from ' + url);
                 var req = new XMLHttpRequest();
                 req.responseType = 'json';                                         
