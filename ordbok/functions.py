@@ -33,6 +33,11 @@ def mäta_förklaring_träff(sök_term, request):
     ny_sök.ip_adress = besökare_ip_adress(request)
     ny_sök.save()
 
+
+def ändra_status_till_översättning(queryset):
+    
+    queryset.update(status='Översättning')
+    
 def skicka_epost_till_beställaren_status(queryset):
 
     email_list = []

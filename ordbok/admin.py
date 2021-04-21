@@ -15,6 +15,7 @@ from ordbok.models import *
 from .functions import skicka_epost_till_beställaren_beslutad
 from .functions import skicka_epost_till_beställaren_status
 from .functions import skicka_epost_till_beställaren_validate
+from .functions import ändra_status_till_översättning
 from django import forms
 import re
 
@@ -168,7 +169,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
-    actions = ['skicka_epost_till_beställaren_beslutad','skicka_epost_till_beställaren_status','skicka_epost_till_beställaren_validate',]
+    actions = ['skicka_epost_till_beställaren_beslutad','skicka_epost_till_beställaren_status','skicka_epost_till_beställaren_validate', 'ändra_status_översättning']
 
     def skicka_epost_till_beställaren_beslutad(self, request, queryset):
         skicka_epost_till_beställaren_beslutad(queryset)
@@ -181,11 +182,15 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_status.short_description = "Skicka epost till beställaren: Status"
 
-    
     def skicka_epost_till_beställaren_validate(self, request, queryset):
         skicka_epost_till_beställaren_validate(queryset)
         self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_validate.short_description = "Skicka epost till beställaren: Validera"
+
+    def ändra_status_översättning(self, request, queryset):
+        ändra_status_till_översättning(queryset)
+        
+    ändra_status_översättning.short_description = "Ändra status -> Översättning"
 
     def önskad_slutdatum(self, obj):
         
