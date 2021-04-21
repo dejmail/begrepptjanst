@@ -20,14 +20,13 @@
                 suggestPreviousValues('id_term');
                 })
             };           
-            
+
             källa_elem = document.getElementById("id_källa")
-            
             if(källa_elem){
                 källa_elem.addEventListener('input', function() { 
                 suggestPreviousValues('id_källa');
                 })
-            };
+            };            
 
             function suggestPreviousValues(id_attr) {
             
@@ -37,16 +36,13 @@
                 var field_id = this.bindings[0].id;
                 var url_parts = window.location.pathname.split('/');
                 var sub_url = url_parts[1];
-                if (sub_url == 'admin') {
-                    var url = '/autocomplete_suggestions/' + attribute + '/' + request.term;    
-                } else {
-                    var url = '/' + sub_url + '/autocomplete_suggestions/' + attribute + '/' + request.term;    
-                }
-                console.log('site sub_url' + sub_url);
-                console.log('getting suggestions from ' + url);
+                var url = "{% url 'autocomplete_suggestions' "<attribute>" "<search_term>" %}".replace("%3Cattribute%3E", attribute);
+                var url = url.replace('%3Csearch_term%3E', request.term);
+                console.log('getting suggestions from - ' + url);
                 var req = new XMLHttpRequest();
                 req.responseType = 'json';                                         
                 req.open('GET', url, true);
+                // req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                 req.send(null);
                 req.onload  = function() {
                     response(req.response);                      

@@ -1,3 +1,4 @@
+from ordbok.forms import BegreppForm
 from pdb import set_trace
 from django.urls import reverse
 from django.db.models.functions import Lower
@@ -112,6 +113,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
     inlines = [BegreppExternalFilesInline, SynonymInline, ValideradAvDomänerInline]
 
     change_form_template = 'change_form_autocomplete.html'
+
+    form = BegreppForm
 
     fieldsets = [
         ['Main', {
