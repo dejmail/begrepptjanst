@@ -120,7 +120,7 @@
                 </p>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-default" data-dismiss="modal">stäng</button>
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Stäng</button>
                 </div>
               </div>			
             </div>
@@ -135,6 +135,7 @@
         {% endif %}
 
 <div id="opponera_bekräfta">
+</div>
 
 {% block extra_javascript %}
 <script>
@@ -185,10 +186,11 @@ $(document).ready(function(){
                           div_to_replace="#opponera_bekräfta",
                           type_method="GET");
                         });
-
+                    });
 function scrollSmoothToBottom() {
     var div = document.getElementById("opponera_bekräfta");
     div.scrollIntoView({behavior : 'smooth'});
 };
+
 </script>
 {% endblock extra_javascript %}
