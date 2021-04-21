@@ -1,5 +1,7 @@
 import json
 from pdb import set_trace
+from urllib.parse import unquote
+
 
 
 from django.forms.models import model_to_dict
@@ -555,6 +557,11 @@ def whatDoYouWant(request):
  
 def autocomplete_suggestions(request, attribute, search_term):
 
+    logger = logging.getLogger(__name__)
+
+    logger.debug(f'incoming autocomplete - {attribute}, {search_term}')
+    attribute = unquote(attribute)
+    logger.debug(f'unquote special characters - {attribute}, {search_term}')
     custom_filter = {}
     custom_filter[attribute+'__icontains'] = search_term
 
