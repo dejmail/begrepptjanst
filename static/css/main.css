@@ -41,6 +41,14 @@ nav {
     animation-direction: alternate;
   }
 
+  .span-button {
+    display: inline-block;
+    width: 85px;
+    text-align: center; 
+    vertical-align: middle;
+    border-color: ;
+  }
+
 .p-center {
   text-align: center; 
   vertical-align: middle; 
@@ -61,6 +69,11 @@ nav {
 
   .red-semi-transparent{
     background-color: rgba(255, 0, 0, 0.6);
+  }
+
+  .li-shrunk {
+    line-height: 1.5em;
+    padding-top: 1em;
   }
 
   .btn-avrådd {
