@@ -41,6 +41,16 @@ nav {
     animation-direction: alternate;
   }
 
+.p-center {
+  text-align: center; 
+  vertical-align: middle; 
+  line-height: normal;
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+
+  .top-buffer-5 { margin-top:10px; }
+
   .top-buffer-10 { margin-top:10px; }
 
   .top-buffer-15 { margin-top:15px; }

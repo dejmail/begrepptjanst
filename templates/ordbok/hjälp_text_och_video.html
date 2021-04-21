@@ -5,7 +5,7 @@
   <div class="container-fluid">
   <div class="row" style="text-align: center;">
    <div class="col-sm-1"></div> 
-  <div class="col-sm">
+  <div class="col-sm-3">
     <h4>Om Olli</h4>
       <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;">
@@ -26,7 +26,7 @@
       <div class="col-sm">
           <h4>Demo av Olli</h4>
           <div class="text-center">
-            <video id="hjälp_video" preload="metadata" width="720px" height="410px" controls>
+            <video id="hjälp_video" preload="metadata" width="100%" height="100%" controls>
                 <source src="{% static '/images/infomercial.mp4'%}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
@@ -40,7 +40,7 @@
 
 </div> -->
 
-  <div class="col-sm">
+  <div class="col-sm-5">
     <h4>Använda Olli</h4>
     <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;" ><p>
@@ -64,10 +64,10 @@
           <tbody>
               <tr>
                   <td>
-                      <p>Status</p>
+                      Status
                   </td>
                   <td>
-                      <p>Kan vara:</p>
+                      Kan vara:
                       <p><span class="btn-grön">Beslutad</span> - ett rekommenderat begrepp<br />
                         <span class="btn-gul">Preliminär</span> - kan användas i väntan på terminologiskt beslut<br />
                         <span class="btn-översättning">Översättning</span> - Begrepp på annat språk med rekommenderad översättning<br />
@@ -80,75 +80,75 @@
               </tr>
               <tr>
                   <td>
-                      <p>Term</p>
+                      Term
                   </td>
                   <td>
-                      <p>Det rekommenderade ord som representerar begreppet</p>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
-                      <p>Synonym</p>
-                  </td>
-                  <td>
-                      <p>Eventuella synonymer som kan användas som alternativ term. Här anges även om en synonym är tillåten eller avråds</p>
+                      Det rekommenderade ord som representerar begreppet
                   </td>
               </tr>
               <tr>
                   <td>
-                      <p>Definition</p>
+                      Synonym
                   </td>
                   <td>
-                      <p>En formell definition av begreppets innebörd. Definitionen kan ersättas av beskrivning när en formel definition inte finns.</p>
-                      <p>Inleds en definition med &lt;<em>exempel</em>&gt; betyder det att definitionen som följer begränsas till en viss domän eller sammanhang.</p>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
-                      <p>Källa</p>
-                  </td>
-                  <td>
-                      <p>Källa för definitionen</p>
+                      Eventuella synonymer som kan användas som alternativ term. Här anges även om en synonym är tillåten eller avråds
                   </td>
               </tr>
               <tr>
                   <td>
-                      <p>Anmärkning</p>
+                      Definition
                   </td>
                   <td>
-                      <p>Ev anmärkningar, kommentarer och exempel som förtydligar eller avgränsar begreppets användning</p>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
-                      <p>Term på annat språk</p>
-                  </td>
-                  <td>
-                      <p>Ev term på annat språk, t ex engelska eller latin</p>
+                      En formell definition av begreppets innebörd. Definitionen kan ersättas av beskrivning när en formel definition inte finns.
+                      Inleds en definition med &lt;<em>exempel</em>&gt; betyder det att definitionen som följer begränsas till en viss domän eller sammanhang.
                   </td>
               </tr>
               <tr>
                   <td>
-                      <p>Definition på annat språk</p>
+                      Källa
                   </td>
                   <td>
-                      <p>Ev definition på annat språk</p>
-                  </td>
-              </tr>
-              <tr>
-                  <td>
-                      <p>Annan referens</p>
-                  </td>
-                  <td>
-                      <p>Ev annan klassifikation eller kodverk som begreppet hämtas från eller är synonymt med.</p>
+                      Källa för definitionen
                   </td>
               </tr>
               <tr>
                   <td>
-                      <p>Annan kod/Id</p>
+                      Anmärkning
                   </td>
                   <td>
-                      <p>Ev Id från annan klassifikation eller kodverk, t ex Snomed CT eller ICF.</p>
+                      Ev anmärkningar, kommentarer och exempel som förtydligar eller avgränsar begreppets användning
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      Term på annat språk
+                  </td>
+                  <td>
+                      Ev term på annat språk, t ex engelska eller latin
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      Definition på annat språk
+                  </td>
+                  <td>
+                      Ev definition på annat språk
+                  </td> 
+              </tr>
+              <tr>
+                  <td>
+                      Annan referens
+                  </td>
+                  <td>
+                      Ev annan klassifikation eller kodverk som begreppet hämtas från eller är synonymt med.
+                  </td>
+              </tr>
+              <tr>
+                  <td>
+                      Annan kod/Id
+                  </td>
+                  <td>
+                      Ev Id från annan klassifikation eller kodverk, t ex Snomed CT eller ICF.
                   </td>
               </tr>
           </tbody>
@@ -160,22 +160,25 @@
   </div>
 </div>
     
-  <div class="col-sm">
+  <div class="col-sm-2">
     <h4>Kontakta oss</h4>
     <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;">
         Om ni har frågor eller funderingar gällande OLLI begreppstjänst 
-        får ni gärna maila oss på informatik@vgregion.se
+        får ni gärna maila oss på <span style="color:blue">informatik@vgregion.se</span>
       </div></div><br>
       <h4>Färgbeskrivning</h4>
       <div class="card">        
-      <div class="card-body text-justify" style="font-family: Calibri;"><div class="col-sm">
-        <div class="btn-grön text-justify border border-dark"><p style="text-align: center;">Beslutad</p></div><br>
-        <div class="btn-gul text-justify border border-dark"><p style="text-align: center;">Preliminärt beslutad</p></div><br>
-        <div class="btn-avrådd border border-dark"><p style="text-align: center;">Term avrådd</p></div><br>
-        <div class="btn-översättning border border-dark"><p style="text-align: center;">Översättning</p></div><br>
-        <div class="bg-white text-dark border border-dark rounded";><p style="text-align: center;">Pågår, Önska översättning, Definieras ej</p></div>
-</p></div></div>
+      <div class="card-body text-justify" style="font-family: Calibri;">
+        <div class="btn-grön border border-dark"><p class="p-center">Beslutad</p></div>
+        <div class="btn-gul border border-dark top-buffer-10"><p class="p-center">Preliminärt beslutad</p></div>
+        <div class="btn-avrådd border border-dark top-buffer-10"><p class="p-center">Term avrådd</p></div>
+        <div class="btn-översättning border border-dark top-buffer-10"><p class="p-center">Översättning</p></div>
+        <div class="bg-white text-dark border border-dark rounded top-buffer-10";><p class="p-center">Pågår</p></div>
+        <div class="bg-white text-dark border border-dark rounded top-buffer-10";><p class="p-center">Önska översättning</p></div>
+        <div class="bg-white text-dark border border-dark rounded top-buffer-10";><p class="p-center">Definieras ej</p></div>
+    
+    </div>
     </div>
   </div>
 
