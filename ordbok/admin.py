@@ -86,8 +86,9 @@ class BegreppSearchResultsAdminMixin(object):
                 When(Q(term__iexact=search_term), then=Value(1)),
                 When(Q(term__istartswith=search_term), then=Value(2)),
                 When(Q(term__icontains=search_term), then=Value(3)), 
-                When(Q(utländsk_term__icontains=search_term), then=Value(4)),
-                When(Q(definition__icontains=search_term), then=Value(5)), 
+                When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
+                When(Q(utländsk_term__icontains=search_term), then=Value(5)),
+                When(Q(definition__icontains=search_term), then=Value(6)), 
                 default=Value(6), output_field=IntegerField()
             )
         )
@@ -165,7 +166,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'begrepp_kontext',    
                     'annan_ordlista',
                     'utländsk_definition',
-                    'utländsk_term')
+                    'utländsk_term',
+                    'synonym__synonym')
 
     date_hierarchy = 'begrepp_version_nummer'
 
