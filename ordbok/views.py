@@ -36,6 +36,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Pågår': 'table-warning',
                     'Preliminär': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
+                    'Översättning' : 'table-översättning',                    
                     'Definieras ej': 'table-warning-light',
                     'Publiceras ej' : 'table-light-blue'}
 
