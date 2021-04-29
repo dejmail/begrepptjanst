@@ -6,7 +6,7 @@ from crispy_forms.layout import Field
 from django.core.exceptions import ValidationError
 from pdb import set_trace
 
-from .models import STATUS_VAL, DEFAULT_STATUS1
+from .models import STATUS_VAL
 
 workstream_choices = [('Inte relevant','Inte relevant'),
 ('Akutsjukvård','Akutsjukvård'),
@@ -137,7 +137,7 @@ class TermRequestTranslateForm(forms.Form):
         return self.cleaned_data.get('utländsk_term')
     
     def clean_status(self):
-        return DEFAULT_STATUS1
+        return "Önskad Översättning"
 
     
 
@@ -147,7 +147,7 @@ class TermRequestTranslateForm(forms.Form):
     workstream = forms.CharField(label='Ström som rapporterar in systembegrepp', widget=forms.Select(choices=workstream_choices))
     other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    status = forms.ChoiceField(widget = forms.HiddenInput, choices=STATUS_VAL, initial=DEFAULT_STATUS1)
+    status = forms.ChoiceField(widget = forms.HiddenInput, choices=STATUS_VAL, initial="Önskad Översättning")
 
 
 class OpponeraTermForm(forms.Form):
