@@ -4,17 +4,17 @@ from pdb import set_trace
 from django.conf import settings
 
 DEFAULT_STATUS = "Ej Påbörjad"
-DEFAULT_STATUS1 ="Översättning"
+
 STATUS_VAL = (('Avråds', "Avråds"),
+              ('Beslutad', 'Beslutad'), 
               ('Definiera ej', 'Definiera ej'), 
               ('För validering', 'För validering'), 
-              ('Beslutad', 'Beslutad'), 
-              ('Pågår', 'Pågår'), 
-              ('Publicera ej', 'Publicera ej'),
-              ('För validering', 'För validering'),
+              ("Internremiss", "Internremiss"),
               ('Preliminär', 'Preliminär'),
+              ('Publicera ej', 'Publicera ej'),
+              ('Pågår', 'Pågår'), 
               ("Önskad Översättning","Önskad Översättning"),
-              (DEFAULT_STATUS1, DEFAULT_STATUS1),
+              ("Översättning", "Översättning"),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
 SYSTEM_VAL = (('Millennium', "Millennium"),
