@@ -31,6 +31,8 @@ workstream_choices = [('Inte relevant','Inte relevant'),
 class CustomDateInput(forms.DateInput):
     input_type = 'date'
 
+
+
 class TermRequestForm(forms.Form):
 
     def clean(self):
@@ -184,6 +186,15 @@ class BegreppForm(forms.ModelForm):
         model = Begrepp
         exclude = ()
         help_texts = {'term': 'Rullistan visar termer redan i DB',
+                      'definition': 'Visas som HTML på framsidan',
                       'källa': 'Rullistan visar termer redan i DB'}
         
     
+    def clean(self):
+        
+        cleaned_definition = self.cleaned_data.get('definition')
+        
+        if any((c in ['{', '}', '½']) for c in cleaned_definition):
+            raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
+        
+        return self.cleaned_data

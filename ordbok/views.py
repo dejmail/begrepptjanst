@@ -15,11 +15,12 @@ from django.core.mail import EmailMessage
 
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from django.utils.safestring import mark_safe
 
 from ordbok.models import *
 from ordbok import models
 from .forms import TermRequestForm, TermRequestTranslateForm, BekräftaTermForm, OpponeraTermForm
-from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space
+from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space, HTML_TAGS
 
 import re
 import logging
@@ -157,7 +158,7 @@ def sort_returned_sql_search_according_to_search_term_position(lines, delim, pos
 def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
     for idx, begrepp in enumerate(begrepp_dict_list):
-        begrepp_dict_list[idx]['definition'] = format_html(begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>'))
+        begrepp_dict_list[idx]['definition'] = begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>')
         
     return begrepp_dict_list
 
@@ -178,6 +179,11 @@ def clean_dict_of_extra_characters(incoming_dict):
     for keys,values in incoming_dict.items():
         clean_dict[keys.strip()] = re.sub('\xa0', ' ', values)
     return clean_dict
+
+def concatentate_all_dictionary_values_to_single_string(dictionary, key):
+
+    return ' ½ '.join([i.get(key) for i in dictionary])
+
 
 def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list, term_def_dict):
 
@@ -201,8 +207,13 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all 
     # the occurrences of begrepp in definitions with a hover tooltip text.
 
-    joined_definitions = ' ½ '.join([i.get('definition') for i in begrepp_dict_list])
+    joined_definitions = concatentate_all_dictionary_values_to_single_string(begrepp_dict_list, 'definition')
     joined_definitions_minus_nbsp = nbsp2space(joined_definitions)
+    gt_brackets, lt_brackets = find_all_angular_brackets(joined_definitions_minus_nbsp)
+    
+    joined_definitions_minus_nbsp = replace_non_html_brackets(joined_definitions_minus_nbsp, gt_brackets, lt_brackets)    
+    logger.info(f'joined_definitions_minus_nbsp - {joined_definitions_minus_nbsp}')
+
     # only here are the regex patterns created in Xlator, couple to the substitution 
     altered_strings = translator.xlat(joined_definitions_minus_nbsp)
     # resplit the now altered string back into a list
@@ -210,11 +221,67 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
-           begrepp_dict_list[index]['definition'] = format_html(resplit_altered_strings[index])
+           begrepp_dict_list[index]['definition'] = resplit_altered_strings[index]
         except (re.error, KeyError) as e:
            print(e)
 
     return begrepp_dict_list
+
+def find_all_angular_brackets(bracket_string):
+
+    lt_brackets = []
+    gt_brackets = []
+    bracket_matches = [find for find in re.finditer(r'(?<=<).*?(?=>)', bracket_string)]
+    for match in bracket_matches:
+        if match.group(0) in HTML_TAGS:
+            continue
+        else:
+            lt_brackets.append(match.start()-1)
+            gt_brackets.append(match.end()+1)
+    
+    return gt_brackets, lt_brackets
+
+def replace_str_index(text,index, index_shifter, replacement):
+
+    return f"{text[:index+index_shifter]}{replacement}{text[index+1+index_shifter:]}"
+
+def replace_non_html_brackets(edit_string, gt_brackets, lt_brackets):
+
+    position_shifter = 0
+    logger.info(f'unedited string - {edit_string}')
+    logger.info(f'lt_brackets - {lt_brackets}')
+    for lt_position in lt_brackets:
+        edit_string = replace_str_index(edit_string, lt_position, position_shifter, '&lt;')
+        logging.info(f'edited_string - {edit_string}')
+        position_shifter += 3
+    
+    logger.info(f'gt_brackets before index change - {gt_brackets}')
+    
+    stepped_range = [i*3-1 for i in range(1, 4)]
+    logger.info(f'stepped_range - {stepped_range}')
+    zipped_lists = zip(stepped_range, gt_brackets)
+    adjusted_gt_indexes = [x + y for (x, y) in zipped_lists]
+    
+    logger.info(f'gt_brackets after index change - {adjusted_gt_indexes}')
+    logger.info('replacing > brackets')
+    position_shifter=0
+    for gt_position in adjusted_gt_indexes:        
+        edit_string = replace_str_index(edit_string, gt_position, position_shifter, '&#62;')
+        logging.info(f'edited_string - {edit_string}')
+        position_shifter += 4
+        
+    
+    return edit_string
+
+def mark_fields_as_safe_html(list_of_dict, fields):
+
+
+    for index, item in enumerate(list_of_dict):
+        for field in fields:
+            list_of_dict[index][field] = format_html(item.get(field))
+
+    return list_of_dict
+
 
 def hämta_data_till_begrepp_view(url_parameter):
     search_request = retur_general_sök(url_parameter)
@@ -243,6 +310,8 @@ def hämta_data_till_begrepp_view(url_parameter):
     return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
+
+    return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
     
     html = render_to_string(
         template_name="term-results-partial.html", context={'begrepp': return_list_dict,
