@@ -1,6 +1,8 @@
 {% load static %}
 {% load crispy_forms_filters %}
 {% if begrepp_full %}
+
+   
     <div class="col-8" id="mitten-span-middle-column">
         <div id="förklaring" class="förklaring">
         <div class="searchTable">
@@ -21,23 +23,22 @@
                 </tr>
                 <tr>
                     <td>Synonym</td>
-                    <td>    
-                            {% for list_item in synonym_full %}
-                                {% if list_item.synonym is not None %}
-                                    {% if list_item.synonym_status == "Avråds" %}
-                                    - <button type="button" class="btn-sm btn-avrådd"><s>{{list_item.synonym}}</s></button>
-                                    <br>
-                                    {% else %}
-                                        - {{list_item.synonym}}<br>
-                                    {% endif %}                            
-                                {% else %}
-                                    -
-                                {% endif %}
-                            {% endfor %}
-                    </td>        
+                    {% spaceless %}
+                    <td>{% for list_item in synonym_full %}
+{% if list_item.synonym is not None %}
+{% if list_item.synonym_status == "Avråds" %}
+-&nbsp;<button type="button" class="btn-sm btn-avrådd strike"><s class="strike">{{list_item.synonym}}</s></button>
+{% else %}
+-&nbsp;{{list_item.synonym}}
+{% endif %}
+{% else %}
+-
+{% endif %}
+{% endfor %}
+</td>
+                    {% endspaceless %}
                 </tr>
-
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.begrepp}}" >
                     <td>Definition</td>
                     {% if begrepp_full.status == "Avråds" %}
                         <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
@@ -82,15 +83,9 @@
 
 
                 <tr>
-                    <td><button class="btn btn-warning" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">
-                            Kommentera
-                        </button>
-                    </td>
+                    <td><button class="btn btn-warning" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button></td>
                     <td>
-                        <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">
-                            Hjälp
-                        </button>
-                    </td>
+                        <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button></td>
                     
                 </tr>
             </tbody>
@@ -137,7 +132,26 @@
 <div id="opponera_bekräfta">
 </div>
 
+<style>
+
+/* This allows us to keep the normal spacing
+in the certain cells without having to use <br> */
+
+tbody > tr:nth-child(4) > td:nth-child(2) {
+    white-space: pre-line;
+    }
+
+tbody > tr:nth-child(6) > td:nth-child(2) {
+    white-space: pre-line;
+    }
+
+</style>
+
+
+
+
 {% block extra_javascript %}
+
 <script>
 
 var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
