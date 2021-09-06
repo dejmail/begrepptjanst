@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ordbok.apps.OrdbokConfig',
     'crispy_forms',
+    
+    
 ]
 
 MIDDLEWARE = [

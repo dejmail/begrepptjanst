@@ -103,10 +103,14 @@ class BegreppSearchResultsAdminMixin(object):
 
 class StatusListFilter(MultipleChoiceListFilter):
     title = 'Status'
+    template = "admin/multipleStatus.html"
     parameter_name = 'status__in'
-
+    
     def lookups(self, request, model_admin):
         return STATUS_VAL
+
+#class FilterWithCustomStatusFilter(admin.SimpleListFilter):
+   
 
 class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
