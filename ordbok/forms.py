@@ -198,3 +198,9 @@ class BegreppForm(forms.ModelForm):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
         
         return self.cleaned_data
+
+
+class ChooseExportAttributes(forms.Form):
+
+    attribut = forms.MultipleChoiceField(required=False)
+    term = forms.CharField(widget=forms.HiddenInput(), required=False)

@@ -10,16 +10,19 @@ from django.db.models import Q, Case, When, Value, IntegerField
 from django.db.models import F, IntegerField, TextField, Value
 from django.db.models.functions import Cast, StrIndex, Substr
 
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
+
+
 from django.contrib import admin
 from ordbok.models import *
-from .functions import skicka_epost_till_beställaren_beslutad
-from .functions import skicka_epost_till_beställaren_status
-from .functions import skicka_epost_till_beställaren_validate
-from .functions import ändra_status_till_översättning
+from . import admin_actions
 from django import forms
+from .forms import ChooseExportAttributes
 import re
 
-admin.site.site_header = "OLLI Begreppstjänst Admin - För fakta i livet"
+admin.site.site_header = """OLLI Begreppstjänst Admin
+ För fakta i livet"""
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
@@ -171,28 +174,64 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
-    actions = ['skicka_epost_till_beställaren_beslutad','skicka_epost_till_beställaren_status','skicka_epost_till_beställaren_validate', 'ändra_status_översättning']
-
     def skicka_epost_till_beställaren_beslutad(self, request, queryset):
-        skicka_epost_till_beställaren_beslutad(queryset)
+        admin_actions.skicka_epost_till_beställaren_beslutad(queryset)
         self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_beslutad.short_description = "Skicka epost till beställaren: Beslutat"
 
     
     def skicka_epost_till_beställaren_status(self, request, queryset):
-        skicka_epost_till_beställaren_status(queryset)
+        admin_actions.skicka_epost_till_beställaren_status(queryset)
         self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_status.short_description = "Skicka epost till beställaren: Status"
 
     def skicka_epost_till_beställaren_validate(self, request, queryset):
-        skicka_epost_till_beställaren_validate(queryset)
+        admin_actions.skicka_epost_till_beställaren_validate(queryset)
         self.message_user(request, 'Mail skickat till beställaren.')
     skicka_epost_till_beställaren_validate.short_description = "Skicka epost till beställaren: Validera"
 
-    def ändra_status_översättning(self, request, queryset):
-        ändra_status_till_översättning(queryset)
+    def ändra_status_översättning(queryset, request):
+        admin_actions.ändra_status_till_översättning(queryset)
         
     ändra_status_översättning.short_description = "Ändra status -> Översättning"
+
+    def export_chosen_attrs_view(request):
+
+        if request.method == 'POST':
+            chosen_begrepp = [int(i) for i in request.POST.get('selected_begrepp').split("&")[:-1]]
+            queryset = Begrepp.objects.filter(id__in=chosen_begrepp)
+            model_fields = [field.name for field in queryset.first()._meta.get_fields()]
+            chosen_table_attrs = [i for i in model_fields if i in request.POST.keys()]
+
+            form=None
+            form = ChooseExportAttributes(request.POST)
+            if form.is_valid():
+                response = admin_actions.export_chosen_begrepp_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
+            return response
+        
+        return HttpResponseRedirect('admin/ordbok/begrepp/')
+
+    def export_chosen_begrepp_attrs_action(self, request, queryset):
+
+        db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
+                                                                                                            'opponerabegreppdefinition', 
+                                                                                                            'email_extra',
+                                                                                                            'begreppexternalfiles',
+                                                                                                            'synonym'])
+        chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
+
+        return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
+                                                                                 "chosen_begrepp" : chosen_begrepp_ids,
+                                                                                 "chosen_begrepp_terms" : chosen_begrepp_terms})
+
+    export_chosen_begrepp_attrs_action.short_description = "Exportera valde begrepp"
+
+    actions = ['skicka_epost_till_beställaren_beslutad',
+               'skicka_epost_till_beställaren_status',
+               'skicka_epost_till_beställaren_validate',
+               'ändra_status_översättning',
+               'export_chosen_begrepp_attrs_action']
 
     def önskad_slutdatum(self, obj):
         
@@ -274,7 +313,7 @@ class BestallareAdmin(admin.ModelAdmin):
     search_fields = ("begrepp__term","beställare_namn", "beställare_email") 
 
     def begrepp(self, obj):
-        # set_trace()
+        
         display_text = ", ".join([
             "<a href={}>{}</a>".format(
                     reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[0].name),
