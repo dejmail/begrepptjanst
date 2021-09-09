@@ -208,8 +208,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
             if form.is_valid():
                 response = admin_actions.export_chosen_begrepp_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
             return response
-        
-        return HttpResponseRedirect('admin/ordbok/begrepp/')
 
     def export_chosen_begrepp_attrs_action(self, request, queryset):
 
