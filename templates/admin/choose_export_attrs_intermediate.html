@@ -18,14 +18,20 @@
     Du har valt följande begrepp för att exportera som text fil.
 </p> 
 
+{% if chosen_begrepp_terms|length > 10 %}
+    <div class="container btn-danger p-2 my-2 border">
+        Du har valt flera än 10 begrepp/term att exportera, så term kommer inte visas här.
+    </div>
 
-<div class="container bg-pale-yellow p-2 my-2 border">
-    <ul>
-    {% for term in chosen_begrepp_terms %}  
-        <li>{{term}}</li>
-    {% endfor %}
-    </ul>
-</div>
+{% else %}
+    <div class="container bg-pale-yellow p-2 my-2 border">
+        <ul>
+        {% for term in chosen_begrepp_terms %}  
+            <li>{{term}}</li>
+        {% endfor %}
+        </ul>
+    </div>
+{% endif %}
 
 <p class="h6">Välja attribut som du vill inkludera i exportfilen</p>
 

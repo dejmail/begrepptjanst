@@ -119,7 +119,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     change_form_template = 'change_form_autocomplete.html'
 
-    form = BegreppForm
+    form = BegreppForm    
 
     fieldsets = [
         ['Main', {
@@ -161,7 +161,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'begrepp_version_nummer',
                     'beställare',
                     'önskad_slutdatum')
-
+    
     list_filter = ("begrepp_version_nummer", "status",)
 
     search_fields = ('term',
@@ -214,8 +214,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
                                                                                                             'opponerabegreppdefinition', 
                                                                                                             'email_extra',
-                                                                                                            'begreppexternalfiles',
-                                                                                                            'synonym'])
+                                                                                                            'begreppexternalfiles'])
         chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
         chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
 
@@ -247,6 +246,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         if display_text:
             return mark_safe(display_text)
         return "-"
+
+    synonym.admin_order_field = 'synonym'
 
     def get_queryset(self, obj):
         qs = super(BegreppAdmin, self).get_queryset(obj)

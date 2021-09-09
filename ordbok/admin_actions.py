@@ -20,6 +20,16 @@ from pdb import set_trace
 logger = logging.getLogger(__name__)
 
 
+def get_synonym_set(obj):
+    query = getattr(obj, 'synonym_set')
+    return_list = []
+    for synonym in query.values_list('synonym','synonym_status'):
+        return_list.append(f'{synonym[0]} - {synonym[1]}')
+    if len(return_list) > 0:
+        return ', '.join(return_list)
+    else:
+        return ''
+
 def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
 
     filename = f"{queryset.first()._meta.object_name.lower()}_export_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.txt"
@@ -32,7 +42,14 @@ def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
 
     writer.writerow(field_names)
     for obj in queryset:
-        row = writer.writerow([getattr(obj, field) for field in field_names])
+        row = []
+        for field in field_names:
+            if field == 'synonym':
+                field_value = get_synonym_set(obj)
+            else:
+                field_value = getattr(obj, field)
+            row.append(field_value)
+        writer.writerow(row)        
 
     return response
 
