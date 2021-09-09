@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ordbok.apps.OrdbokConfig',
     'crispy_forms',
-    
+    'django_admin_multiple_choice_list_filter',
+    'rangefilter',
     
 ]
 
