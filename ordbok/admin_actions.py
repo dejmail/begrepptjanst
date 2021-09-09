@@ -39,6 +39,7 @@ def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
     response['Content-Disposition'] = f'attachment; filename={filename}'
     response.write(codecs.BOM_UTF8)
     writer = csv.writer(response, dialect="excel", quotechar='"')
+    field_names.sort()
 
     writer.writerow(field_names)
     for obj in queryset:
