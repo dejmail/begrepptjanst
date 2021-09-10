@@ -20,6 +20,8 @@ STATUS_VAL = (('Avråds', "Avråds"),
 SYSTEM_VAL = (('Millennium', "Millennium"),
               ('Annat system', "Annat system"),
                ('VGR Begreppsystem',"VGR Begreppsystem"))
+
+
             
 
 class Begrepp(models.Model):

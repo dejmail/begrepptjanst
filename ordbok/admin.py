@@ -9,6 +9,10 @@ import django.utils.encoding
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.db.models import F, IntegerField, TextField, Value
 from django.db.models.functions import Cast, StrIndex, Substr
+from django_admin_multiple_choice_list_filter.list_filters import MultipleChoiceListFilter
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
+
+
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -105,6 +109,13 @@ class BegreppSearchResultsAdminMixin(object):
 
         return qs, use_distinct
 
+class StatusListFilter(MultipleChoiceListFilter):
+    title = 'Status'
+    template = "admin/multiple_status_filter.html"
+    parameter_name = 'status__in'
+    
+    def lookups(self, request, model_admin):
+        return STATUS_VAL
 
 class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
@@ -161,8 +172,10 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'begrepp_version_nummer',
                     'beställare',
                     'önskad_slutdatum')
-    
-    list_filter = ("begrepp_version_nummer", "status",)
+
+    list_filter = (StatusListFilter,
+                   ('begrepp_version_nummer', DateRangeFilter),
+    )
 
     search_fields = ('term',
                     'definition',
@@ -385,6 +398,9 @@ class SökDataAdmin(admin.ModelAdmin):
                     'ip_adress',
                     'sök_timestamp',
                     'records_returned')
+
+
+
 
 
 
