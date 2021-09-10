@@ -213,7 +213,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
             model_fields = [field.name for field in queryset.first()._meta.get_fields()]
             chosen_table_attrs = [i for i in model_fields if i in request.POST.keys()]
 
-            form=None
             form = ChooseExportAttributes(request.POST)
             if form.is_valid():
                 response = admin_actions.export_chosen_begrepp_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
@@ -225,9 +224,11 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                                                                                                             'opponerabegreppdefinition', 
                                                                                                             'email_extra',
                                                                                                             'begreppexternalfiles'])
-        chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        #chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        chosen_begrepp_ids = queryset.values_list('pk', flat=True)
         chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
 
+        
         return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
                                                                                  "chosen_begrepp" : chosen_begrepp_ids,
                                                                                  "chosen_begrepp_terms" : chosen_begrepp_terms})

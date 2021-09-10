@@ -16,12 +16,12 @@
 
 {% if chosen_begrepp_terms|length > 10 %}
     <div class="container btn-danger p-2 my-2 border">
-        Du har valt {{chosen_begrepp_terms|length}} begrepp/term att exportera, så termer kommer inte visas här.
+        Du har valt {{chosen_begrepp_terms|length}} begrepp/termer för att exportera, så termer kommer inte visas här.
     </div>
 
 {% else %}
     <div class="container bg-pale-yellow p-2 my-2 border">
-        <p class="h6">Du har valt följander begrepp eller termer att exportera.</p></br>
+        <p class="h6">Du har valt följander begrepp eller termer för att exportera.</p></br>
 
         <ul>
         {% for term in chosen_begrepp_terms %}  
