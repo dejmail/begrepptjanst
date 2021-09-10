@@ -12,11 +12,8 @@ from django.db.models.functions import Cast, StrIndex, Substr
 from django_admin_multiple_choice_list_filter.list_filters import MultipleChoiceListFilter
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
-
-
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-
 
 from django.contrib import admin
 from ordbok.models import *

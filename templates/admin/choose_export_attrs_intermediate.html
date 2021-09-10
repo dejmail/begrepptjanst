@@ -14,13 +14,9 @@
 
 {% block content %}
 
-<p class="h6">
-    Du har valt följande begrepp för att exportera som text fil.
-</p> 
-
 {% if chosen_begrepp_terms|length > 10 %}
     <div class="container btn-danger p-2 my-2 border">
-        Du har valt flera än 10 begrepp/term att exportera, så term kommer inte visas här.
+        Du har valt {{chosen_begrepp_terms|length}} begrepp/term att exportera, så termer kommer inte visas här.
     </div>
 
 {% else %}
@@ -33,11 +29,11 @@
     </div>
 {% endif %}
 
-<p class="h6">Välja attribut som du vill inkludera i exportfilen</p>
-
-
-<form method="post" name="attr_export" action="{% url 'export_chosen_attrs'%}">{% csrf_token %}
     <div class="container bg-pale-yellow p-2 my-2 border">
+
+        <p class="h6">Välja attribut som du vill inkludera i exportfilen</p></br>
+
+        <form method="post" name="attr_export" action="{% url 'export_chosen_attrs'%}">{% csrf_token %}
         <div class="results">
 
             {% for attr in db_table_attrs %}
