@@ -19,8 +19,28 @@ from pdb import set_trace
 
 logger = logging.getLogger(__name__)
 
+predetermined_column_order =  ['id_vgr',
+                               'term',
+                               'synonym',
+                               'definition',
+                               'källa',
+                               'anmärkningar',
+                               'status',
+                               'beställare',
+                               'begrepp_kontext',
+                               'kommentar_handläggning',
+                               'utländsk_term',
+                               'annan_ordlista',
+                               'externt_id',
+                               'begrepp_version_nummer',
+                               'datum_skapat',
+                               'term_i_system',
+                               'utländsk_definition',
+                               'alternativ_definition',
+                               'id']
 
 def get_synonym_set(obj):
+    
     query = getattr(obj, 'synonym_set')
     return_list = []
     for synonym in query.values_list('synonym','synonym_status'):
@@ -32,25 +52,38 @@ def get_synonym_set(obj):
 
 def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
 
-    filename = f"{queryset.first()._meta.object_name.lower()}_export_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.txt"
+    filename = f"{queryset.first()._meta.object_name.lower()}_export_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.csv"
     logger.debug(f"field_names for ACTION begrepp_export - {field_names}")
 
     response = HttpResponse(content_type='text/txt')
     response['Content-Disposition'] = f'attachment; filename={filename}'
     response.write(codecs.BOM_UTF8)
     writer = csv.writer(response, dialect="excel", quotechar='"')
-    field_names.sort()
+    
+    chosen_columns = [i for i in predetermined_column_order if i in field_names]
+    zipped_list = zip(chosen_columns, field_names)
+    field_names = [x[0] for x in zipped_list]
+    logger.debug(f"column order of export file --> {field_names}")
 
     writer.writerow(field_names)
     for obj in queryset:
         row = []
+        
         for field in field_names:
             if field == 'synonym':
                 field_value = get_synonym_set(obj)
+                row.append(field_value)
+                logger.debug(f'writing {field} - {field_value}')
+            elif field == 'term':
+                field_value = getattr(obj, field)
+                row.append(field_value)
+                logger.debug(f'writing {field} - {field_value}')
             else:
                 field_value = getattr(obj, field)
-            row.append(field_value)
-        writer.writerow(row)        
+                row.append(field_value)
+                logger.debug(f'writing {field} - {field_value}')
+
+        writer.writerow(row)
 
     return response
 
