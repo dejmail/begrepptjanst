@@ -9,7 +9,9 @@ from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, message, send_mail
 
 import codecs
-import csv
+import io
+import xlsxwriter
+
 import datetime
 
 from .forms import ChooseExportAttributes
@@ -32,6 +34,7 @@ predetermined_column_order =  ['id_vgr',
                                'utländsk_term',
                                'annan_ordlista',
                                'externt_id',
+                               'senaste_ändring',
                                'begrepp_version_nummer',
                                'datum_skapat',
                                'term_i_system',
@@ -52,38 +55,62 @@ def get_synonym_set(obj):
 
 def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
 
-    filename = f"{queryset.first()._meta.object_name.lower()}_export_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.csv"
-    logger.debug(f"field_names for ACTION begrepp_export - {field_names}")
-
-    response = HttpResponse(content_type='text/txt')
-    response['Content-Disposition'] = f'attachment; filename={filename}'
-    response.write(codecs.BOM_UTF8)
-    writer = csv.writer(response, dialect="excel", quotechar='"')
     
+    output = io.BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    bold = workbook.add_format({'bold': True})
+    date_format = workbook.add_format({'num_format': 'YYYY-MM-DD H:M:S'})
+
     chosen_columns = [i for i in predetermined_column_order if i in field_names]
     zipped_list = zip(chosen_columns, field_names)
     field_names = [x[0] for x in zipped_list]
     logger.debug(f"column order of export file --> {field_names}")
+    row_index=0
+    col_index=0
+    worksheet.write_row(row_index,col_index,field_names, bold)
+    length=40
 
-    writer.writerow(field_names)
     for obj in queryset:
-        row = []
-        
-        for field in field_names:
+        row_index += 1
+        worksheet.set_row(row_index, 15)
+        for col_index, field in enumerate(field_names):
+            worksheet.set_column(row_index, col_index, length)
             if field == 'synonym':
                 field_value = get_synonym_set(obj)
-                row.append(field_value)
+                worksheet.write(row_index, col_index, field_value)
                 logger.debug(f'writing {field} - {field_value}')
             elif field == 'term':
                 field_value = getattr(obj, field)
-                row.append(field_value)
+                link = request.build_absolute_uri(reverse('begrepp_förklaring'))  + f'?q={obj.pk}'
+                worksheet.write_url(row=row_index, col=col_index, url=link, string=field_value)
                 logger.debug(f'writing {field} - {field_value}')
+            elif field == 'beställare':
+                field_value = getattr(obj, field).beställare_namn
+                worksheet.write(row_index, col_index, field_value)
+                logger.debug(f'writing {field} - {field_value}')
+            elif field in ['datum_skapat', 'begrepp_version_nummer']:
+                field_value = getattr(obj, field)
+                worksheet.write(row_index, col_index, field_value, date_format)
             else:
                 field_value = getattr(obj, field)
-                row.append(field_value)
+                if (type(field_value) == str) and (len(field_value) > 80):
+                    worksheet.set_column(col_index, col_index, length)
+                    worksheet.write(row_index, col_index, field_value)
+                else:
+                    worksheet.write(row_index, col_index, field_value)
                 logger.debug(f'writing {field} - {field_value}')
+    workbook.close()
+    output.seek(0)
 
-        writer.writerow(row)
+    filename = f"{queryset.first()._meta.object_name.lower()}_export_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.xlsx"
+    logger.debug(f"field_names for ACTION begrepp_export - {field_names}")
+    response = HttpResponse(
+        output, 
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+    response['Content-Disposition'] = f'attachment; filename={filename}'
 
     return response
 
