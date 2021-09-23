@@ -1,24 +1,23 @@
 {% load static %}
-
 {% block mitten-span %}
 {% spaceless %}
 
 {% if begrepp %}
+  <div class="d-flex flex-row justify-content-center">
+        <button class="btn btn-light-blue btn-sm" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a></button>&nbsp;&nbsp;
+        <button class="btn btn-light-blue btn-sm float-sm-right" onclick="populate_request_form('{{searched_for_term}}+translate')">Registrera millennium översättning</a></button>
+  </div>
 
-<div class="top-buffer-10">
-  <div class="table-responsive-md">
-    <div class="mitten-span">
-<div class="row">
-<dig class="col-4"></dig>   
-<div class="col-4">
-  <button class="btn btn-light-blue btn-sm" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a></button>&nbsp;&nbsp;
-  <button class="btn btn-light-blue btn-sm float-sm-right" onclick="populate_request_form('{{searched_for_term}}+translate')">Registrera millennium översättning</a></button></div></div>
-</div>
-      </h5>
-        <br>
-    </div>
-   
-    <table class="table table-bordered" id="definition_table">
+  <div class="container">
+    <div class="row">
+    <div class="col-12">      
+    <table class="table table-bordered top-buffer-20" id="definition_table">
+      <colgroup>
+        <col class="col-3">
+        <col class="col-2">
+        <col class="col-5">
+        <col class="col-2">
+      </colgroup>
         <thead>
           <tr>
             <th>Term</th>
@@ -176,8 +175,8 @@
           </tbody>
           </table>
         </div>
-</div>
-
+      </div>
+    </div>
 <style>
   /* Ensure we see intended spacing in the Definitions column */
 tbody > tr > td:nth-child(3) {
