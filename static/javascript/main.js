@@ -20,13 +20,17 @@ const endpoint = endpoint_check();
 const delay_by_in_ms = 750
 let scheduled_function = true
 
+function remove_om_olli_window() {
+	var div = document.getElementById("replaceable-content-middle-column");
+	while(div.firstChild) {
+		div.removeChild(div.firstChild);
+	}
+}
+
 user_input.keyup(function () {
 	$("#mitten-span-middle-column").empty();
-	var div = document.getElementById("replaceable-content-middle-column");
-		while(div.firstChild) {
-			div.removeChild(div.firstChild);
-		}
-
+	remove_om_olli_window();
+	
 	const request_parameters = {
 		
 		q: $(this).val() // value of user_input: the HTML element with ID user-input

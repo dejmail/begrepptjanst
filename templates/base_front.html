@@ -130,8 +130,10 @@ function populate_request_form(requested_term)
         },
         });
     };
+
 function scrollToHelp()
 {
+  remove_om_olli_window();
   $('#mitten-span-middle-column').empty(); 
   var x = document.getElementById("helpInfo");
   if (x.style.display === "none") {
