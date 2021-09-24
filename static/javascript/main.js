@@ -22,6 +22,10 @@ let scheduled_function = true
 
 user_input.keyup(function () {
 	$("#mitten-span-middle-column").empty();
+	var div = document.getElementById("replaceable-content-middle-column");
+		while(div.firstChild) {
+			div.removeChild(div.firstChild);
+		}
 
 	const request_parameters = {
 		
