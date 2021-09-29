@@ -2,8 +2,6 @@
 {% load crispy_forms_filters %}
 {% if begrepp_full %}
 
-   
-    <div class="col-8" id="mitten-span-middle-column">
         <div id="förklaring" class="förklaring">
         <div class="searchTable">
         <table id="term_förklaring_tabell" class="table table-bordered">
@@ -84,17 +82,18 @@
                     <td>Term id</td>
                     <td>{{begrepp_full.begrepp_id}}</td>
                 </tr>
-
-
                 <tr>
-                    <td><button class="btn btn-warning" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button></td>
                     <td>
-                        <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button></td>
+                        <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
+                    </td>
+                    <td>
+                        <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
+                    </td>
                     
                 </tr>
             </tbody>
         </table> 
-        <div class="modal fade" id="Comment" role="dialog">
+        <div class="modal" id="Comment" role="dialog">
             <div class="modal-dialog">		  
               <!-- Modal content-->
               <div class="modal-content">
@@ -126,9 +125,7 @@
           </div>
       </div>
     </div>
-    </div>
-    <div class="col-2" id="mitten-span-right-column"></div>
-    </div>
+    
         {% else %}
                 <p>Ingen definition hittades...</p>
         {% endif %}
@@ -163,7 +160,6 @@ var MutationObserver = window.MutationObserver || window.WebKitMutationObserver 
 var observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         if (mutation.type === 'childList') {
-            scrollSmoothToBottom();
             if ($('input[name=namn]').length > 0) {
                 $('input[name=namn]').focus();
             } else {
@@ -187,6 +183,7 @@ function get_form_function(url, div_to_replace, type_method){
             type : type_method,
             success: function(response){
                 $(div_to_replace).html(response);
+                $("#kommenteraModal").modal('show');
             },
             error: function() {
         $(div_to_replace).html("There has been an error loading this form");
@@ -195,7 +192,8 @@ function get_form_function(url, div_to_replace, type_method){
         });
 
     };
-    
+
+
 $(document).ready(function(){
 
     $("#opponera_button").click(function(){
@@ -203,12 +201,8 @@ $(document).ready(function(){
         get_form_function(url="{% url 'opponera_term' %}?q={{begrepp_full.term}}", 
                           div_to_replace="#opponera_bekräfta",
                           type_method="GET");
-                        });
                     });
-function scrollSmoothToBottom() {
-    var div = document.getElementById("opponera_bekräfta");
-    div.scrollIntoView({behavior : 'smooth'});
-};
+                });
 
 </script>
 {% endblock extra_javascript %}

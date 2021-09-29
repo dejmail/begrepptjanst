@@ -19,7 +19,7 @@ from django.contrib import admin
 from ordbok.models import *
 from . import admin_actions
 from django import forms
-from .forms import ChooseExportAttributes
+from .forms import ChooseExportAttributes, BegreppExternalFilesForm
 import re
 
 admin.site.site_header = """OLLI Begreppstjänst Admin
@@ -269,23 +269,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         return list(domäner)
 
     get_domäner.short_description = 'Validerad av'
-
-
-    
-    # def visa_html_i_begrepp_kontext(self, obj):
-        
-    #     set_trace()
-    #     if len(re.findall("|") > 1:
-    #     if ("|" in obj.begrepp_kontext) and ('http' in obj.begrepp_kontext):
-    #         set_trace()
-    #         description, url = obj.begrepp_kontext.split('|')
-
-    #         display_text = f"<a href={url}>{description}</a>"
-    #         return mark_safe(display_text)
-    #     else:
-    #     return obj.begrepp_kontext
-
-    # visa_html_i_begrepp_kontext.short_description = "begrepp context"
     
     def status_button(self, obj):
 
@@ -306,11 +289,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
-
-    # def save_model(self, request, obj, form, change):
-    #     if "http" in obj.begrepp_kontext:
-    #         obj.begrepp_kontext = f"<a href={obj.begrepp_kontext}>SCT{obj.begrepp_kontext.split('/')[-1]}</a>"           
-    #     super().save_model(request, obj, form, change)
 
 class BestallareAdmin(admin.ModelAdmin):
 
@@ -367,22 +345,73 @@ class SynonymAdmin(admin.ModelAdmin):
     list_filter = ("synonym_status",)
     search_fields = ("begrepp__term", "synonym")
 
+
+class ContextFilesInline(admin.StackedInline):
+
+    model = BegreppExternalFiles
+    extra = 1
+    verbose_name = "Externt Kontext Fil"
+    verbose_name_plural = "Externa Kontext Filer"
+    exclude = ('begrepp',)
+
+
 class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': (f'{settings.STATIC_URL}css/admin_kommentarmodel_custom.css',)
+
+            'all': ('https://use.fontawesome.com/releases/v5.8.2/css/all.css',
+                   f'{settings.STATIC_URL}css/admin_kommentarmodel_custom.css',
+                   f'{settings.STATIC_URL}css/custom_icon.css')
             }
+
+    inlines = [ContextFilesInline,]
 
     list_display = ('begrepp',
                     'begrepp_kontext',
+                    'bifogade_filer',
                     'datum',
                     'epost',
                     'namn',
                     'status',
-                    'telefon')
+                    'telefon',
+                    )
 
     list_filter = ('status',)
+
+    readonly_fields = ['datum',]
+
+    fieldsets = [
+        ['Main', {
+        'fields': [('begrepp', 'datum'), 
+        ('begrepp_kontext',), 
+        ('epost','namn','status','telefon'),]},
+        ]]
+
+    def bifogade_filer(self, obj):
+
+        if (obj.begreppexternalfiles_set.exists()) and (obj.begreppexternalfiles_set.name != ''):
+            return format_html(f'''<a href={obj.begreppexternalfiles_set}>
+                                    <i class="fas fa-file-download">
+                                    </i>
+                                    </a>''')
+        else:
+            return format_html(f'''<span style="color: red;">            
+                                       <i class="far fa-times-circle"></i>
+                                    </span>''')
+    bifogade_filer.short_description = "Bifogade filer"
+
+    def save_formset(self, request, form, formset, change):
+        
+        if request.method == 'POST':
+            instances = formset.save(commit=False)
+            for instance in instances:
+                if not instance.begrepp_id:
+                    instance.begrepp_id = form.cleaned_data.get('begrepp').pk
+        instance.save()
+        formset.save_m2m()
+
+
 
 class SökFörklaringAdmin(admin.ModelAdmin):
 
@@ -398,9 +427,12 @@ class SökDataAdmin(admin.ModelAdmin):
                     'records_returned')
 
 
+class BegreppExternalFilesAdmin(admin.ModelAdmin):
 
+    model = BegreppExternalFiles
+    form = BegreppExternalFilesForm
 
-
+    list_display = ('begrepp', 'kommentar', 'support_file')
 
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
@@ -409,4 +441,4 @@ admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
-admin.site.register(BegreppExternalFiles)
+admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
