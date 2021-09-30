@@ -71,6 +71,7 @@ def retur_general_sök(url_parameter):
                             LEFT JOIN ordbok_doman\
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
                         WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%"\
+                        OR ordbok_begrepp.id LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.definition LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
                         OR ordbok_synonym.synonym LIKE "%{url_parameter}%")
@@ -558,7 +559,14 @@ def opponera_term(request):
     elif request.method == 'POST':
         form = OpponeraTermForm(request.POST)
         if form.is_valid():
-            
+            file_list = []
+            if len(request.FILES) != 0:
+                for file in request.FILES.getlist('file_field'):
+                    fs = FileSystemStorage()
+                    filename = fs.save(content=file, name=file.name)
+                    uploaded_file_url = fs.url(filename)
+                    file_list.append(file.name)
+
             opponera_term = OpponeraBegreppDefinition()
             opponera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
             #opponera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -569,6 +577,13 @@ def opponera_term(request):
             # entries with doublets cause a problem, so we take the first one
             opponera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
             opponera_term.save()
+
+            for filename in file_list:
+                new_file = BegreppExternalFiles()
+                new_file.begrepp = opponera_term.begrepp
+                new_file.kommentar = opponera_term
+                new_file.support_file = filename
+                new_file.save()
 
             return HttpResponse('''<div class="alert alert-success">
                                    Tack för dina synpunkter.

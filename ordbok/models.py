@@ -54,6 +54,7 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
+    kommentar = models.ForeignKey("OpponeraBegreppDefinition", to_field='id', null=True, blank=True, on_delete=models.CASCADE)
     support_file = models.FileField(blank=True, null=True, upload_to='')
 
     def __str__(self):
@@ -79,7 +80,7 @@ class Doman(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name='begrepp_fk')
     domän_id = models.AutoField(primary_key=True)
     domän_kontext = models.TextField(blank=True, null=True)
-    domän_namn = models.CharField(max_length=255)       
+    domän_namn = models.CharField(max_length=255)
 
     def __str__(self):
         return self.domän_namn

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Doman, Begrepp
+from .models import Doman, Begrepp, BegreppExternalFiles
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
@@ -158,7 +158,18 @@ class OpponeraTermForm(forms.Form):
     epost = forms.EmailField()
     telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
-    term = forms.CharField(widget=forms.HiddenInput())  
+    term = forms.CharField(widget=forms.HiddenInput())
+    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+
+class ExternalFilesForm(forms.ModelForm):
+
+    class Meta:
+        model = BegreppExternalFiles
+        exclude = ()
+
+    begrepp = forms.CharField(widget=forms.HiddenInput())  
+    kommentar = forms.CharField(widget=forms.HiddenInput())  
+    support_file = forms.FileField()
 
 class BekräftaTermForm(forms.Form):
 
@@ -199,6 +210,15 @@ class BegreppForm(forms.ModelForm):
         
         return self.cleaned_data
 
+
+class BegreppExternalFilesForm(forms.ModelForm):
+
+    support_file = forms.FileField(label='Bifogad fil')
+    
+    class Meta:
+        model = BegreppExternalFiles
+        exclude = ()
+        help_texts = {'kommentar' : 'Kan länkas till en kommentar också, men behövs inte'}
 
 class ChooseExportAttributes(forms.Form):
 
