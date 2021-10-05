@@ -16,114 +16,175 @@
 
     <div class="col-2" id="mitten-span-left-column"></div>
     <div class="col-8" id="mitten-span-middle-column">
+     
         <div id="förklaring" class="förklaring">
-        <div class="searchTable">
-        <table id="term_förklaring_tabell" class="table table-bordered">
-            <tbody>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Status</td>
-                    <td>{{begrepp_full.status}}</td>
-                </tr>
-
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Term</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.term}}</s></td>
+            <div class="searchTable">
+            <table id="term_förklaring_tabell" class="table table-bordered">
+                
+                <tbody>
+                    {% for attribute, value in begrepp_full.items %}
+    
+                    {% if attribute == 'synonym' %}
+                        <tr class="{{färg_status.synonym}}">
                     {% else %}
-                        <td>{{begrepp_full.term}}</td>
+                        <tr class="{{färg_status.begrepp}}">
                     {% endif %}
-                </tr>
-                <tr>
-                    <td>Synonym</td>
-                    <td>    
-                            {% for list_item in synonym_full %}
-                                {% if list_item.synonym is not None %}
-                                    {% if list_item.synonym_status == "Avråds" %}
-                                    - <button type="button" class="btn-sm btn-avrådd"><s>{{list_item.synonym}}</s></button>
-                                    <br>
-                                    {% else %}
-                                        - {{list_item.synonym}}<br>
-                                    {% endif %}                            
+                        <td>{{attribute|capfirst}}</td>
+                        {% if attribute == 'status' %}
+                                {% if value in 'Preliminär,För validering,Internremiss' %}
+                                    <td>Preliminär</td>
                                 {% else %}
+                                    <td>{{value}}</td>
+                                {% endif %}
+                        {% elif attribute == 'synonym' %}
+                            {% for synonym in value %}
+                                {% if synonym.synonym is not None %}
+                                    {% if synonym.synonym_status == "Avråds" %}
+                                    <td>
+                                        -&nbsp;
+                                        <button type="button" class="btn-sm btn-avrådd strike">
+                                            <s class="strike">{{synonym.synonym}}</s>
+                                        </button>
+                                    </td>
+                                    {% else %}
+                                    <td>
+                                        -&nbsp;
+                                        {{synonym.synonym}}
+                                    </td>
+                                    {% endif %}
+                                {% else %}
+                                <td>
                                     -
+                                </td>
                                 {% endif %}
                             {% endfor %}
-                    </td>        
-                </tr>
-
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Definition</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.definition}}</td>
-                    {% endif %}
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Källa</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.källa}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.källa}}</td>
-                    {% endif %}
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Validerad av</td>
-                    
-                    <td>{% for domän in domän_full %}
-                            {{domän.domän_namn}}<br>
-                        {% endfor %}
-                    </td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Anmärkning</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.anmärkningar|default_if_none:'-'}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
-                    {% endif %}
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>ID VGR</td>
-                    <td>{{begrepp_full.id_vgr}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Term på annat språk</td>
-                    <td>{{begrepp_full.utländsk_term}}</td>
-                </tr>
-                <tr>
-                    <td>Definition på annat språk</td>
-                    <td>{{begrepp_full.utländsk_definition}}</td>
-                </tr>
-                <tr>
-                    <td>Används i system</td>
-                    <td>{{begrepp_full.term_i_system|default_if_none:'-'}}</td>
-                </tr>
-                <tr>
-                    <td>Annan referens</td>
-                    <td>{{begrepp_full.externt_register}}</td>
-                </tr>
-                <tr>
-                    <td>Kod</td>
-                    <td>{{begrepp_full.externt_id}}</td>
-                </tr>
-                <tr>
-                    <td>Term id</td>
-                    <td>{{begrepp_full.begrepp_id}}</td>
-                </tr>
-            </tbody>
-        </table>
-      </div>
+    
+                        {% elif begrepp_full.status == "Avråds" %}
+                            <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
+                        {% else %}
+                            <td>{{value}}</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>
+                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
+                        </td>
+                        <td>
+                            
+                        </td>
+                        
+                    </tr>
+                </tbody>
+            </table>  
         </div>
     </div>
+    
+
     <div class="col-2" id="mitten-span-right-column"></div>
+
+    <div class="modal" id="Comment" role="dialog">
+        <div class="modal-dialog">
+            <!-- Modal content-->
+            <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
+            </div>
+            <div class="modal-body">
+                <h4 style="font-family: frutiger;">Kommentera begrepp</h4>
+                <p style="font-family: Calibri;">
+                Funktionen Kommentera är tänkt att vara en möjlighet att framföra synpunkter om ett begrepp, 
+                hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma termer 
+                som kan vara aktuella, ev översättning m m. Det är viktigt att kommentaren tydligt anger vad 
+                som avses samt motiveras på ett adekvat sätt. Ange även den kontext som din kommentar gäller.
+                    Kommentarerna kommer sedan bearbetas av BegreppsByrån. <br>Gör så här:<br>
+                <ol style="font-family: Calibri;">
+                    <li>Tryck på knappen Kommentera</li>
+                    <li>Fyll i kontaktuppgifter men namn, E-post och telefon så att vi kan nå dig för att ställa frågor.</li>
+                    <li>Avge dina kommentarer om begreppet. Var så tydlig du kan!</li>
+                    <li>Tryck på Skicka</li>
+                </ol> 
+                <br>
+            </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Stäng</button>
+            </div>
+            </div>			
+        </div>
+        </div>
+        
+    {% else %}
+            <p>Ingen definition hittades...</p>
+    {% endif %}
+    
+    <div id="opponera_bekräfta">
     </div>
-
-        {% else %}
-                <p>Ingen definition hittades...</p>
-        {% endif %}
-
-{% endblock mitten-span %}
-
-{% block extra_javascript %}
-{% endblock extra_javascript %}
+    
+    <style>
+    
+    /* This allows us to keep the normal spacing
+    in the certain cells without having to use <br> */
+    
+    tbody > tr:nth-child(4) > td:nth-child(2) {
+        white-space: pre-line;
+        }
+    
+    tbody > tr:nth-child(6) > td:nth-child(2) {
+        white-space: pre-line;
+        }
+    
+    </style>
+    {% endblock mitten-span %}
+    {% block extra_javascript %}
+    
+    <script>
+    
+    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+    // create an observer instance
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                if ($('input[name=namn]').length > 0) {
+                    $('input[name=namn]').focus();
+                } else {
+                    $('input[name=epost]').focus();
+                }
+        }
+        });
+    });
+     
+    // configuration of the observer:
+    var config = {childList: true}
+     
+    var target = document.querySelector('#opponera_bekräfta');
+    // pass in the target node, as well as the observer options
+    observer.observe(target, config); 
+    
+    function get_form_function(url, div_to_replace, type_method){
+            
+            $.ajax({
+                url : url,
+                type : type_method,
+                success: function(response){
+                    $(div_to_replace).html(response);
+                    $("#kommenteraModal").modal('show');
+                },
+                error: function() {
+            $(div_to_replace).html("There has been an error loading this form");
+            },
+            });
+        };
+    
+    $(document).ready(function(){
+    
+        $("#opponera_button").click(function(){
+            
+            get_form_function(url="{% url 'opponera_term' %}?q={{begrepp_full.term}}", 
+                              div_to_replace="#opponera_bekräfta",
+                              type_method="GET");
+                        });
+                    });
+    
+    </script>
+    {% endblock extra_javascript %}

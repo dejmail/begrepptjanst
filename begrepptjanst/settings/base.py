@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_admin_multiple_choice_list_filter',
     'rangefilter',
+    'simple_history',
     
 ]
 
@@ -50,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
+
 ]
 
 ROOT_URLCONF = 'begrepptjanst.urls'

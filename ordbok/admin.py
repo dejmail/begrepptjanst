@@ -138,10 +138,9 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
         'fields' : ['term',
                     'definition',
                     'källa',
-                    'alternativ_definition',
+                    'tidigare_definition_och_källa',
                     'anmärkningar',
                     'utländsk_term',
-                    'utländsk_definition',
                     'term_i_system',
                     'email_extra',
                     ('annan_ordlista', 'externt_id'),
@@ -178,7 +177,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
                     'definition',
                     'begrepp_kontext',    
                     'annan_ordlista',
-                    'utländsk_definition',
                     'utländsk_term',
                     'synonym__synonym')
 
