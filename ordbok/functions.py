@@ -1,6 +1,8 @@
 from pdb import set_trace
 from .models import SökData, SökFörklaring, Bestallare
 
+from collections import OrderedDict
+
 import re
 import datetime
 
@@ -31,7 +33,20 @@ def mäta_förklaring_träff(sök_term, request):
     ny_sök.ip_adress = besökare_ip_adress(request)
     ny_sök.save()
 
+def sort_begrepp_keys(begrepp_dict):
 
+    desired_dict_order = ['status',
+                          'term',
+                          'synonym',
+                          'definition',
+                          'källa',
+                          'anmärkning',
+                          'term på annat språk',
+                          'annan referens',
+                          'kod',
+                          'term id']
+    
+    return OrderedDict([(v, begrepp_dict[v]) for v in desired_dict_order])
 
 def nbsp2space(string_with_bad_values):
     

@@ -2,10 +2,12 @@ from django.contrib import admin
 from django.db import models
 from pdb import set_trace
 from django.conf import settings
+from simple_history.models import HistoricalRecords
 
 DEFAULT_STATUS = "Ej Påbörjad"
 
 STATUS_VAL = (('Avråds', "Avråds"),
+              ('Avställd', "Avställd"),
               ('Beslutad', 'Beslutad'), 
               ('Definiera ej', 'Definiera ej'), 
               ('För validering', 'För validering'), 
@@ -34,20 +36,20 @@ class Begrepp(models.Model):
     datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField(blank=True)
-    alternativ_definition = models.TextField(blank=True, null=True)
+    tidigare_definition_och_källa = models.TextField(blank=True, null=True)
     externt_id = models.CharField(max_length=255, null=True, default='Inte definierad', verbose_name="Kod")
     källa = models.CharField(max_length=255, null=True, default='Inte definierad')
     annan_ordlista = models.CharField(max_length=255, null=True, default='Inte definierad')
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255, default='Angavs ej')
     utländsk_term = models.CharField(max_length=255, blank=True)
-    utländsk_definition = models.TextField(default='Inte definierad')
     id_vgr = models.CharField(max_length=255, null=True, default='Inte definierad')
     anmärkningar = models.TextField(null=True, default='Inte definierad')
     kommentar_handläggning = models.TextField(null=True, default='Inte definierad')
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
     email_extra = models.TextField(null=True, blank=True)
-    
+
+    history = HistoricalRecords('datum_skapat')
 
     def __str__(self):
         return self.term
@@ -89,7 +91,6 @@ class Synonym(models.Model):
 
     SYNONYM_STATUS =  (('Avråds', "Avråds"),
                        ('Tillåten', "Tillåten"),
-                       ('Rekommenderad', "Rekommenderad"),
                        ('Inte angiven','Inte angiven'))
 
     class Meta:
@@ -98,6 +99,8 @@ class Synonym(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
     synonym = models.CharField(max_length=255, blank=True, null=True)
     synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
+
+    history = HistoricalRecords()
 
     def __str__(self):
         return self.synonym

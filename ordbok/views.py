@@ -16,7 +16,7 @@ from django.utils.safestring import mark_safe
 from ordbok.models import *
 from ordbok import models
 from .forms import TermRequestForm, TermRequestTranslateForm, BekräftaTermForm, OpponeraTermForm
-from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space, HTML_TAGS
+from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space, HTML_TAGS, sort_begrepp_keys
 
 import re
 import logging
@@ -33,6 +33,8 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Beslutad': 'table-success',
                     'Pågår': 'table-warning',
                     'Preliminär': 'table-warning',
+                    'För validering': 'table-warning',
+                    'Internremiss': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
                     'Översättning' : 'table-översättning',                    
                     'Definieras ej': 'table-warning-light',
@@ -95,7 +97,7 @@ def retur_general_sök(url_parameter):
 
 
 def retur_komplett_förklaring_custom_sql(url_parameter):
-    
+
     cursor = connection.cursor()
     sql_statement = f'''SELECT\
                             ordbok_begrepp.id AS begrepp_id,\
@@ -108,7 +110,6 @@ def retur_komplett_förklaring_custom_sql(url_parameter):
                             annan_ordlista,\
                             status,\
                             term,\
-                            utländsk_definition,\
                             utländsk_term,\
                             id_vgr,\
                             anmärkningar,\
@@ -314,6 +315,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     
     html = render_to_string(
         template_name="term-results-partial.html", context={'begrepp': return_list_dict,
+                                                            'färg_status' : färg_status_dict,
                                                             'synonym' : return_synonym_list_dict,
                                                             'searched_for_term' : url_parameter}
                                                             
@@ -348,6 +350,8 @@ def begrepp_view(request):
     
     return render(request, "term.html", context={'begrepp' : begrepp})
 
+
+
 def begrepp_förklaring_view(request):
 
     url_parameter = request.GET.get("q")
@@ -357,20 +361,19 @@ def begrepp_förklaring_view(request):
         synonym_full = extract_columns_from_query_and_return_set(exact_term_request, -5, -2)
         domän_full = extract_columns_from_query_and_return_set(exact_term_request, -2, 0)
         
-        result_column_names = ['begrepp_id',
+        result_column_names = ['term id',
                                'begrepp_kontext',
                                'begrepp_version_nummer',
                                'definition',
                                'källa',
                                'term_i_system',
-                               'externt_id',
-                               'externt_register',
+                               'kod',
+                               'annan referens',
                                'status',
                                'term',
-                               'utländsk_definition',
-                               'utländsk_term',
+                               'term på annat språk',
                                'id_vgr',
-                               'anmärkningar',
+                               'anmärkning',
                                'synonym_begrepp_id',
                                'synonym',
                                'synonym_status',
@@ -381,6 +384,8 @@ def begrepp_förklaring_view(request):
         return_list_dict = []
         for return_result in begrepp_full:
             return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
+
+        
 
         synonym_column_names = result_column_names[-5:-2]
         return_synonym_list_dict = []
@@ -397,13 +402,15 @@ def begrepp_förklaring_view(request):
         status_färg_dict = {'begrepp' :färg_status_dict.get(return_list_dict[0].get('status')),
                             'synonym' : färg_status_dict.get(return_synonym_list_dict[0].get('status'))}
 
-        template_context = {'begrepp_full': return_list_dict[0],
-                            'synonym_full' : return_synonym_list_dict,
+        return_list_dict[0]['synonym'] = return_synonym_list_dict
+
+        # the function for the output of the begrepp_full sort has a harcoded sort order
+        # that needs to have the same fields as described in the ingoing dict.
+        template_context = {'begrepp_full': sort_begrepp_keys(return_list_dict[0]),
                             'domän_full' : return_domän_list_dict,
                             'färg_status' : status_färg_dict}
         
         html = render_to_string(template_name="term_forklaring.html", context=template_context)
-        
     # else:
     #     term_json = Begrepp.objects.none()
 

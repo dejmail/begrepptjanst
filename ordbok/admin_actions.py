@@ -38,8 +38,7 @@ predetermined_column_order =  ['id_vgr',
                                'begrepp_version_nummer',
                                'datum_skapat',
                                'term_i_system',
-                               'utländsk_definition',
-                               'alternativ_definition',
+                               'tidigare_definition_och_källa',
                                'id']
 
 def get_synonym_set(obj):

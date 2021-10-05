@@ -1,87 +1,57 @@
 {% load static %}
 {% load crispy_forms_filters %}
+
 {% if begrepp_full %}
 
         <div id="förklaring" class="förklaring">
         <div class="searchTable">
         <table id="term_förklaring_tabell" class="table table-bordered">
+            
             <tbody>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Status</td>
-                    <td>{{begrepp_full.status}}</td>
-                </tr>
+                {% for attribute, value in begrepp_full.items %}
 
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Term</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.term}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.term}}</td>
-                    {% endif %}
-                </tr>
-                <tr>
-                    <td>Synonym</td>
-                    {% spaceless %}
-                    <td>{% for list_item in synonym_full %}
-{% if list_item.synonym is not None %}
-{% if list_item.synonym_status == "Avråds" %}
--&nbsp;<button type="button" class="btn-sm btn-avrådd strike"><s class="strike">{{list_item.synonym}}</s></button>
-{% else %}
--&nbsp;{{list_item.synonym}}
-{% endif %}
-{% else %}
--
-{% endif %}
-{% endfor %}
-</td>
-                    {% endspaceless %}
-                </tr>
-                <tr class="{{färg_status.begrepp}}" >
-                    <td>Definition</td>
-                    {% if begrepp_full.status == "Avråds" %}
+                {% if attribute == 'synonym' %}
+                    <tr class="{{färg_status.synonym}}">
+                {% else %}
+                    <tr class="{{färg_status.begrepp}}">
+                {% endif %}
+                    <td>{{attribute|capfirst}}</td>
+                    {% if attribute == 'status' %}
+                            {% if value in 'Preliminär,För validering,Internremiss' %}
+                                <td>Preliminär</td>
+                            {% else %}
+                                <td>{{value}}</td>
+                            {% endif %}
+                    {% elif attribute == 'synonym' %}
+                        {% for synonym in value %}
+                            {% if synonym.synonym is not None %}
+                                {% if synonym.synonym_status == "Avråds" %}
+                                <td>
+                                    -&nbsp;
+                                    <button type="button" class="btn-sm btn-avrådd strike">
+                                        <s class="strike">{{synonym.synonym}}</s>
+                                    </button>
+                                </td>
+                                {% else %}
+                                <td>
+                                    -&nbsp;
+                                    {{synonym.synonym}}
+                                </td>
+                                {% endif %}
+                            {% else %}
+                            <td>
+                                -
+                            </td>
+                            {% endif %}
+                        {% endfor %}
+
+                    {% elif begrepp_full.status == "Avråds" %}
                         <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
                     {% else %}
-                        <td>{{begrepp_full.definition}}</td>
+                        <td>{{value}}</td>
                     {% endif %}
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Källa</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.källa}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.källa}}</td>
-                    {% endif %}
-                </tr>
-
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Anmärkning</td>
-                    {% if begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.anmärkningar|default_if_none:'-'}}</s></td>
-                    {% else %}
-                        <td>{{begrepp_full.anmärkningar|default_if_none:'-'}}</td>
-                    {% endif %}
-                </tr>
-
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Term på annat språk</td>
-                    <td>{{begrepp_full.utländsk_term}}</td>
-                </tr>
-                <tr>
-                    <td>Definition på annat språk</td>
-                    <td>{{begrepp_full.utländsk_definition}}</td>
-                </tr>
-                <tr>
-                    <td>Annan referens</td>
-                    <td>{{begrepp_full.externt_register}}</td>
-                </tr>
-                <tr>
-                    <td>Kod</td>
-                    <td>{{begrepp_full.externt_id}}</td>
-                </tr>
-                <tr>
-                    <td>Term id</td>
-                    <td>{{begrepp_full.begrepp_id}}</td>
-                </tr>
+                {% endfor %}
                 <tr>
                     <td>
                         <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
@@ -92,12 +62,14 @@
                     
                 </tr>
             </tbody>
-        </table> 
+        </table>  
+    </div>
+</div>
         <div class="modal" id="Comment" role="dialog">
-            <div class="modal-dialog">		  
+            <div class="modal-dialog">
               <!-- Modal content-->
               <div class="modal-content">
-                <div class="modal-header">				
+                <div class="modal-header">
                   <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
                 </div>
                 <div class="modal-body">
@@ -123,12 +95,10 @@
               </div>			
             </div>
           </div>
-      </div>
-    </div>
     
-        {% else %}
-                <p>Ingen definition hittades...</p>
-        {% endif %}
+{% else %}
+        <p>Ingen definition hittades...</p>
+{% endif %}
 
 <div id="opponera_bekräfta">
 </div>
@@ -147,9 +117,6 @@ tbody > tr:nth-child(6) > td:nth-child(2) {
     }
 
 </style>
-
-
-
 
 {% block extra_javascript %}
 
@@ -188,11 +155,8 @@ function get_form_function(url, div_to_replace, type_method){
             error: function() {
         $(div_to_replace).html("There has been an error loading this form");
         },
-
         });
-
     };
-
 
 $(document).ready(function(){
 

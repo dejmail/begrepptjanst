@@ -1,188 +1,68 @@
 {% load static %}
 {% block mitten-span %}
-{% spaceless %}
 
 {% if begrepp %}
-  <div class="d-flex flex-row justify-content-center">
-        <button class="btn btn-light-blue btn-sm" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a></button>&nbsp;&nbsp;
-        <button class="btn btn-light-blue btn-sm float-sm-right" onclick="populate_request_form('{{searched_for_term}}+translate')">Registrera millennium översättning</a></button>
-  </div>
+{% load get_item %}
 
-  <div class="container">
-    <div class="row">
-    <div class="col-12">      
-    <table class="table table-bordered top-buffer-20" id="definition_table">
-      <colgroup>
-        <col class="col-3">
-        <col class="col-2">
-        <col class="col-5">
-        <col class="col-2">
-      </colgroup>
-        <thead>
-          <tr>
-            <th>Term</th>
-            <th>Term på annat språk</th>
-            <th>Definition</th>
-            <th>Synonym</th>
-          </tr>
-        </thead>
-        <tbody id="myTable">
-          {% for begrepp in begrepp %}
-            {% if begrepp.begrepp_status == "Beslutad" %}
-            <tr class="table-success">
-              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
-              <td>{{begrepp.utländsk_term}}</td>   
-              <td>{{begrepp.definition}}</td>                 
-              <td>
-                  {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                        {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
-                      </div><br>
-                        {% else %}
-                        <div class="tooltip">- {{syn.synonym}}
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div><br>
-                        {% endif %} 
-                    {% endifequal %}
-                  {% endfor %}
-                
-              </td>
-            </tr>
-            {% elif begrepp.begrepp_status == "Preliminär" %}
-            <tr class="table-warning">
-              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>
-              <td>{{begrepp.utländsk_term}}</td>   
-              <td>{{begrepp.definition}}</td>   
-              <td>
-                
-                  {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-               
-                      {% if syn.synonym_status == "Avråds" %}
-                      <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                        <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
-                    </div><br>
-                        {% else %}
-                        <div class="tooltip">- {{syn.synonym}}
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div><br>
-                        {% endif %}
-                 
-                    {% endifequal %}
-                  {% endfor %}
-                
-              </td>
-            </tr>
-            {% elif begrepp.begrepp_status == "Avråds" %}
-            <tr class="table-avrådd">
-              <td><a STYLE="text-decoration: line-through" href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</p></a></td>
-              <td>{{begrepp.utländsk_term}}</td>   
-              <td>{{begrepp.definition}}</td>   
-              <td>
-                
-                  {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                        {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
-                      </div><br>
-                        {% else %}
-                        <div class="tooltip">- {{syn.synonym}}
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div><br>
-                        {% endif %}
-                    
-                    {% endifequal %}
-                  {% endfor %}
-                
-              </td>
-            </tr>
-            {% elif begrepp.begrepp_status == "Översättning" %}
-            <tr class="table-översättning">
-              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</p></a></td>
-              <td>{{begrepp.utländsk_term}}</td>   
-              <td>{{begrepp.definition}}</td>   
-              <td>  
-                  {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                        {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
-                      </div><br>
-                        {% else %}
-                        <div class="tooltip">- {{syn.synonym}}
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div><br>
-                        {% endif %}
-                    
-                    {% endifequal %}
-                  {% endfor %}
-                
-              </td>
-            </tr>
-            {% elif begrepp.begrepp_status == "Önskad Översättning" %}
-            <tr class="table-önskad-översättning">
-              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</p></a></td>
-              <td>{{begrepp.utländsk_term}}</td>   
-              <td>{{begrepp.definition}}</td>   
-              <td>  
-                  {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                        {% if syn.synonym_status == "Avråds" %}
-                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
-                      </div><br>
-                        {% else %}
-                        <div class="tooltip">- {{syn.synonym}}
-                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div><br>
-                        {% endif %}
-                    
-                    {% endifequal %}
-                  {% endfor %}
-                
-              </td>
-            </tr>
-            {% else %}
+    <div class="d-flex flex-row justify-content-center">
+          <button class="btn btn-light-blue btn-sm" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a></button>&nbsp;&nbsp;
+          <button class="btn btn-light-blue btn-sm float-sm-right" onclick="populate_request_form('{{searched_for_term}}+translate')">Registrera millennium översättning</a></button>
+    </div>
+  
+    <div class="container">
+      <div class="row">
+      <div class="col-12">      
+      <table class="table table-bordered top-buffer-20" id="definition_table">
+        <colgroup>
+          <col class="col-3">
+          <col class="col-2">
+          <col class="col-5">
+          <col class="col-2">
+        </colgroup>
+          <thead>
             <tr>
-              <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}} >{{begrepp.term}}</a></td>
-              <td>{{begrepp.utländsk_term}}</td>   
-              <td>{{begrepp.definition}}</td>   
-              <td>
-                
-                  {% for syn in synonym %}
-                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                    
-                      {% if syn.synonym_status == "Avråds" %}
-                      <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                        <span class="tooltiptext " style="background-color: red;">Status : {{syn.synonym_status}}</span>
-                    </div><br>
-                        {% else %}
-                        <div class="tooltip">- {{syn.synonym}}
-                        <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                        </div>
-                        {% endif %}
-                    
-                    {% endifequal %}
-                  {% endfor %}
-                
-              </td>
+              <th>Rekommenderad term</th>
+              <th>Term på annat språk</th>
+              <th>Definition</th>
+              <th>Synonym</th>
             </tr>
-          {% endif %}
-          {% endfor %}
+          </thead>
+          <tbody id="myTable">
+            {% for begrepp in begrepp %}            
+              <tr class="{{ färg_status|get_item:begrepp.begrepp_status }}">
+                <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
+                <td>{{begrepp.utländsk_term}}</td>   
+                <td>{{begrepp.definition}}</td>                 
+                <td>
+                    {% for syn in synonym %}
+                      {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                          {% if syn.synonym_status == "Avråds" %}
+                          <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                            <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                        </div><br>
+                          {% else %}
+                          <div class="tooltip">- {{syn.synonym}}
+                            <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
+                          </div><br>
+                          {% endif %} 
+                      {% endifequal %}
+                  {% endfor %}
+                  
+                </td>
+              </tr>
+            {% endfor %}
           </tbody>
-          </table>
-        </div>
+        </table>
       </div>
     </div>
-<style>
-  /* Ensure we see intended spacing in the Definitions column */
-tbody > tr > td:nth-child(3) {
-  white-space: pre-line;
-  }
-</style>
+  </div>
+            
+  <style>
+    /* Ensure we see intended spacing in the Definitions column */
+  tbody > tr > td:nth-child(3) {
+    white-space: pre-line;
+    }
+  </style>
 
 
 {% else %}
@@ -193,7 +73,6 @@ tbody > tr > td:nth-child(3) {
   <script> whatDoYouWant("{{searched_for_term}}")</script>
   </div>
 {% endif %}
-{% endspaceless %}
 
 {% endblock mitten-span %}
 
