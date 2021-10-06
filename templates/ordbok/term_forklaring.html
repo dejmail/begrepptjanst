@@ -23,26 +23,22 @@
                                 <td>{{value}}</td>
                             {% endif %}
                     {% elif attribute == 'synonym' %}
+                        <td>
                         {% for synonym in value %}
                             {% if synonym.synonym is not None %}
                                 {% if synonym.synonym_status == "Avråds" %}
-                                <td>
                                     -&nbsp;
                                     <button type="button" class="btn-sm btn-avrådd strike">
                                         <s class="strike">{{synonym.synonym}}</s>
                                     </button>
-                                </td>
                                 {% else %}
-                                <td>
                                     -&nbsp;
                                     {{synonym.synonym}}
-                                </td>
                                 {% endif %}
                             {% else %}
-                            <td>
                                 -
-                            </td>
                             {% endif %}
+                        </td>
                         {% endfor %}
 
                     {% elif begrepp_full.status == "Avråds" %}
