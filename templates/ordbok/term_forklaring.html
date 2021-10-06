@@ -9,13 +9,29 @@
             
             <tbody>
                 {% for attribute, value in begrepp_full.items %}
-
                 {% if attribute == 'synonym' %}
                     <tr class="{{färg_status.synonym}}">
+                        <td>{{attribute|capfirst}}</td>
+                        <td>
+                            {% for synonym in value %}
+                                {% if synonym.synonym is not None %}
+                                    {% if synonym.synonym_status == "Avråds" %}
+                                        -&nbsp;
+                                        <button type="button" class="btn-sm btn-avrådd strike">
+                                            <s class="strike">{{synonym.synonym}}</s>
+                                        </button><br>
+                                    {% else %}
+                                        -&nbsp;
+                                        {{synonym.synonym}}<br>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            {% endfor %}
+                        </td>
                 {% else %}
                     <tr class="{{färg_status.begrepp}}">
-                {% endif %}
-                    <td>{{attribute|capfirst}}</td>
+                        <td>{{attribute|capfirst}}</td>
                     {% if attribute == 'status' %}
                             {% if value in 'Preliminär,För validering,Internremiss' %}
                                 <td>Preliminär</td>
@@ -23,29 +39,13 @@
                                 <td>{{value}}</td>
                             {% endif %}
                     {% elif attribute == 'synonym' %}
-                        <td>
-                        {% for synonym in value %}
-                            {% if synonym.synonym is not None %}
-                                {% if synonym.synonym_status == "Avråds" %}
-                                    -&nbsp;
-                                    <button type="button" class="btn-sm btn-avrådd strike">
-                                        <s class="strike">{{synonym.synonym}}</s>
-                                    </button>
-                                {% else %}
-                                    -&nbsp;
-                                    {{synonym.synonym}}
-                                {% endif %}
-                            {% else %}
-                                -
-                            {% endif %}
-                        </td>
-                        {% endfor %}
-
+                        
                     {% elif begrepp_full.status == "Avråds" %}
                         <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
                     {% else %}
                         <td>{{value}}</td>
                     {% endif %}
+                {% endif %}                
                 </tr>
                 {% endfor %}
                 <tr>
