@@ -406,7 +406,7 @@ class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
             for instance in instances:
                 if not instance.begrepp_id:
                     instance.begrepp_id = form.cleaned_data.get('begrepp').pk
-        instance.save()
+                instance.save()
         formset.save_m2m()
 
 
