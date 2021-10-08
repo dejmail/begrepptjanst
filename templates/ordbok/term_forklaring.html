@@ -6,7 +6,6 @@
         <div id="förklaring" class="förklaring">
         <div class="searchTable">
         <table id="term_förklaring_tabell" class="table table-bordered">
-            
             <tbody>
                 {% for attribute, value in begrepp_full.items %}
                 {% if attribute == 'synonym' %}
@@ -37,30 +36,30 @@
                                 <td>Preliminär</td>
                             {% else %}
                                 <td>{{value}}</td>
-                            {% endif %}
-                    {% elif attribute == 'synonym' %}
-                        
-                    {% elif begrepp_full.status == "Avråds" %}
-                        <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
+                            {% endif %}                        
+                    {% elif begrepp_full.status in "Avråds, Avställd" %}
+                        <td><s class="text-danger">{{value}}</s></td>
                     {% else %}
                         <td>{{value}}</td>
                     {% endif %}
                 {% endif %}                
                 </tr>
                 {% endfor %}
-                <tr>
-                    <td>
-                        <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
-                    </td>
-                    <td>
-                        <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
-                    </td>
-                    
-                </tr>
+                <tfoot>
+                    <tr>
+                        <td>
+                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
+                        </td>
+                        <td>
+                            <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
+                        </td>
+                    </tr>
+                </tfoot>
             </tbody>
-        </table>  
+        </table>
     </div>
 </div>
+
         <div class="modal" id="Comment" role="dialog">
             <div class="modal-dialog">
               <!-- Modal content-->

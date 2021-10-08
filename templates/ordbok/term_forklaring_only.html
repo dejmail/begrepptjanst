@@ -58,22 +58,19 @@
                                 </td>
                                 {% endif %}
                             {% endfor %}
-    
-                        {% elif begrepp_full.status == "Avråds" %}
-                            <td><s class="text-danger">{{begrepp_full.definition}}</s></td>
+                        {% elif begrepp_full.status in 'Avråds, Avställd' %}
+                            <td><s class="text-danger">{{value}}</s></td>
                         {% else %}
                             <td>{{value}}</td>
                         {% endif %}
-                    </tr>
+                        </tr>
                     {% endfor %}
                     <tr>
                         <td>
                             <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
                         </td>
                         <td>
-                            
                         </td>
-                        
                     </tr>
                 </tbody>
             </table>  
