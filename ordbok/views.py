@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 re_pattern = re.compile(r'\s+')
 
 färg_status_dict = {'Avråds' : 'table-danger',
+                    'Avställd' : 'table-danger',
                     'Beslutad': 'table-success',
                     'Pågår': 'table-warning',
                     'Preliminär': 'table-warning',
