@@ -92,19 +92,17 @@ document.body.addEventListener("click", function(e) {
 });
 
 function getPage(link_url) {
-
+	
 	console.log('entering ajax getPage function');
 	$.ajax({
 		type: "GET",
-		data: "string",
-		dataType: "json",
 		url: link_url,
 	}).done(function(data, textStatus, jqXHR) {
 		$('#replaceable-content-middle-column').empty();
 		$("#mitten-span-middle-column").empty();
 		begrepp_div.html(data);
 		changeBrowserURL(data, this.url);
-	}).fail(function(data,textStatus,jqXHR) {        
+	}).fail(function(data,textStatus,jqXHR) {
 		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
 		});
 	  };
