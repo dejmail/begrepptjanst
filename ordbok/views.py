@@ -96,6 +96,19 @@ def retur_general_sök(url_parameter):
     
     return result
 
+def filter_by_first_letter(letter):
+
+    queryset = Begrepp.objects.filter(
+                            term__istartswith=letter).values_list(
+                                                            'id',\
+                                                            'definition',\
+                                                            'term',\
+                                                            'utländsk_term',\
+                                                            'status',\
+                                                            'synonym__begrepp_id',\
+                                                            'synonym__synonym',\
+                                                            'synonym__synonym_status')
+    return queryset
 
 def retur_komplett_förklaring_custom_sql(url_parameter):
 
@@ -153,7 +166,7 @@ def sort_returned_sql_search_according_to_search_term_position(lines, delim, pos
     Returns a sorted list based on "column" from list-of-dictionaries data.
     '''
 
-    return sorted(lines, key=lambda x: x.get('term').split(delim))
+    return sorted(lines, key=lambda x: x.get('term').lower().split(delim))
 
 
 def highlight_search_term_i_definition(search_term, begrepp_dict_list):
@@ -285,7 +298,13 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
 
 def hämta_data_till_begrepp_view(url_parameter):
-    search_request = retur_general_sök(url_parameter)
+
+    if (len(url_parameter) == 1) and (url_parameter.isupper()):
+        search_request = filter_by_first_letter(letter=url_parameter)
+        highlight=False
+    else: 
+        search_request = retur_general_sök(url_parameter)
+        highlight=True
 
     begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=5)
     synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=5, stop=8)
@@ -307,13 +326,13 @@ def hämta_data_till_begrepp_view(url_parameter):
     
     return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,
                                              term_def_dict=term_def_dict)
-    
-    return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
+    if highlight==True:
+        return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
-    
+
     html = render_to_string(
         template_name="term-results-partial.html", context={'begrepp': return_list_dict,
                                                             'färg_status' : färg_status_dict,

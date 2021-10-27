@@ -1,7 +1,9 @@
 {% load static %}
+{% spaceless %}
 {% block mitten-span %}
 
 {% if begrepp %}
+
 {% load get_item %}
 
     <div class="d-flex flex-row justify-content-center">
@@ -75,7 +77,7 @@
 {% endif %}
 
 {% endblock mitten-span %}
-
+{% endspaceless %}
 {% block extra_javascript %}
 
 {% endblock extra_javascript %}

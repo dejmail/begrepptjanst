@@ -96,13 +96,13 @@ function getPage(link_url) {
 	console.log('entering ajax getPage function');
 	$.ajax({
 		type: "GET",
-		dataType: "html",
+		data: "string",
+		dataType: "json",
 		url: link_url,
 	}).done(function(data, textStatus, jqXHR) {
-		//debugger;
+		$('#replaceable-content-middle-column').empty();
 		$("#mitten-span-middle-column").empty();
-		var data = data.replace('\n','').replace('  ', '').replace('\"', "");
-		$('#mitten-span-middle-column').html(data.slice(1,-1));
+		begrepp_div.html(data);
 		changeBrowserURL(data, this.url);
 	}).fail(function(data,textStatus,jqXHR) {        
 		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
