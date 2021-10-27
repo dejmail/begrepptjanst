@@ -1,5 +1,6 @@
 {% extends 'base_front.html' %}
 {% load static %}
+
 {% block header %}
 	{% block header_row1 %}
 		{{ block.super }}
@@ -30,22 +31,33 @@
 	{% endblock search-left-column %}
 	{% block search-middle-column %}
 		<div class="col-6" id="search-middle-column">
-			<form class="form-inline" onsubmit="return false;">
-			<i id="search-icon" class="fas fa-search" style="position:relative; left:-0.5%;" aria-hidden="true"></i>
-			<input id="user-input" class="form-control form-control-md" style="flex:2" type="text" placeholder="Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
-			</form>
+			<div class="flex-row">
+				<form class="form-inline" onsubmit="return false;">
+				<i id="search-icon" class="fas fa-search" style="position:relative; left:-0.5%;" aria-hidden="true"></i>
+				<input id="user-input" class="form-control form-control-md" style="flex:2" type="text" placeholder="Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
+				</form>
+				<div class="row justify-content-between mt-2">
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					{% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÅÖ'|make_list %}
+						<a href="{% url 'begrepp'  %}?q={{letter}}">{{letter}}</a>&nbsp;
+					{% endfor %}
+				</div>
+			</div>
 		</div>
 	{% endblock search-middle-column %}
 	{% block search-right-column %}
 		<div class="col-3" id="search-right-column"></div>
 	{% endblock search-right-column %}
 	</div>
+
+
+	
 {% endblock search_bar %}
 
 {% block replaceable-content %}
 
 <div id="om_olli">
-<div class="row mt-5" id="replaceable-content-row">
+<div class="row mt-4" id="replaceable-content-row">
     <div class="col-4" id="replaceable-content-left-column"></div>
     <div class="col-4" text-left" id="replaceable-content-middle-column">
 

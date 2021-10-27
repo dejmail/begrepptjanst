@@ -27,6 +27,8 @@ urlpatterns = [
     path('', include('ordbok.urls')),
     path('admin/', admin.site.urls),
     path('favicon.ico',RedirectView.as_view(url='/static/images/favicon.ico')),
+    path('datawizard/', include('data_wizard.urls')),
+
 ]
 
 urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django_admin_multiple_choice_list_filter',
     'rangefilter',
     'simple_history',
+    'data_wizard',
+    'data_wizard.sources'
     
 ]
 
