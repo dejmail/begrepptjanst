@@ -1,13 +1,14 @@
 from begrepptjanst.settings.base import *
 
+
 DEBUG=False
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'vgrinfor_begrepp_prod',
-        'USER': 'vgrinfor_admin',
-        'PASSWORD': 'YqvyYGm5cJMLmzt',
+        'NAME': os.getenv('OLLI_DB_NAME'),
+        'USER': os.getenv('OLLI_DB_USER'),
+        'PASSWORD': os.getenv('OLLI_DB_PASSWORD'),
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
         'OPTIONS': {
