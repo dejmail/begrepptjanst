@@ -20,7 +20,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'vgrinfor_begrepp_backup',
         'USER': 'vgrinfor_admin',
-        'PASSWORD': 'YqvyYGm5cJMLmzt',
+        'PASSWORD': '',
         'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
 
