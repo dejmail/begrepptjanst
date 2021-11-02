@@ -10,14 +10,6 @@ logger = logging.getLogger(__name__)
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME' : 'ordlist_databas.sqlite3'
-
-#     }
-# }
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -33,8 +25,7 @@ DATABASES = {
         'PORT': '3306',
 
         'OPTIONS': {
-            # Tell MySQLdb to connect with 'utf8mb4' character set
-            #'charset': 'utf8_swedish_ci',
+            # Tell MySQLdb to connect with 'utf8mb4' character set  
             'sql_mode' : 'traditional',
         },
          'TEST': {
@@ -42,7 +33,6 @@ DATABASES = {
         },
     }
 }
-
 
 #INSTALLED_APPS.append('debug_toolbar')
 
@@ -54,9 +44,6 @@ TEMPLATE_DIRS = ['/templates/',]
 
 MEDIA_URL = '/begrepptjanst/media/'
 MEDIA_ROOT = 'media'
-
-# if settings.DEBUG:
-#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 STATICFILES_DIRS = [
