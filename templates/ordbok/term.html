@@ -38,7 +38,7 @@
 				</form>
 				<div class="row justify-content-between mt-2">
 					&nbsp;&nbsp;&nbsp;&nbsp;
-					{% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÅÖ'|make_list %}
+					{% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
 						<a href="{% url 'begrepp'  %}?q={{letter}}">{{letter}}</a>&nbsp;
 					{% endfor %}
 				</div>
