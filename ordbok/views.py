@@ -99,15 +99,16 @@ def retur_general_sök(url_parameter):
 def filter_by_first_letter(letter):
 
     queryset = Begrepp.objects.filter(
-                            term__istartswith=letter).values_list(
-                                                            'id',\
-                                                            'definition',\
-                                                            'term',\
-                                                            'utländsk_term',\
-                                                            'status',\
-                                                            'synonym__begrepp_id',\
-                                                            'synonym__synonym',\
-                                                            'synonym__synonym_status')
+        ~Q(status="Publicera ej")).filter(
+            term__istartswith=letter).values_list(
+                'id',\
+                'definition',\
+                'term',\
+                'utländsk_term',\
+                'status',\
+                'synonym__begrepp_id',\
+                'synonym__synonym',\
+                'synonym__synonym_status')
     return queryset
 
 def retur_komplett_förklaring_custom_sql(url_parameter):
