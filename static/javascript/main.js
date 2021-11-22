@@ -1,6 +1,29 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
 const begrepp_div = $('#mitten-span-middle-column');
+const status_table = $('<div class="row justify-content-center border rounded shadow statuscolours">\
+<table class="status-padding">\
+<tr>\
+  <td><button type="button" class="btn buttonwidth table-success btn-sm">Beslutad</button></td>\
+</tr>\
+<tr>\
+  <td><button type="button" class="btn buttonwidth table-warning btn-sm">Preliminär</button></td>\
+</tr>\
+<tr>\
+<td><button type="button" class="btn buttonwidth table-warning btn-sm">Pågår</button></td>\
+</tr>\
+<tr>\
+<td><button type="button" class="btn buttonwidth table-warning btn-sm">Ej Påbörjad</button></td>\
+</tr>\
+<tr>\
+<td><button type="button" class="btn buttonwidth table-warning-light btn-sm">Definieras ej</button></td>\
+</tr>\
+<tr>\
+<td><button type="button" class="btn buttonwidth table-danger btn-sm">Avråds</button></td>\
+</tr>\
+</table>\
+</div>');
+
 
 function endpoint_check() {
 
@@ -10,7 +33,7 @@ function endpoint_check() {
     } else {
 		const endpoint = document.URL;
 		return endpoint
-	}
+	} 
 
 }
 
@@ -51,6 +74,7 @@ user_input.keyup(function () {
 				begrepp_div.fadeTo('fast', 0).promise().then(() => {
 					// replace the HTML contents
 					begrepp_div.html(response);
+					$("#mitten-span-right-column").html(status_table)
 					// fade-in the div with new contents
 					begrepp_div.fadeTo('fast', 1);
 					// stop animating search icon
@@ -101,6 +125,8 @@ function getPage(link_url) {
 		$('#replaceable-content-middle-column').empty();
 		$("#mitten-span-middle-column").empty();
 		begrepp_div.html(data);
+		
+		
 		changeBrowserURL(data, this.url);
 	}).fail(function(data,textStatus,jqXHR) {
 		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");

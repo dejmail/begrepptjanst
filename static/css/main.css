@@ -204,6 +204,30 @@ text-decoration: line-through;
     z-index: 1000;
   }
 
+  .statuscolours {
+    display: inline-block;
+    position: fixed;
+    width: 110px; 
+    height: 250px;
+  }
+
+  .status-padding {
+    border-spacing: 10px 4px;
+    padding: 10px;
+    text-align: center;
+    align-self: center;
+    width: 100%;
+    height: 100%
+    
+  }
+
+  .buttonwidth {
+    width: 90px;
+  }
+
+
+
+
   .definitiontooltip {
     position: relative;
     display: inline-block;
