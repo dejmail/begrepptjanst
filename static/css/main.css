@@ -21,6 +21,12 @@ body {
     word-break:break-word;
   }
 
+th {
+  position: sticky;
+  top: 0; 
+  background: white;
+  z-index: 2000;
+  }
 
 nav {
     margin-bottom: 4em;
@@ -55,7 +61,6 @@ text-decoration: line-through;
     width: 85px;
     text-align: center; 
     vertical-align: middle;
-    border-color: ;
   }
 
 .p-center {
@@ -208,7 +213,7 @@ text-decoration: line-through;
     display: inline-block;
     position: fixed;
     width: 110px; 
-    height: 250px;
+    height: 205px;
   }
 
   .status-padding {
@@ -222,7 +227,12 @@ text-decoration: line-through;
   }
 
   .buttonwidth {
-    width: 90px;
+    width: 100px;
+    text-align: center;
+  }
+
+  .text-smaller {
+    font-size: 12px; 
   }
 
 

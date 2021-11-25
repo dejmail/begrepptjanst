@@ -13,7 +13,8 @@
   
     <div class="container">
       <div class="row">
-      <div class="col-12">      
+      <div class="col-12">
+      <div class="float-right" id="färg_förklaring" data-toggle="tooltip" data-placement="right" title="Vad betyder färgerna?"><i class="far fa-question-circle"></i></div>
       <table class="table table-bordered top-buffer-20" id="definition_table">
         <colgroup>
           <col class="col-3">
@@ -77,8 +78,23 @@
 {% endif %}
 
 {% endblock mitten-span %}
+
+
 {% endspaceless %}
 {% block extra_javascript %}
+
+
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#färg_panel").removeClass('d-none');
+    $("#färg_förklaring").click(function(){
+        $("#färg_panel").toggle();
+        });
+  });
+
+</script>
+
 
 {% endblock extra_javascript %}
 
