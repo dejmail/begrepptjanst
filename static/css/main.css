@@ -16,6 +16,16 @@ body {
    
   }
 
+.table-help {
+  width : auto;
+}
+
+.w-30 {
+  width : 30%;
+}
+
+
+
   td {
     word-wrap:break-word;
     word-break:break-word;

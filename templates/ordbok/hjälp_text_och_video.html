@@ -9,10 +9,20 @@
     <h4>Om Olli</h4>
       <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;">
-        OLLI är VGR Informatik och Standidiserings begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, allt från rent klinisk terminologi till olika administrativa och tekniska begrepp. OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i regionen och olika verksamheter samt personal med administrativa uppgifter eller andra stödfunktioner. 
+        OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, allt från rent klinisk terminologi till olika administrativa och tekniska begrepp. OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i regionen och olika verksamheter samt personal med administrativa uppgifter eller andra stödfunktioner. 
       </div>
     </div>
 
+    <div class="top-buffer-15">
+    <h4>Kontakta oss</h4>
+    <div class="card">
+      <div class="card-body text-justify" style="font-family: Calibri;">
+        Om ni har frågor eller funderingar gällande OLLI begreppstjänst 
+        får ni gärna maila oss på <span style="color:blue">informatik@vgregion.se</span>
+      </div>
+    </div>
+    </div>
+    
     <div class="row top-buffer-15">
      
       <div class="col-sm">
@@ -28,66 +38,84 @@
     </div>
 </div>
 
-  <div class="col-sm-5">
+  <div class="col-sm-7">
     <h4>Använda Olli</h4>
     <div class="card">
       <div class="card-body text-justify" style="font-family: Calibri;" ><p>
-        Skriv in början på den textsträng du söker i sökfältet. En lista med begrepp som innehåller strängen visas under sökfältet. När ett begrepp dyker upp kan man se begreppets term, eventuell term på annat språk, en definition och eventuella synonymer i listan. När man söker i OLLI görs sökningen på hela begreppet, det vill säga inte bara på begreppets term utan även på eventuell term på annat språk och synonymer. Sökfunktionen kontrollerar också om den textsträng du söker finns i definitionen, den svenska eller annat språk. 
-        Sökresultatet kan därför visa begrepp där söksträngen inte syns i listan som visas automatiskt. Man får då klicka in sig på begreppet för att se mer information och den sträng som är eftersökt. Vid sökning kommer sökt sträng markeras med gul överstrykning. Understrukna begrepp i definitionen markerar att detta är ett begrepp som finns i OLLI. Håll pekaren över begreppet så visas definitionen på detta begrepp. 
+        <p class="p">Skriv in början på den textsträng du söker i sökfältet. En lista med begrepp som innehåller strängen visas under sökfältet. När ett begrepp dyker upp kan man se begreppets term, eventuella synonymer, definition och eventuell term på annat språk i listan.</p>
+
+        <p>När man söker i OLLI görs sökningen på hela begreppet, det vill säga inte bara på begreppets term utan även på eventuella synonymer och term på annat språk. Sökresultatet kan därför visa begrepp där söksträngen inte markeras i listan. Man får då klicka in sig på begreppet för att se mer information och den sträng som är eftersökt. Vid sökning kommer sökt sträng markeras med gul överstrykning. Understrukna begrepp i definitionen markerar att detta är ett begrepp som finns i OLLI. Håll pekaren över begreppet så visas definitionen på detta begrepp.</p>
         
-        <table class="table table-striped table-bordered">
+        <div class="row justify-content-center">
+            <table class="table table-bordered table-help">
+                <tbody>
+                <tr>
+                    <td class="table-success">Beslutad/ Definieras ej</td>
+                    <td>Beslutad av Informatik och standardisering VGR</td>
+                </tr>
+                <tr>
+                    <td class="table-warning">Pågår</td>
+                    <td>Efterfrågat begrepp under handläggning</td>
+                </tr>
+                <tr>
+                    <td class="table-danger">Avråds/Avställd</td>
+                    <td>Termen ska inte användas</td>
+                </tr>
+                <tr>
+                    <td class="table-översättning">Översättning</td>
+                    <td>Term med rekommenderad översättning</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <p>När man klickar på ett begrepp i sökresultatet visas all information om begreppet. Följande rubriker används:</p>
+
+        <table class="table table-striped table-bordered table-help">
           <tbody>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Status
                   </td>
                   <td>
                       Kan vara:
                       <ul>
-                        <li class="li-shrunk"><span class="btn-grön border border-dark span-button">Beslutad</span> - ett rekommenderat begrepp</li><br />
-                        <li><span class="btn-gul border border-dark span-button">Preliminär</span> - kan användas i väntan på terminologiskt beslut</li><br />
-                        <li><span class="btn-översättning border border-dark span-button">Översättning</span> - term på annat språk med rekommenderad översättning</li><br />
-                        <li><span class="btn-white border border-dark span-button">Pågår</span> - ett begrepp som är under handläggning</li><br />
-                        <li><span class="btn-white border border-dark span-button">Ej påbörjad</span> - begrepp som efterfrågats men där handläggningen ännu inte påbörjats</li><br />
-                        <li><span class="btn-white border border-dark span-button">Önskad Översättning</span> - term på annat språk som man önskar översatt</li><br />
-                        <li><span class="btn-white border border-dark span-button">Definieras ej</span> - allmänspråkligt begrepp som inte definieras av VGR. Statusen används även för begrepp som styrs av lagar och regelverk då vi istället hänvisar till lagtexter eller regelverket.</li><br />
-                        <li><span class="btn-avrådd border border-dark span-button"><s>Avråds</s></span> (röd genomstruken text på rosa bakgrund) - ett begrepp som inte ska användas</li>
-
-
-                        <li><span class="btn-white border border-dark span-button">För validering</span> - Begrepp som väntar på validering av sakkunnig  
-                        <li><span class="btn-white border border-dark span-button">Internremiss</span> - Begrepp under arbete 
-
-
+                        <li class="li-shrunk"><span class="table-success border border-dark span-button">Beslutad / Definieras ej</span>Beslutad av Informatik och standardisering VGR</li><br />
+                        <li><span class="table-warning border border-dark span-button">Pågår</span>Efterfrågat begrepp under handläggning</li><br />
+                        <li><span class="btn-danger border border-dark span-button">Avråds / Avtälld</span>Termen ska inte användas</li><br />
+                        <li><span class="table-översättning border border-dark span-button">Översättning</span>Term med rekommenderad översättning </li><br />
                     </ul>
+
+
                   </td>
               </tr>
               <tr>
-                  <td>
-                      Term
+                  <td class="w-30">
+                      Rekommenderad term
                   </td>
                   <td>
-                      Det rekommenderade ord som representerar begreppet
+                      Den rekommenderade term som representerar begreppet
                   </td>
               </tr>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Synonym
                   </td>
                   <td>
-                      Eventuella synonymer som kan användas som alternativ term. Här anges även om en synonym är tillåten eller avråds
+                    Eventuella synonymer som är tillåtna som alternativ term. Här anges även synonymer som avråds med en röd bakgrund, dessa ska inte användas.
                   </td>
               </tr>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Definition
                   </td>
                   <td>
-                      En formell definition av begreppets innebörd. Definitionen kan ersättas av beskrivning när en formel definition inte finns.
-                      Inleds en definition med &lt;<em>exempel</em>&gt; betyder det att definitionen som följer begränsas till en viss domän eller sammanhang.
+                    En formell definition av begreppets innebörd. Inleds en definition med &lt<em>domän</em>&gt betyder det att definitionen som följer begränsas till en viss domän eller sammanhang.
+
+                    Ett begrepp kan ha flera definitioner, en s.k. homonym. Det anges med en siffra före respektive definition. Om vi inte definierar ett begrepp kan här hänvisas till anmärkningar.
                   </td>
               </tr>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Källa
                   </td>
                   <td>
@@ -95,45 +123,45 @@
                   </td>
               </tr>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Anmärkning
                   </td>
                   <td>
-                      Ev anmärkningar, kommentarer och exempel som förtydligar eller avgränsar begreppets användning
+                      Eventuella anmärkningar, kommentarer, exempel och hänvisningar som förtydligar eller avgränsar begreppets användning
                   </td>
               </tr>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Term på annat språk
                   </td>
                   <td>
-                    Eventuell term på annat språk, till exempel ex engelska eller latin 
+                    Eventuell term på annat språk, till exempel engelska eller latin
                   </td>
               </tr>
               <tr>
-                  <td>
-                      Definition på annat språk
-                  </td>
-                  <td>
-                      Ev definition på annat språk
-                  </td> 
-              </tr>
-              <tr>
-                  <td>
+                  <td class="w-30">
                       Annan referens
                   </td>
                   <td>
-                      Ev annan klassifikation eller kodverk som begreppet hämtas från eller är synonymt med.
+                      Eventuell annan klassifikation eller kodverk som begreppet hämtas från eller är synonymt med
                   </td>
               </tr>
               <tr>
-                  <td>
+                  <td class="w-30">
                       Annan kod/Id
                   </td>
                   <td>
-                      Ev Id från annan klassifikation eller kodverk, till exempel Snomed CT eller ICF.
+                    Eventuell Id från annan klassifikation eller kodverk, till exempel Snomed CT eller ICF.
                   </td>
               </tr>
+              <tr>
+                <td class="w-30">
+                    Term id
+                </td>
+                <td>
+                    Termpostens unika id i databasen 
+                </td>
+            </tr>
           </tbody>
       </table>
 
@@ -142,17 +170,6 @@
       </div>
   </div>
 </div>
-    
-  <div class="col-sm-2">
-    <h4>Kontakta oss</h4>
-    <div class="card">
-      <div class="card-body text-justify" style="font-family: Calibri;">
-        Om ni har frågor eller funderingar gällande OLLI begreppstjänst 
-        får ni gärna maila oss på <span style="color:blue">informatik@vgregion.se</span>
-      </div></div><br>
-      
-  </div>
-
   
   <div class="col-sm-1"></div> 
   </div>
