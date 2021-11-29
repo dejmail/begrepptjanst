@@ -46,28 +46,8 @@
 
         <p>När man söker i OLLI görs sökningen på hela begreppet, det vill säga inte bara på begreppets term utan även på eventuella synonymer och term på annat språk. Sökresultatet kan därför visa begrepp där söksträngen inte markeras i listan. Man får då klicka in sig på begreppet för att se mer information och den sträng som är eftersökt. Vid sökning kommer sökt sträng markeras med gul överstrykning. Understrukna begrepp i definitionen markerar att detta är ett begrepp som finns i OLLI. Håll pekaren över begreppet så visas definitionen på detta begrepp.</p>
         
-        <div class="row justify-content-center">
-            <table class="table table-bordered table-help">
-                <tbody>
-                <tr>
-                    <td class="table-success">Beslutad/ Definieras ej</td>
-                    <td>Beslutad av Informatik och standardisering VGR</td>
-                </tr>
-                <tr>
-                    <td class="table-warning">Pågår</td>
-                    <td>Efterfrågat begrepp under handläggning</td>
-                </tr>
-                <tr>
-                    <td class="table-danger">Avråds/Avställd</td>
-                    <td>Termen ska inte användas</td>
-                </tr>
-                <tr>
-                    <td class="table-översättning">Översättning</td>
-                    <td>Term med rekommenderad översättning</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <p>Ett begrepp i OLLI kan ha olika status. I söklistan och sökresultat visas status med färg och text</p>
+
         <p>När man klickar på ett begrepp i sökresultatet visas all information om begreppet. Följande rubriker används:</p>
 
         <table class="table table-striped table-bordered table-help">
@@ -77,13 +57,36 @@
                       Status
                   </td>
                   <td>
-                      Kan vara:
-                      <ul>
-                        <li class="li-shrunk"><span class="table-success border border-dark span-button">Beslutad / Definieras ej</span>Beslutad av Informatik och standardisering VGR</li><br />
-                        <li><span class="table-warning border border-dark span-button">Pågår</span>Efterfrågat begrepp under handläggning</li><br />
-                        <li><span class="btn-danger border border-dark span-button">Avråds / Avtälld</span>Termen ska inte användas</li><br />
-                        <li><span class="table-översättning border border-dark span-button">Översättning</span>Term med rekommenderad översättning </li><br />
-                    </ul>
+                    <div class="row justify-content-center">
+                        <table class="table table-bordered table-help">
+                            <tbody>
+                            <tr>
+                                <td class="table-success">Beslutad/ Definieras ej</td>
+                                <td>Beslutad av Informatik och standardisering VGR</td>
+                            </tr>
+                            <tr>
+                                <td class="table-success">Definieras ej</td>
+                                <td>Allmänspråkligt begrepp eller begrepp som styrs av lagar och regelverk definieras inte i VGR. Se anmärkning.</td>
+                            </tr>
+                            <tr>
+                                <td class="table-warning">Pågår</td>
+                                <td>Begrepp under handläggning</td>
+                            </tr>
+                            <tr>
+                                <td class="table-danger">Avråds</td>
+                                <td>Termen avråds för användning i VGR</td>
+                            </tr>
+                            <tr>
+                                <td class="table-danger">Avställd</td>
+                                <td>Begrepp som är inaktuell och inte ska användas</td>
+                            </tr>
+                            <tr>
+                                <td class="table-översättning">Översättning</td>
+                                <td>Term med rekommenderad översättning</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
 
                   </td>
