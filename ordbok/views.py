@@ -24,6 +24,9 @@ from begrepptjanst.logs import setup_logging
 from django.utils.html import format_html
 from django.views.generic import ListView
 
+from django.core.paginator import Paginator
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -75,6 +78,7 @@ def retur_general_sök(url_parameter):
                                 ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
                         WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.id LIKE "%{url_parameter}%"\
+                        OR ordbok_begrepp.anmärkningar LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.definition LIKE "%{url_parameter}%"\
                         OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
                         OR ordbok_synonym.synonym LIKE "%{url_parameter}%")
@@ -205,8 +209,14 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     #create a set as there are duplicates in the database
     term_def_set = set([(concepts,definition) for concepts,definition in term_def_dict])
     # create a dictionary with the term as key and definition containing the HTML needed to show the hover definition
-    term_def_dict_uncleaned = {concept:f'''<div class="definitiontooltip">{concept.strip()}<div class="definitiontooltiptext">{definition}</div></div>''' for concept, definition in term_def_set}
+    term_def_dict_uncleaned = {concept:f'''<div class="definitiontooltip">{concept.strip()}<div class="definitiontooltiptext">{definition}</div></div>&nbsp;''' for concept, definition in term_def_set}
     
+    #term_def_dict_uncleaned = {}
+    #set_trace()
+    #for concept, definition in term_def_set:
+    #    term_def_dict_uncleaned[concept] = f'''<a href="#" class="definitiontooltip" title="{definition}">{concept.strip()}</a>'''
+
+     
     term_def_dict = clean_dict_of_extra_characters(term_def_dict_uncleaned)
 
     # Would be good to be able to send a list of plurals that we could 
@@ -307,6 +317,7 @@ def hämta_data_till_begrepp_view(url_parameter):
         search_request = retur_general_sök(url_parameter)
         highlight=True
 
+
     begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=5)
     synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=5, stop=8)
     
@@ -332,6 +343,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     
     return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
 
+    #set_trace()
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
 
     html = render_to_string(
@@ -350,7 +362,10 @@ def begrepp_view(request):
     url_parameter = request.GET.get("q")
     
     if request.is_ajax():
-        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)        
+        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
+        #page = request.GET.get('page', 1)
+        #paginator = Paginator(user_list, 10)
+    
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
         return JsonResponse(data=data_dict, safe=False)
 
@@ -696,3 +711,18 @@ def autocomplete_suggestions(request, attribute, search_term):
         suggestions = sorted(suggestions, key=len)[0:6]
 
     return JsonResponse(suggestions, safe=False)
+
+from django.core.serializers import serialize
+from django.core.serializers.json import DjangoJSONEncoder
+
+
+class LazyEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, int):
+            return str(obj)
+        return super().default(obj)
+
+def all_beslutade_terms(request):
+        queryset = list(Begrepp.objects.filter(status='Beslutad').values_list('term', flat=True))
+        #qs_serialize = serialize('json', queryset, cls=LazyEncoder)
+        return JsonResponse({'data' : queryset}, json_dumps_params={'ensure_ascii':False})
