@@ -1,7 +1,8 @@
 {% load static %}
 {% spaceless %}
-{% block mitten-span %}
 
+
+{% block mitten-span %}
 {% if begrepp %}
 
 {% load get_item %}
@@ -76,10 +77,10 @@
 
   <script> whatDoYouWant("{{searched_for_term}}")</script>
   </div>
-{% endif %}
+
+  {% endif %}
 
 {% endblock mitten-span %}
-
 
 {% endspaceless %}
 {% block extra_javascript %}
