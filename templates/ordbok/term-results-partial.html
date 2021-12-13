@@ -1,7 +1,8 @@
 {% load static %}
 {% spaceless %}
-{% block mitten-span %}
 
+
+{% block mitten-span %}
 {% if begrepp %}
 
 {% load get_item %}
@@ -13,7 +14,8 @@
   
     <div class="container">
       <div class="row">
-      <div class="col-12">      
+      <div class="col-12">
+      <div class="float-right" id="färg_förklaring" data-toggle="tooltip" data-placement="right" title="Vad betyder färgerna?"><i class="far fa-question-circle"></i></div>
       <table class="table table-bordered top-buffer-20" id="definition_table">
         <colgroup>
           <col class="col-3">
@@ -24,33 +26,34 @@
           <thead>
             <tr>
               <th>Rekommenderad term</th>
-              <th>Term på annat språk</th>
-              <th>Definition</th>
               <th>Synonym</th>
+              <th>Definition</th>
+              <th>Term på annat språk</th>
+
             </tr>
           </thead>
           <tbody id="myTable">
             {% for begrepp in begrepp %}            
               <tr class="{{ färg_status|get_item:begrepp.begrepp_status }}">
                 <td><a href="{% url 'begrepp_förklaring' %}?q={{begrepp.begrepp_id}}" id={{begrepp.begrepp_id}}>{{begrepp.term}}</a></td>              
-                <td>{{begrepp.utländsk_term}}</td>   
-                <td>{{begrepp.definition}}</td>                 
                 <td>
-                    {% for syn in synonym %}
-                      {% ifequal syn.begrepp_id begrepp.begrepp_id %}
-                          {% if syn.synonym_status == "Avråds" %}
-                          <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
-                            <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                  {% for syn in synonym %}
+                    {% ifequal syn.begrepp_id begrepp.begrepp_id %}
+                        {% if syn.synonym_status == "Avråds" %}
+                        <div class="tooltip">  - <s class="text-danger">{{syn.synonym}}</s>
+                          <span class="tooltiptext" style="background-color: red;">Status : {{syn.synonym_status}}</span>
+                      </div><br>
+                        {% else %}
+                        <div class="tooltip">- {{syn.synonym}}
+                          <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
                         </div><br>
-                          {% else %}
-                          <div class="tooltip">- {{syn.synonym}}
-                            <span class="tooltiptext">Status : {{syn.synonym_status}}</span>
-                          </div><br>
-                          {% endif %} 
-                      {% endifequal %}
-                  {% endfor %}
-                  
-                </td>
+                        {% endif %} 
+                    {% endifequal %}
+                {% endfor %}
+                
+              </td>
+              <td>{{begrepp.definition}}</td>
+              <td>{{begrepp.utländsk_term}}</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -74,11 +77,26 @@
 
   <script> whatDoYouWant("{{searched_for_term}}")</script>
   </div>
-{% endif %}
+
+  {% endif %}
 
 {% endblock mitten-span %}
+
 {% endspaceless %}
 {% block extra_javascript %}
+
+
+<script>
+  $(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+    $("#färg_panel").removeClass('d-none');
+    $("#färg_förklaring").click(function(){
+        $("#färg_panel").toggle();
+        });
+  });
+
+</script>
+
 
 {% endblock extra_javascript %}
 

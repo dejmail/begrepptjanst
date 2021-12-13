@@ -41,7 +41,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Internremiss': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
                     'Översättning' : 'table-översättning',                    
-                    'Definieras ej': 'table-warning-light',
+                    'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
 def extract_columns_from_query_and_return_set(search_result, start, stop):
