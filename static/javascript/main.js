@@ -10,7 +10,7 @@ function endpoint_check() {
     } else {
 		const endpoint = document.URL;
 		return endpoint
-	}
+	} 
 
 }
 
@@ -20,8 +20,8 @@ const endpoint = endpoint_check();
 const delay_by_in_ms = 750
 let scheduled_function = true
 
-function remove_om_olli_window() {
-	var div = document.getElementById("replaceable-content-middle-column");
+function toggle_element(element_id) {
+	var div = document.getElementById(element_id);
 	while(div.firstChild) {
 		div.removeChild(div.firstChild);
 	}
@@ -29,7 +29,7 @@ function remove_om_olli_window() {
 
 user_input.keyup(function () {
 	$("#mitten-span-middle-column").empty();
-	remove_om_olli_window();
+	toggle_element("replaceable-content-middle-column");
 	
 	const request_parameters = {
 		
@@ -51,6 +51,7 @@ user_input.keyup(function () {
 				begrepp_div.fadeTo('fast', 0).promise().then(() => {
 					// replace the HTML contents
 					begrepp_div.html(response);
+					
 					// fade-in the div with new contents
 					begrepp_div.fadeTo('fast', 1);
 					// stop animating search icon
@@ -64,6 +65,10 @@ user_input.keyup(function () {
 	
 	// start animating the search icon with the CSS class
 	search_icon.addClass('blink')
+
+	// rehide the colour panel
+	$("#färg_panel").addClass('d-none');
+
 
 	// if scheduled_function is NOT false, cancel the execution of the function
 	if (scheduled_function) {
@@ -101,6 +106,8 @@ function getPage(link_url) {
 		$('#replaceable-content-middle-column').empty();
 		$("#mitten-span-middle-column").empty();
 		begrepp_div.html(data);
+		
+		
 		changeBrowserURL(data, this.url);
 	}).fail(function(data,textStatus,jqXHR) {
 		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
