@@ -23,55 +23,50 @@
                 
                 <tbody>
                     {% for attribute, value in begrepp_full.items %}
-    
-                    {% if attribute == 'synonym' %}
-                        <tr class="{{färg_status.synonym}}">
-                    {% else %}
-                        <tr class="{{färg_status.begrepp}}">
-                    {% endif %}
+                {% if attribute == 'synonym' %}
+                    <tr class="{{färg_status.synonym}}">
                         <td>{{attribute|capfirst}}</td>
-                        {% if attribute == 'status' %}
-                                {% if value in 'Preliminär,För validering,Internremiss' %}
-                                    <td>Preliminär</td>
-                                {% else %}
-                                    <td>{{value}}</td>
-                                {% endif %}
-                        {% elif attribute == 'synonym' %}
+                        <td>
                             {% for synonym in value %}
                                 {% if synonym.synonym is not None %}
                                     {% if synonym.synonym_status == "Avråds" %}
-                                    <td>
                                         -&nbsp;
                                         <button type="button" class="btn-sm btn-avrådd strike">
                                             <s class="strike">{{synonym.synonym}}</s>
-                                        </button>
-                                    </td>
+                                        </button><br>
                                     {% else %}
-                                    <td>
                                         -&nbsp;
-                                        {{synonym.synonym}}
-                                    </td>
+                                        {{synonym.synonym}}<br>
                                     {% endif %}
                                 {% else %}
-                                <td>
                                     -
-                                </td>
                                 {% endif %}
                             {% endfor %}
-                        {% elif begrepp_full.status in 'Avråds, Avställd' %}
-                            <td><s class="text-danger">{{value}}</s></td>
-                        {% else %}
-                            <td>{{value}}</td>
-                        {% endif %}
-                        </tr>
-                    {% endfor %}
+                        </td>
+                {% else %}
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>{{attribute|capfirst}}</td>
+                    {% if attribute == 'status' %}
+                            {% if value in 'Preliminär,För validering,Internremiss' %}
+                                <td>Preliminär</td>
+                            {% else %}
+                                <td>{{value}}</td>
+                            {% endif %}                        
+                    {% elif begrepp_full.status in "Avråds, Avställd" %}
+                        <td><s class="text-danger">{{value}}</s></td>
+                    {% else %}
+                        <td>{{value}}</td>
+                    {% endif %}
+                {% endif %}                
+                </tr>
+                {% endfor %}
+                <tfoot>
                     <tr>
                         <td>
                             <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
                         </td>
-                        <td>
-                        </td>
                     </tr>
+                </tfoot>
                 </tbody>
             </table>  
         </div>
