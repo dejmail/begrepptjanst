@@ -184,11 +184,7 @@ def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
 def return_list_of_term_and_definition():
     
-    cursor = connection.cursor()
-    sql_statement = f"SELECT term, definition FROM ordbok_begrepp;"
-    clean_statement = re.sub(re_pattern, ' ', sql_statement)
-    cursor.execute(clean_statement)
-    result = cursor.fetchall()
+    result = Begrepp.objects.all().exclude(status='Publicera ej').values('term','definition')
 
     return result
 
@@ -207,16 +203,12 @@ def concatentate_all_dictionary_values_to_single_string(dictionary, key):
 def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list, term_def_dict):
 
     #create a set as there are duplicates in the database
-    term_def_set = set([(concepts,definition) for concepts,definition in term_def_dict])
+    term_def_set = set([(record.get('term'),record.get('definition')) for record in term_def_dict])
     # create a dictionary with the term as key and definition containing the HTML needed to show the hover definition
     term_def_dict_uncleaned = {concept:f'''<div class="definitiontooltip">{concept.strip()}<div class="definitiontooltiptext">{definition}</div></div>&nbsp;''' for concept, definition in term_def_set}
     
     #term_def_dict_uncleaned = {}
-    #set_trace()
-    #for concept, definition in term_def_set:
-    #    term_def_dict_uncleaned[concept] = f'''<a href="#" class="definitiontooltip" title="{definition}">{concept.strip()}</a>'''
 
-     
     term_def_dict = clean_dict_of_extra_characters(term_def_dict_uncleaned)
 
     # Would be good to be able to send a list of plurals that we could 
