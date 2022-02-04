@@ -12,6 +12,9 @@ from django.db.models.functions import Cast, StrIndex, Substr
 from django_admin_multiple_choice_list_filter.list_filters import MultipleChoiceListFilter
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
+from simple_history.admin import SimpleHistoryAdmin
+ 
+
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 
@@ -114,7 +117,7 @@ class StatusListFilter(MultipleChoiceListFilter):
     def lookups(self, request, model_admin):
         return STATUS_VAL
 
-class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
+class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     class Media:
         css = {
@@ -151,6 +154,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
     ]
 
     readonly_fields = ['begrepp_version_nummer','datum_skapat','beställare__beställare_epost']
+    history_list_display = ['changed_fields']
 
     def beställare__beställare_epost(self, obj):
         return obj.beställare.beställare_email
@@ -182,6 +186,17 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, admin.ModelAdmin):
 
     date_hierarchy = 'begrepp_version_nummer'
 
+    def changed_fields(self, obj):
+        if obj.prev_record:
+            delta = obj.diff_against(obj.prev_record)
+            return_text = ""
+            for field in delta.changed_fields:
+                # set_trace()
+                return_text += f"""<p><strong>{field}</strong> ändrad från --> <span class="text_highlight_yellow">{getattr(delta.old_record, field)}</span></br></br>
+                till --> <span class="text_highlight_green">{getattr(delta.new_record, field)}</span></p>"""
+            return mark_safe(return_text)
+        return None
+        
     def skicka_epost_till_beställaren_beslutad(self, request, queryset):
         admin_actions.skicka_epost_till_beställaren_beslutad(queryset)
         self.message_user(request, 'Mail skickat till beställaren.')
