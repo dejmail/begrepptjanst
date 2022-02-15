@@ -722,20 +722,14 @@ def all_beslutade_terms(request):
                 if value == '-':
                     entry[attribute] = None
                 cleaned_list.append(entry)
-        
-        
-        #qs_serialize = serialize('json', queryset, cls=LazyEncoder)
+
         return JsonResponse(cleaned_list[0:100], json_dumps_params={'ensure_ascii':False}, safe=False)
 
 def all_synonyms(request):
         querylist = list(Synonym.objects.all().values())
-        # cleaned_list = []
-        # for entry in queryset:
-        #     for attribute, value in entry.items():
-        #         if value == '-':
-        #             entry[attribute] = None
-        #         cleaned_list.append(entry)
-        
-        
-        #qs_serialize = serialize('json', queryset, cls=LazyEncoder)
         return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
+
+def all_översättningar(request):
+        querylist = list(Begrepp.objects.filter(status='Översättning').values())
+        return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
+

@@ -15,5 +15,8 @@ urlpatterns = [
     path('whatDoYouWant/', ordbok_views.whatDoYouWant, name='whatDoYouWant'),
     path('autocomplete_suggestions/<str:attribute>/<search_term>/', ordbok_views.autocomplete_suggestions, name='autocomplete_suggestions'),
     path('export/attrs/', admin_views.BegreppAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
+    path('json/begrepp/', views.all_beslutade_terms, name='all_beslutade_terms'),
+    path('json/synonymer/', ordbok_views.all_synonyms, name='all_synonyms'),
+    path('json/oversattningar/', ordbok_views.all_översättningar, name='all_translations'),
     
 ]
