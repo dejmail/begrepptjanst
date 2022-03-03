@@ -716,15 +716,16 @@ class LazyEncoder(DjangoJSONEncoder):
 
 def all_beslutade_terms(request):
 
-        queryset = Begrepp.objects.filter(status='Beslutad').prefetch_related().values()
+        queryset = Begrepp.objects.all().filter(status='Beslutad').prefetch_related().values()
+        
         cleaned_list = []
-        for entry in queryset:
-            for attribute, value in entry.items():
-                if (value == '-') or (value == ''):
-                    entry[attribute] = None
-                cleaned_list.append(entry)
-
-        return JsonResponse(cleaned_list, json_dumps_params={'ensure_ascii':False}, safe=False)
+        # for entry in queryset:
+        #     for attribute, value in entry.items():
+        #         if (value == '-') or (value == ''):
+        #             entry[attribute] = None
+        #         cleaned_list.append(entry)
+        #set_trace()
+        return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
 def all_synonyms(request):
         querylist = list(Synonym.objects.all().values())
