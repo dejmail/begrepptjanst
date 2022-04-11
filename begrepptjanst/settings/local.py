@@ -18,9 +18,9 @@ INTERNAL_IPS = ['127.0.0.1',]
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'vgrinfor_begrepp_backup',
+        'NAME': 'vgrinfor_begrepp_prod',
         'USER': 'vgrinfor_admin',
-        'PASSWORD': '',
+        'PASSWORD': 'YqvyYGm5cJMLmzt',
         'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
 
