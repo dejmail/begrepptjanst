@@ -704,28 +704,33 @@ def autocomplete_suggestions(request, attribute, search_term):
 
     return JsonResponse(suggestions, safe=False)
 
-from django.core.serializers import serialize
-from django.core.serializers.json import DjangoJSONEncoder
+
+def all_non_beslutade_begrepp(request):
+
+    queryset = Begrepp.objects.all().filter(~Q(status='Beslutad') & 
+                                            ~Q(status__icontains='översättning') & 
+                                            ~Q(status__icontains='publicera ej')).prefetch_related().values()
 
 
-class LazyEncoder(DjangoJSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, int):
-            return str(obj)
-        return super().default(obj)
+    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
 def all_beslutade_terms(request):
 
-        queryset = Begrepp.objects.all().filter(status='Beslutad').prefetch_related().values()
-        
-        cleaned_list = []
-        # for entry in queryset:
-        #     for attribute, value in entry.items():
-        #         if (value == '-') or (value == ''):
-        #             entry[attribute] = None
-        #         cleaned_list.append(entry)
-        #set_trace()
-        return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+    queryset = Begrepp.objects.all().filter(~Q(status__icontains='översättning') & 
+                                            ~Q(status__icontains='publicera ej')).prefetch_related().values()
+    
+    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+
+
+from django.core import serializers
+
+def get_term(request, id):
+
+    logger.info(f'Getting begrepp {id}')
+    queryset = Begrepp.objects.filter(pk=id).values()
+
+    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+
 
 def all_synonyms(request):
         querylist = list(Synonym.objects.all().values())
