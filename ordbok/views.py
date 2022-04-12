@@ -11,6 +11,8 @@ from django.db.models import Q
 from django.core.mail import EmailMessage
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
+from django.urls import reverse
+
 from django.utils.safestring import mark_safe
 from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
 
@@ -678,7 +680,7 @@ def prenumera_till_epost(request):
             auth_password=settings.EMAIL_HOST_PASSWORD
         )
 
-    return HttpResponseRedirect('/')
+    return HttpResponseRedirect(reverse('begrepp'))
 
 
 def return_number_of_recent_comments(request):
