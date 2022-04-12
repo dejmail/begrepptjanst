@@ -2,12 +2,16 @@ from begrepptjanst.settings.base import *
 from django.urls import include, path  # For django versions from 2.0 and up
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 
 DEBUG=True
 
 DB_NAME = os.getenv('DB_NAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
 DB_USER = os.getenv('DB_USER')
+
+logger.debug(f'DB login credentials - {DB_NAME}, {DB_USER}, {DB_PASSWORD}')
 
 DATABASES = {
     'default': {
