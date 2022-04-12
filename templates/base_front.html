@@ -75,7 +75,7 @@
                   </div>
                   <div class="modal-body">
                     <p>Brevet kommer skickas ut en gång per vecka på en måndag</p>
-                    <form class="form-group" action="/prenumera" method="get">
+                    <form class="form-group" action="{% url 'email_subscribe' %}" method="get">
                       <label for="epost"></label>
                       <input type="email" class="form-control" id="prenumera" name="epost" placeholder="Epost address"><br><br>
                       <input type="submit" value="Prenumera" type="button" class="btn btn-primary">
