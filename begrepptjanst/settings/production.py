@@ -2,6 +2,8 @@ from begrepptjanst.settings.base import *
 
 DEBUG=False
 
+SUBDOMAIN = 'begreppstjanst'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 

@@ -680,7 +680,7 @@ def prenumera_till_epost(request):
             auth_password=settings.EMAIL_HOST_PASSWORD
         )
 
-    return HttpResponseRedirect(reverse('begrepp'))
+    return HttpResponseRedirect(reverse('begrepp') + settings.SUBDOMAIN)
 
 
 def return_number_of_recent_comments(request):

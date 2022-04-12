@@ -5,7 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
+SUBDOMAIN = 'begreppstjanst-dev'
 DEBUG=True
 
 DB_NAME = os.getenv('DB_NAME')
