@@ -679,14 +679,8 @@ def prenumera_till_epost(request):
             auth_user=settings.EMAIL_HOST_USER,
             auth_password=settings.EMAIL_HOST_PASSWORD
         )
-    
-    url = reverse('begrepp') + settings.SUBDOMAIN
-    
-    logger.debug(f'script prefix - {get_script_prefix()}')
-    logger.debug(f'redirect url - {url}')
 
-
-    return HttpResponseRedirect(url)
+    return HttpResponseRedirect(get_script_prefix())
 
 
 def return_number_of_recent_comments(request):
