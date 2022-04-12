@@ -1,6 +1,7 @@
 from begrepptjanst.settings.base import *
 from django.urls import include, path  # For django versions from 2.0 and up
 from django.conf import settings
+import logging
 
 logger = logging.getLogger(__name__)
 
