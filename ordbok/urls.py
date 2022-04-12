@@ -12,6 +12,7 @@ urlpatterns = [
     path('begrepp_forklaring/', ordbok_views.begrepp_förklaring_view, name="begrepp_förklaring"),
     path('requesttermform/', ordbok_views.hantera_request_term, name='hantera_term_request'),
     path('unread_comments/', ordbok_views.return_number_of_recent_comments, name='unread_comments'),
+    path('prenumera/', ordbok_views.prenumera_till_epost, name="email_subscribe"),
     path('whatDoYouWant/', ordbok_views.whatDoYouWant, name='whatDoYouWant'),
     path('autocomplete_suggestions/<str:attribute>/<search_term>/', ordbok_views.autocomplete_suggestions, name='autocomplete_suggestions'),
     path('export/attrs/', admin_views.BegreppAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),

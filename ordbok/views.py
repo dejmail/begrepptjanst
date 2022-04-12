@@ -2,7 +2,7 @@ import json
 from pdb import set_trace
 from urllib.parse import unquote
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from datetime import datetime
@@ -12,6 +12,7 @@ from django.core.mail import EmailMessage
 from django.core.files.storage import FileSystemStorage
 from django.conf import settings
 from django.utils.safestring import mark_safe
+from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
 
 from ordbok.models import *
 from ordbok import models
@@ -25,6 +26,11 @@ from django.utils.html import format_html
 from django.views.generic import ListView
 
 from django.core.paginator import Paginator
+
+from django.core.mail import send_mail
+
+
+
 
 
 logger = logging.getLogger(__name__)
@@ -656,6 +662,24 @@ def bekräfta_term(request):
                                    </div>''')
     else:
         return render(request, 'bekrafta_term.html', {'bekräfta': form})
+
+def prenumera_till_epost(request):
+
+    if request.method == 'GET':
+        epost = request.GET.get('epost')
+
+        send_mail(
+            'Prenumera till beslutade begrepp utskick',
+            f'Hej! {epost} vill prenumera mig till den veckovis utskicket av beslutade begrepp från Informatik och standardisering.',
+            epost,
+            ['informatik@vgregion.se'],
+            fail_silently=False,
+            auth_user=settings.EMAIL_HOST_USER,
+            auth_password=settings.EMAIL_HOST_PASSWORD
+        )
+
+    return HttpResponseRedirect('/')
+
 
 def return_number_of_recent_comments(request):
     
