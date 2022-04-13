@@ -18,7 +18,7 @@ from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
 
 from ordbok.models import *
 from ordbok import models
-from .forms import TermRequestForm, TermRequestTranslateForm, BekräftaTermForm, OpponeraTermForm
+from .forms import TermRequestForm, KommenteraTermForm
 from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space, HTML_TAGS, sort_begrepp_keys
 
 import re
@@ -48,7 +48,6 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'För validering': 'table-warning',
                     'Internremiss': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
-                    'Översättning' : 'table-översättning',                    
                     'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
@@ -462,127 +461,76 @@ def begrepp_förklaring_view(request):
     return render(request, "base.html", context={})
 
 def hantera_request_term(request):
-    
-    
+
     if request.method == 'POST':
-        
-        type_of_request = request.get_raw_uri().split('?')[-1].split('=')
-        
-        if 'requestTranslate' in type_of_request:
-            form = TermRequestTranslateForm(request.POST)
-            if form.is_valid():
+
+        form = TermRequestForm(request.POST, request.FILES)
+    
+        if form.is_valid():
+
+            file_list = []
+            if len(request.FILES) != 0:
+                for file in request.FILES.getlist('file_field'):
+                    fs = FileSystemStorage()
+                    filename = fs.save(content=file, name=file.name)
+                    uploaded_file_url = fs.url(filename)
+                    file_list.append(file.name)
+            
+            if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
+                    
+                return HttpResponse('''<div class="alert alert-danger text-center" id="ajax_response_message">
+                            Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
+                            </div>''')
+            else:
 
                 ny_beställare = Bestallare()
+                ny_beställare.beställare_namn = form.clean_name()
                 ny_beställare.beställare_email = form.clean_epost()
+                ny_beställare.beställare_telefon = form.clean_telefon()
+                ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
                 ny_beställare.save()
 
                 ny_term = Begrepp()
                 ny_term.utländsk_term = form.clean_utländsk_term()
                 ny_term.term = form.clean_begrepp()
                 ny_term.begrepp_kontext = form.clean_kontext()
-                ny_term.status = form.clean_status()
                 ny_term.beställare = ny_beställare
                 ny_term.save()
-
-                inkommande_domän = Doman()
                 
+                inkommande_domän = Doman()
+
                 if form.cleaned_data.get('workstream') == "Övrigt/Annan":
                     ny_domän = form.clean_not_previously_mentioned_in_workstream()
                     if (ny_domän is not None) and (ny_domän != ''):
-                        inkommande_domän.begrepp = ny_term
                         inkommande_domän.domän_namn = ny_domän
+                        inkommande_domän.begrepp = ny_term
                         inkommande_domän.save()
                 elif form.cleaned_data.get('workstream') == 'Inte relevant':
                     pass
                 else:
-                    inkommande_domän.begrepp = ny_term
                     inkommande_domän.domän_namn = form.clean_workstream()
-                    inkommande_domän.save()                
+                    inkommande_domän.begrepp = ny_term
+                    inkommande_domän.save()
+
+                for filename in file_list:
+                    new_file = BegreppExternalFiles()
+                    new_file.begrepp = ny_term
+                    new_file.support_file = filename
+                    new_file.save()
 
                 return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
-                                    Tack! Begrepp skickades in för översättning.
-                                    </div>''')
-
-            else:                
-                return render(request, 'requestTerm.html', {'form': form,
-                                                                 'whichTemplate' : 'requestTranslate'}, 
-                                                                 status=500)
-
-        else:
-            form = TermRequestForm(request.POST, request.FILES)
-
-            
-            if form.is_valid():
-
-                file_list = []
-                if len(request.FILES) != 0:
-                    for file in request.FILES.getlist('file_field'):
-                        fs = FileSystemStorage()
-                        filename = fs.save(content=file, name=file.name)
-                        uploaded_file_url = fs.url(filename)
-                        file_list.append(file.name)
-                
-                if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
-                        
-                    return HttpResponse('''<div class="alert alert-danger text-center" id="ajax_response_message">
-                                Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
+                                Tack! Begrepp skickades in för granskning.
                                 </div>''')
-                else:
-
-                    ny_beställare = Bestallare()
-                    ny_beställare.beställare_namn = form.clean_name()
-                    ny_beställare.beställare_email = form.clean_epost()
-                    ny_beställare.beställare_telefon = form.clean_telefon()
-                    ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
-                    ny_beställare.save()
-
-                    ny_term = Begrepp()
-                    ny_term.utländsk_term = form.clean_utländsk_term()
-                    ny_term.term = form.clean_begrepp()
-                    ny_term.begrepp_kontext = form.clean_kontext()
-                    ny_term.beställare = ny_beställare
-                    ny_term.save()
-                    
-                    inkommande_domän = Doman()
-
-                    if form.cleaned_data.get('workstream') == "Övrigt/Annan":
-                        ny_domän = form.clean_not_previously_mentioned_in_workstream()
-                        if (ny_domän is not None) and (ny_domän != ''):
-                            inkommande_domän.domän_namn = ny_domän
-                            inkommande_domän.begrepp = ny_term
-                            inkommande_domän.save()
-                    elif form.cleaned_data.get('workstream') == 'Inte relevant':
-                        pass
-                    else:
-                        inkommande_domän.domän_namn = form.clean_workstream()
-                        inkommande_domän.begrepp = ny_term
-                        inkommande_domän.save()
-
-                    for filename in file_list:
-                        new_file = BegreppExternalFiles()
-                        new_file.begrepp = ny_term
-                        new_file.support_file = filename
-                        new_file.save()
-
-                    return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
-                                    Tack! Begrepp skickades in för granskning.
-                                    </div>''')
-            else:
-                
-                return render(request, 'requestTerm.html', {'form': form,
-                                                            'whichTemplate' : 'requestTerm'}, 
-                                                            status=500)
+        else:
+            
+            return render(request, 'requestTerm.html', {'form': form,
+                                                        'whichTemplate' : 'requestTerm'}, 
+                                                        status=500)
 
     elif request.is_ajax():
-       #request.GET.get
-        if 'translate' in request.GET.keys():
-            form = TermRequestTranslateForm(initial={'utländsk_term' : request.GET.get("q")})
-            
-            return render(request, 'requestTerm.html', {'form': form, 
-                                                        'whichTemplate' : 'requestTranslate',
-                                                        'header' : 'Önskemål om ny översättning'})
-        else:
-            form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
+       
+        form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
+        
         return render(request, 'requestTerm.html', {'form': form, 
                                                     'whichTemplate' : 'requestTerm',
                                                     'header' : 'Önskemål om nytt begrepp'})
@@ -590,17 +538,17 @@ def hantera_request_term(request):
     else:
         return render(request, 'term.html', {})
 
-def opponera_term(request):
+def kommentera_term(request):
 
     url_parameter = request.GET.get("q")
     
     if request.method == 'GET':
         inkommande_term = Begrepp(term=url_parameter)
-        form = OpponeraTermForm(initial={'term' : inkommande_term})
-        return render(request, 'opponera_term.html', {'opponera': form})
+        form = KommenteraTermForm(initial={'term' : inkommande_term})
+        return render(request, 'kommentera_term.html', {'kommentera': form})
 
     elif request.method == 'POST':
-        form = OpponeraTermForm(request.POST)
+        form = KommenteraTermForm(request.POST)
         if form.is_valid():
             file_list = []
             if len(request.FILES) != 0:
@@ -610,21 +558,21 @@ def opponera_term(request):
                     uploaded_file_url = fs.url(filename)
                     file_list.append(file.name)
 
-            opponera_term = OpponeraBegreppDefinition()
-            opponera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
-            #opponera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
-            opponera_term.epost = form.cleaned_data.get('epost')
-            opponera_term.namn = form.cleaned_data.get('namn')
-            opponera_term.status = models.DEFAULT_STATUS
-            opponera_term.telefon = form.cleaned_data.get('telefon')
+            kommentera_term = KommenteraBegreppDefinition()
+            kommentera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
+            #kommentera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
+            kommentera_term.epost = form.cleaned_data.get('epost')
+            kommentera_term.namn = form.cleaned_data.get('namn')
+            kommentera_term.status = models.DEFAULT_STATUS
+            kommentera_term.telefon = form.cleaned_data.get('telefon')
             # entries with doublets cause a problem, so we take the first one
-            opponera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
-            opponera_term.save()
+            kommentera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
+            kommentera_term.save()
 
             for filename in file_list:
                 new_file = BegreppExternalFiles()
-                new_file.begrepp = opponera_term.begrepp
-                new_file.kommentar = opponera_term
+                new_file.begrepp = kommentera_term.begrepp
+                new_file.kommentar = kommentera_term
                 new_file.support_file = filename
                 new_file.save()
 
@@ -686,7 +634,7 @@ def prenumera_till_epost(request):
 def return_number_of_recent_comments(request):
     
     if request.method == 'GET':
-        total_comments = OpponeraBegreppDefinition.objects.all()
+        total_comments = KommenteraBegreppDefinition.objects.all()
         status_list = [i.get('status') for i in total_comments.values()]
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})
