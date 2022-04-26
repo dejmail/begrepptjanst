@@ -248,7 +248,13 @@ text-decoration: line-through;
   }
 
 
-
+mark {
+  padding-left: .1em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  padding-right: 0%;
+  background-color:#fcf8e3
+}
 
   .definitiontooltip {
     position: relative;
