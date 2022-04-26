@@ -123,13 +123,6 @@ text-decoration: line-through;
       border-radius: 4px;
     }
 
-  .btn-översättning {
-      border-color: #8eaadb;
-      background-color: #8eaadb;
-      color: white;
-      border-radius: 4px;
-    }
-
   .btn-white {
       border-color: black;
       background-color: white;
@@ -203,13 +196,6 @@ text-decoration: line-through;
     background-color: #f496a3;
   }
 
-  .table-översättning{
-    background-color: #8eaadb;
-  }
-
-  .table-önskad-översättning{
-    background-color: white;
-  }
 
   
   
@@ -239,7 +225,7 @@ text-decoration: line-through;
     display: inline-block;
     position: fixed;
     width: 110px; 
-    height: 205px;
+    height: 145px;
   }
 
   .status-padding {

@@ -1,16 +1,25 @@
 from begrepptjanst.settings.base import *
 from django.urls import include, path  # For django versions from 2.0 and up
 from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
 
+SUBDOMAIN = 'begreppstjanst-dev'
 DEBUG=True
+
+DB_NAME = os.getenv('DB_NAME')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_USER = os.getenv('DB_USER')
+
+logger.debug(f'DB login credentials - {DB_NAME}, {DB_USER}, {DB_PASSWORD}')
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'vgrinfor_begrepp_prod',
-        'USER': 'vgrinfor_admin',
-        'PASSWORD': '',
+        'NAME': DB_NAME,
+        'USER': DB_USER,
+        'PASSWORD': DB_PASSWORD,
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
         'OPTIONS': {
@@ -39,5 +48,6 @@ MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
 EMAIL_HOST = 'mail.vgrinformatik.se'
 EMAIL_PORT = 587
 EMAIL_HOST_USER = 'info@vgrinformatik.se'
-EMAIL_HOST_PASSWORD = os.getenv('OLLI_EMAIL_PASSWORD')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
+

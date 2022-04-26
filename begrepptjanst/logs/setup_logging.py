@@ -56,13 +56,13 @@ logging_schema = {
         "__main__": {  # if __name__ == "__main__"
             # Use a list even if one handler is used
             "handlers": ["file"],
-            "level": "INFO",
+            "level": "DEBUG",
             "propagate": False
         }
     },
     # Just a standalone kwarg for the root logger
     "root" : {
-        "level": "WARNING",
+        "level": "DEBUG",
         "handlers": ["file"]
     }
 }
