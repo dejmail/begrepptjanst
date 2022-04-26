@@ -7,8 +7,7 @@ from ordbok import admin as admin_views
 
 urlpatterns = [
     path("", ordbok_views.begrepp_view, name="begrepp"),
-    path('term_opponering/', ordbok_views.opponera_term, name="opponera_term"),
-    path('term_bekraftelse/', ordbok_views.bekräfta_term, name="bekräfta_term"),
+    path('term_kommentera/', ordbok_views.kommentera_term, name="kommentera_term"),
     path('begrepp_forklaring/', ordbok_views.begrepp_förklaring_view, name="begrepp_förklaring"),
     path('requesttermform/', ordbok_views.hantera_request_term, name='hantera_term_request'),
     path('unread_comments/', ordbok_views.return_number_of_recent_comments, name='unread_comments'),

@@ -1,0 +1,57 @@
+{% load crispy_forms_filters %}
+
+	<div class="modal" id="kommenteraModal" tabindex="-1" role="dialog" aria-labelledby="kommenteraModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <h5 class="modal-title" id="kommenteraModalLabel">Kommentera Begrepp</h5>
+			  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			  </button>
+			</div>
+			<div class="modal-body">
+				<p style="font-size: 15px;">Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet. Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.</p>
+				<form id="kommentera_term_form" action="{% url 'kommentera_term' %}", method='POST'>{% csrf_token %}
+					{{ kommentera|crispy }}
+				
+				<input type="submit" data-dismiss="kommenteraModal" value="Skicka" id="kommentera_button" class="btn btn-light-blue" style="color: white; background-color:#006298;">
+				</form>
+			</div>
+		  </div>
+		</div>
+	</div>
+
+{% block extra_javascript %}
+<script>	
+	$("#kommentera_term_form").submit(function(event){
+		event.preventDefault(); //prevent default action 
+		var post_url = $(this).attr("action"); //get form action url
+		var request_method = $(this).attr("method"); //get form GET/POST method
+		var formdata = new FormData($(this)[0]);
+		// var form_data = $(this).serialize(); //Encode form elements for submission
+		
+		$.ajax({
+			url : post_url,
+			type: request_method,
+			data : formdata,
+			dataType: 'html',
+        	contentType: false,
+        	cache: false,
+        	processData:false,
+			beforeSend: function (request)
+            {
+                request.setRequestHeader("X-CSRFTOKEN", "{{ csrf_token }}");
+            },
+		}).done(function(response){ 
+			$('body').removeClass('modal-open');
+			$('.modal-backdrop').remove();
+			$("#mitten-span-middle-column").html(response);
+            history.pushState(post_url, '', post_url)
+            setTimeout(function(){
+            $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
+            document.getElementById('user-input').value = '';
+            history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', '/');
+		});
+	});
+</script>
+{% endblock extra_javascript %}

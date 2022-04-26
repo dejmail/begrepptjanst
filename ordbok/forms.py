@@ -99,60 +99,10 @@ class TermRequestForm(forms.Form):
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
 
-class TermRequestTranslateForm(forms.Form):
-
-    def clean(self):
-        cleaned_data = super().clean()
-        workstream = cleaned_data.get("workstream")
-        other = cleaned_data.get("other")
-        
-        if (workstream == 'Övrigt/Annan') and (other is None or other == ''):
-        # Only do something if both fields are valid so far.
-            self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
-            )
-            raise ValidationError("Måste ge var begreppet används om du har valt Övrigt/Annan")
-        
-        return cleaned_data
-
-    def clean_name(self):
-        return self.cleaned_data.get('namn')
-
-    def clean_begrepp(self):
-        if self.cleaned_data.get('begrepp') == '':
-            return "[Finns ingen översättning]"
-        else:
-            return self.cleaned_data.get('begrepp')
-
-    def clean_epost(self):
-        return self.cleaned_data.get('epost')
-
-    def clean_kontext(self):
-        return self.cleaned_data.get('kontext')
-
-    def clean_not_previously_mentioned_in_workstream(self):
-        return self.cleaned_data.get('other')
-
-    def clean_workstream(self):
-        return self.cleaned_data.get('workstream')
-
-    def clean_utländsk_term(self):
-        return self.cleaned_data.get('utländsk_term')
-    
-    def clean_status(self):
-        return "Önskad Översättning"
-
-    
-
-    begrepp = forms.CharField(max_length=254, label="Förslag på svensk begrepp", widget = forms.TextInput, required=False)
-    utländsk_term = forms.CharField(max_length=254, label="Engelsk term / Vad det heter i systemet")
-    kontext = forms.CharField(widget=forms.Textarea, label="Förklara funktionaliteten:")
-    workstream = forms.CharField(label='Ström som rapporterar in systembegrepp', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
-    epost =  forms.EmailField(max_length=254, label="E-post")
-    status = forms.ChoiceField(widget = forms.HiddenInput, choices=STATUS_VAL, initial="Önskad Översättning")
 
 
-class OpponeraTermForm(forms.Form):
+
+class KommenteraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
@@ -171,25 +121,6 @@ class ExternalFilesForm(forms.ModelForm):
     kommentar = forms.CharField(widget=forms.HiddenInput())  
     support_file = forms.FileField()
 
-class BekräftaTermForm(forms.Form):
-
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     workstream = cleaned_data.get("workstream")
-    #     other = cleaned_data.get("other")
-
-    #     if (workstream == 'Övrigt/Annan') and (other is None):
-    #     # Only do something if both fields are valid so far.
-    #         raise ValidationError(
-    #             "Måste ge var begreppet används om du har valt Övrigt/Annan"
-    #             )
-
-    term = forms.CharField(widget=forms.HiddenInput())  
-    epost = forms.EmailField()
-    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
-    workstream = forms.CharField(label='Verifierar att begreppet används i:', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
-    kontext = forms.CharField(label='Specificera var begreppet används')
 
 class BegreppForm(forms.ModelForm):
     

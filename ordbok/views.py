@@ -31,12 +31,7 @@ from django.core.paginator import Paginator
 
 from django.core.mail import send_mail
 
-
-
-
-
 logger = logging.getLogger(__name__)
-
 
 re_pattern = re.compile(r'\s+')
 
@@ -51,61 +46,20 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
-def extract_columns_from_query_and_return_set(search_result, start, stop):
-
-    reduced_list = []
-    for record in search_result:
-        if start==0:
-            reduced_list.append(record[:stop])
-        elif stop==0:
-            reduced_list.append(record[start:])
-        else:
-            reduced_list.append(record[start:stop])
-    
-    reduced_set = set([tuple(i) for i in reduced_list])
-    return reduced_set
-
-
 def retur_general_sök(url_parameter):
-    cursor = connection.cursor()
-    ''' need to reduce the number of fields being returned, we are not using all of them,
-    but this also affects the parsing as it is position based, so need to be careful'''
-    sql_statement = f'''SELECT ordbok_begrepp.id,\
-                              definition,\
-                              term,\
-                              utländsk_term,\
-                              ordbok_begrepp.status AS begrepp_status,\
-                              ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
-                              synonym,\
-                              synonym_status\
-                        FROM ordbok_begrepp\
-                            LEFT JOIN ordbok_synonym\
-                                ON ordbok_begrepp.id = ordbok_synonym.begrepp_id\
-                            LEFT JOIN ordbok_doman\
-                                ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
-                        WHERE (ordbok_begrepp.term LIKE "%{url_parameter}%"\
-                        OR ordbok_begrepp.id LIKE "%{url_parameter}%"\
-                        OR ordbok_begrepp.anmärkningar LIKE "%{url_parameter}%"\
-                        OR ordbok_begrepp.definition LIKE "%{url_parameter}%"\
-                        OR ordbok_begrepp.utländsk_term LIKE "%{url_parameter}%"\
-                        OR ordbok_synonym.synonym LIKE "%{url_parameter}%")
-                        AND NOT ordbok_begrepp.status = 'Publicera ej';'''
-    
-    column_names = ['begrepp_id',
-                    'definition',
-                    'term',
-                    'utländsk_term',
-                    'begrepp_status', 
-                    'synonym_begrepp_id',
-                    'synonym',
-                    'synonym_status']
 
+    queryset = Begrepp.objects.all().exclude(
+                         status='Publicera ej'
+                     ).filter(
+                     Q(id__contains=url_parameter) |
+                     Q(term__icontains=url_parameter) |
+                     Q(anmärkningar__icontains=url_parameter) |
+                     Q(definition__icontains=url_parameter) |
+                     Q(utländsk_term__icontains=url_parameter) |
+                     Q(synonym__synonym__icontains=url_parameter)
+                     ).distinct()
 
-    clean_statement = re.sub(re_pattern, ' ', sql_statement)
-    cursor.execute(clean_statement)
-    result = cursor.fetchall()
-    
-    return result
+    return queryset
 
 def filter_by_first_letter(letter):
 
@@ -124,52 +78,7 @@ def filter_by_first_letter(letter):
 
 def retur_komplett_förklaring_custom_sql(url_parameter):
 
-    cursor = connection.cursor()
-    sql_statement = f'''SELECT\
-                            ordbok_begrepp.id AS begrepp_id,\
-                            begrepp_kontext,\
-                            begrepp_version_nummer,\
-                            definition,\
-                            källa,\
-                            term_i_system,\
-                            externt_id,\
-                            annan_ordlista,\
-                            status,\
-                            term,\
-                            utländsk_term,\
-                            id_vgr,\
-                            anmärkningar,\
-                            ordbok_synonym.begrepp_id AS synonym_begrepp_id,\
-                            synonym,
-                            synonym_status,\
-                            ordbok_doman.begrepp_id AS domän_begrepp_id,\
-                            domän_namn\
-                            FROM\
-                                ordbok_begrepp\
-                            LEFT JOIN\
-                                ordbok_synonym\
-                                ON ordbok_begrepp.id = ordbok_synonym.begrepp_id\
-                            LEFT JOIN\
-                                ordbok_doman\
-                                ON ordbok_begrepp.id = ordbok_doman.begrepp_id\
-                            WHERE\
-                                ordbok_begrepp.id = {url_parameter};'''
-
-    clean_statement = re.sub(re_pattern, ' ', sql_statement)
-    cursor.execute(clean_statement)
-    result = cursor.fetchall()
-    
-    return result
-
-def run_sql_statement(sql_statement):
-
-        cursor = connection.cursor()
-        clean_statement = re.sub(re_pattern, ' ', sql_statement)
-        cursor.execute(clean_statement)
-        result = cursor.fetchall()
-
-        return result
-
+    return Begrepp.objects.get(pk=url_parameter)
 
 
 def sort_returned_sql_search_according_to_search_term_position(lines, delim, position=1):
@@ -202,7 +111,7 @@ def clean_dict_of_extra_characters(incoming_dict):
         clean_dict[keys.strip()] = re.sub('\xa0', ' ', values)
     return clean_dict
 
-def concatentate_all_dictionary_values_to_single_string(dictionary, key):
+def concatentate_all_dictionary_values_to_single_string(dictionary : dict, key : str):
 
     return ' ½ '.join([i.get(key) for i in dictionary])
 
@@ -210,10 +119,13 @@ def concatentate_all_dictionary_values_to_single_string(dictionary, key):
 def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list, term_def_dict):
 
     #create a set as there are duplicates in the database
-    term_def_set = set([(record.get('term'),record.get('definition')) for record in term_def_dict])
+    #term_def_set = set([(record.get('term'),record.get('definition')) for record in term_def_dict])
     # create a dictionary with the term as key and definition containing the HTML needed to show the hover definition
-    term_def_dict_uncleaned = {concept:f'''<div class="definitiontooltip">{concept.strip()}<div class="definitiontooltiptext">{definition}</div></div>&nbsp;''' for concept, definition in term_def_set}
-    
+
+    term_def_dict_uncleaned = {
+        record.get('term'):f'''<div class="definitiontooltip">{record.get('term').strip()}<div class="definitiontooltiptext">{record.get('definition')}</div></div>&nbsp;''' for record in term_def_dict
+        }
+
     #term_def_dict_uncleaned = {}
 
     term_def_dict = clean_dict_of_extra_characters(term_def_dict_uncleaned)
@@ -242,7 +154,8 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     altered_strings = translator.xlat(joined_definitions_minus_nbsp)
     # resplit the now altered string back into a list
     resplit_altered_strings = altered_strings.split(' ½ ')
-    
+
+    #begrepp_list = {}
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
            begrepp_dict_list[index]['definition'] = resplit_altered_strings[index]
@@ -293,8 +206,7 @@ def replace_non_html_brackets(edit_string, gt_brackets, lt_brackets):
         edit_string = replace_str_index(edit_string, gt_position, position_shifter, '&#62;')
         logging.info(f'edited_string - {edit_string}')
         position_shifter += 4
-        
-    
+
     return edit_string
 
 def mark_fields_as_safe_html(list_of_dict, fields):
@@ -306,7 +218,6 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
     return list_of_dict
 
-
 def hämta_data_till_begrepp_view(url_parameter):
 
     if (len(url_parameter) == 1) and (url_parameter.isupper()):
@@ -314,47 +225,40 @@ def hämta_data_till_begrepp_view(url_parameter):
         highlight=False
     else: 
         search_request = retur_general_sök(url_parameter)
+        logger.info(f'len of search result = {len(search_request)}')
+
         highlight=True
 
-
-    begrepp = extract_columns_from_query_and_return_set(search_result=search_request, start=0, stop=5)
-    synonym = extract_columns_from_query_and_return_set(search_result=search_request, start=5, stop=8)
-    
-    begrepp_column_names = ['begrepp_id', 'definition', 'term', 'utländsk_term', 'begrepp_status']
-
-    return_list_dict = []
-    for return_result in begrepp:
-        return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
-
-    synonym_column_names = ['begrepp_id', 'synonym', 'synonym_status']
-
-    return_synonym_list_dict = []
-    for return_result in synonym:
-        return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
-
     # this is all the terms and definitions from the DB
-    term_def_dict = return_list_of_term_and_definition()
+    all_terms_and_definitions_dict = return_list_of_term_and_definition()
     
-    return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list=return_list_dict,
-                                             term_def_dict=term_def_dict)
-    if highlight==True:
-        return_list_dict = highlight_search_term_i_definition(url_parameter, return_list_dict)
-    
-    return_list_dict = sort_returned_sql_search_according_to_search_term_position(return_list_dict, url_parameter)
+    return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(
+        begrepp_dict_list = search_request.values(),
+        term_def_dict = all_terms_and_definitions_dict
+        )
 
-    #set_trace()
+    if highlight==True:
+        return_list_dict = highlight_search_term_i_definition(
+            url_parameter, 
+            return_list_dict
+            )
+    
+    return_list_dict = sort_returned_sql_search_according_to_search_term_position(
+        return_list_dict, 
+        url_parameter
+        )
+
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
 
     html = render_to_string(
         template_name="term-results-partial.html", context={'begrepp': return_list_dict,
                                                             'färg_status' : färg_status_dict,
-                                                            'synonym' : return_synonym_list_dict,
-                                                            'searched_for_term' : url_parameter}
-                                                            
-    )
+                                                            'queryset' : search_request,
+                                                            'searched_for_term' : url_parameter
+                                                            }
+                            )
     
     return html, return_list_dict
-
 
 def begrepp_view(request):
     
@@ -362,92 +266,31 @@ def begrepp_view(request):
     
     if request.is_ajax():
         data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
-        #page = request.GET.get('page', 1)
-        #paginator = Paginator(user_list, 10)
-    
+
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
         return JsonResponse(data=data_dict, safe=False)
 
-    # elif request.method == 'GET':
-    #     data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
-    #     return render(request, "term-results-partial.html", context=data_dict)
-
-    #elif request.method=='GET':
-    #    return render(request, "term_forklaring_only.html", context=template_context)
-    
     else:
         begrepp = Begrepp.objects.none()
-    #    context = dict.fromkeys(['searched_for_term'], url_parameter)
-    
-    #context['begrepp'] = begrepp
-
-    #print(f"context = {context}, {url_parameter}")
     
     return render(request, "term.html", context={'begrepp' : begrepp})
-
-
 
 def begrepp_förklaring_view(request):
 
     url_parameter = request.GET.get("q")
+    
     if url_parameter:
-        exact_term_request = retur_komplett_förklaring_custom_sql(url_parameter)
-        begrepp_full = extract_columns_from_query_and_return_set(exact_term_request, 0, -5)
-        synonym_full = extract_columns_from_query_and_return_set(exact_term_request, -5, -2)
-        domän_full = extract_columns_from_query_and_return_set(exact_term_request, -2, 0)
-        
-        result_column_names = ['term id',
-                               'begrepp_kontext',
-                               'begrepp_version_nummer',
-                               'definition',
-                               'källa',
-                               'term_i_system',
-                               'kod',
-                               'annan referens',
-                               'status',
-                               'term',
-                               'term på annat språk',
-                               'id_vgr',
-                               'anmärkning',
-                               'synonym_begrepp_id',
-                               'synonym',
-                               'synonym_status',
-                               'domän_begrepp_id',
-                               'domän_namn']
-
-        begrepp_column_names = result_column_names[:-5]
-        return_list_dict = []
-        for return_result in begrepp_full:
-            return_list_dict.append(dict(zip(begrepp_column_names, return_result)))
-
-        
-
-        synonym_column_names = result_column_names[-5:-2]
-        return_synonym_list_dict = []
-        for return_result in synonym_full:
-            return_synonym_list_dict.append(dict(zip(synonym_column_names, return_result)))
-        
-
-        domän_column_names = result_column_names[-2:]
-        return_domän_list_dict = []
-        for return_result in domän_full:
-            return_domän_list_dict.append(dict(zip(domän_column_names, return_result)))
+        single_term = retur_komplett_förklaring_custom_sql(url_parameter)
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
-        status_färg_dict = {'begrepp' :färg_status_dict.get(return_list_dict[0].get('status')),
-                            'synonym' : färg_status_dict.get(return_synonym_list_dict[0].get('status'))}
 
-        return_list_dict[0]['synonym'] = return_synonym_list_dict
-
-        # the function for the output of the begrepp_full sort has a harcoded sort order
-        # that needs to have the same fields as described in the ingoing dict.
-        template_context = {'begrepp_full': sort_begrepp_keys(return_list_dict[0]),
-                            'domän_full' : return_domän_list_dict,
-                            'färg_status' : status_färg_dict}
+        status_färg_dict = {'begrepp' : färg_status_dict.get(single_term.status),
+                            'synonym' : [[i.synonym,i.synonym_status] for i in single_term.synonym_set.all()]}
         
+        template_context = {'begrepp_full': single_term,
+                            'färg_status' : status_färg_dict}
+
         html = render_to_string(template_name="term_forklaring.html", context=template_context)
-    # else:
-    #     term_json = Begrepp.objects.none()
 
     if request.is_ajax():        
         return HttpResponse(html, content_type="html")
@@ -560,7 +403,6 @@ def kommentera_term(request):
 
             kommentera_term = KommenteraBegreppDefinition()
             kommentera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
-            #kommentera_term.datum = datetime.now().strftime("%Y-%m-%d %H:%M")
             kommentera_term.epost = form.cleaned_data.get('epost')
             kommentera_term.namn = form.cleaned_data.get('namn')
             kommentera_term.status = models.DEFAULT_STATUS
@@ -579,39 +421,6 @@ def kommentera_term(request):
             return HttpResponse('''<div class="alert alert-success">
                                    Tack för dina synpunkter.
                                    </div>''')
-    
-def bekräfta_term(request):
-
-    url_parameter = request.GET.get("q")
-
-    if request.method == 'GET':
-        inkommande_term = Begrepp(term=url_parameter)
-        form = BekräftaTermForm(initial={'term' : inkommande_term})
-
-    if request.method == 'POST':
-        form = BekräftaTermForm(request.POST)
-        if form.is_valid():
-            kopplad_domän = Doman()
-            kopplad_domän.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
-
-            if form.cleaned_data.get('workstream') is not None:
-                kopplad_domän.domän_namn = form.cleaned_data.get('workstream')
-            elif (kopplad_domän.domän_namn == 'Övrigt/Annan') and (kopplad_domän.other is not None):
-                kopplad_domän.domän_namn = form.cleaned_data.get('other')
-            if kopplad_domän.domän_namn == 'Inte relevant':
-                kopplad_domän.domän_namn = form.cleaned_data.get('kontext')
-            else:
-                kopplad_domän.domän_namn = form.cleaned_data.get('kontext')
-
-            # We need to clean out the "Inte definierad" once the domän has been given a real one
-            #SomeModel.objects.filter(id=id).delete()
- 
-            kopplad_domän.save()
-            return HttpResponse('''<div class="alert alert-success">
-                                   Tack för verifiering av domänen.
-                                   </div>''')
-    else:
-        return render(request, 'bekrafta_term.html', {'bekräfta': form})
 
 def prenumera_till_epost(request):
 
@@ -645,7 +454,6 @@ def whatDoYouWant(request):
     if request.method == 'GET':
         
          return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
-     # return render(request, "term.html", context={'begrepp' : begrepp})
  
 def autocomplete_suggestions(request, attribute, search_term):
 
@@ -691,14 +499,6 @@ class LazyEncoder(DjangoJSONEncoder):
 def all_beslutade_terms(request):
 
         queryset = Begrepp.objects.all().filter(status='Beslutad').prefetch_related().values()
-        
-        cleaned_list = []
-        # for entry in queryset:
-        #     for attribute, value in entry.items():
-        #         if (value == '-') or (value == ''):
-        #             entry[attribute] = None
-        #         cleaned_list.append(entry)
-        #set_trace()
         return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
 def all_synonyms(request):

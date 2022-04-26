@@ -63,7 +63,7 @@
                 <tfoot>
                     <tr>
                         <td>
-                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="opponera_button">Kommentera</button>
+                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="kommentera_button">Kommentera</button>
                         </td>
                     </tr>
                 </tfoot>
@@ -110,7 +110,7 @@
             <p>Ingen definition hittades...</p>
     {% endif %}
     
-    <div id="opponera_bekräfta">
+    <div id="kommentera_bekräfta">
     </div>
     
     <style>
@@ -149,7 +149,7 @@
     // configuration of the observer:
     var config = {childList: true}
      
-    var target = document.querySelector('#opponera_bekräfta');
+    var target = document.querySelector('#kommentera_bekräfta');
     // pass in the target node, as well as the observer options
     observer.observe(target, config); 
     
@@ -170,10 +170,10 @@
     
     $(document).ready(function(){
     
-        $("#opponera_button").click(function(){
+        $("#kommentera_button").click(function(){
             
-            get_form_function(url="{% url 'opponera_term' %}?q={{begrepp_full.term}}", 
-                              div_to_replace="#opponera_bekräfta",
+            get_form_function(url="{% url 'kommentera_term' %}?q={{begrepp_full.term}}", 
+                              div_to_replace="#kommentera_bekräfta",
                               type_method="GET");
                         });
                     });

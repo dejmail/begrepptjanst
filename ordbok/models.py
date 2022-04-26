@@ -15,13 +15,11 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Preliminär', 'Preliminär'),
               ('Publicera ej', 'Publicera ej'),
               ('Pågår', 'Pågår'), 
-              ("Önskad Översättning","Önskad Översättning"),
-              ("Översättning", "Översättning"),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
 SYSTEM_VAL = (('Millennium', "Millennium"),
               ('Annat system', "Annat system"),
-               ('VGR Begreppsystem',"VGR Begreppsystem"))
+              ('VGR Begreppsystem',"VGR Begreppsystem"))
 
 
             
@@ -56,7 +54,7 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
-    kommentar = models.ForeignKey("OpponeraBegreppDefinition", to_field='id', null=True, blank=True, on_delete=models.CASCADE)
+    kommentar = models.ForeignKey("KommenteraBegreppDefinition", to_field='id', null=True, blank=True, on_delete=models.CASCADE)
     support_file = models.FileField(blank=True, null=True, upload_to='')
 
     def __str__(self):
@@ -105,7 +103,7 @@ class Synonym(models.Model):
     def __str__(self):
         return self.synonym
 
-class OpponeraBegreppDefinition(models.Model):
+class KommenteraBegreppDefinition(models.Model):
 
     class Meta:
         verbose_name_plural = 'Kommenterade Begrepp'

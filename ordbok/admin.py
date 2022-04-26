@@ -234,7 +234,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     def export_chosen_begrepp_attrs_action(self, request, queryset):
 
         db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
-                                                                                                            'opponerabegreppdefinition', 
+                                                                                                            'kommenterabegreppdefinition', 
                                                                                                             'email_extra',
                                                                                                             'begreppexternalfiles'])
         #chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -368,7 +368,7 @@ class ContextFilesInline(admin.StackedInline):
     exclude = ('begrepp',)
 
 
-class OpponeraBegreppDefinitionAdmin(admin.ModelAdmin):
+class KommenteraBegreppDefinitionAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
@@ -451,7 +451,7 @@ admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
-admin.site.register(OpponeraBegreppDefinition, OpponeraBegreppDefinitionAdmin)
+admin.site.register(KommenteraBegreppDefinition, KommenteraBegreppDefinitionAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
