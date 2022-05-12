@@ -1,29 +1,27 @@
-from ordbok.forms import BegreppForm
+import re
 from pdb import set_trace
-from django.urls import reverse
-from django.db.models.functions import Lower
-from django.utils.safestring import mark_safe
-from django.conf import settings
-from django.utils.html import format_html
+
 import django.utils.encoding
-from django.db.models import Q, Case, When, Value, IntegerField
-from django.db.models import F, IntegerField, TextField, Value
-from django.db.models.functions import Cast, StrIndex, Substr
-from django_admin_multiple_choice_list_filter.list_filters import MultipleChoiceListFilter
-from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
-
-from simple_history.admin import SimpleHistoryAdmin
- 
-
+from django import forms
+from django.conf import settings
+from django.contrib import admin
+from django.db.models import Case, F, IntegerField, Q, TextField, Value, When
+from django.db.models.functions import Cast, Lower, StrIndex, Substr
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.urls import reverse
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+from django_admin_multiple_choice_list_filter.list_filters import \
+    MultipleChoiceListFilter
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
+from simple_history.admin import SimpleHistoryAdmin
 
-from django.contrib import admin
+from ordbok.forms import BegreppForm
 from ordbok.models import *
-from . import admin_actions
-from django import forms
-from .forms import ChooseExportAttributes, BegreppExternalFilesForm
-import re
+
+from ordbok import admin_actions
+from ordbok.forms import BegreppExternalFilesForm, ChooseExportAttributes
 
 admin.site.site_header = """OLLI Begreppstjänst Admin
  För fakta i livet"""
@@ -134,7 +132,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     fieldsets = [
         ['Main', {
-        'fields': [('datum_skapat','begrepp_version_nummer'), ('status', 'id_vgr',)],
+        'fields': [('datum_skapat','senaste_ändring'), ('status', 'id_vgr',)],
         }],
         [None, {
         #'classes': ['collapse'],
@@ -145,7 +143,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'anmärkningar',
                     'utländsk_term',
                     'term_i_system',
-                    'email_extra',
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
                     ('beställare','beställare__beställare_epost'),
@@ -153,7 +150,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
         }]
     ]
 
-    readonly_fields = ['begrepp_version_nummer','datum_skapat','beställare__beställare_epost']
+    readonly_fields = ['senaste_ändring','datum_skapat','beställare__beställare_epost']
     history_list_display = ['changed_fields']
 
     def beställare__beställare_epost(self, obj):
@@ -167,14 +164,13 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'utländsk_term',
                     'get_domäner',
                     'status_button',
-                    #'visa_html_i_begrepp_kontext',    
                     'annan_ordlista',
-                    'begrepp_version_nummer',
+                    'senaste_ändring',
                     'beställare',
                     'önskad_slutdatum')
 
     list_filter = (StatusListFilter,
-                   ('begrepp_version_nummer', DateRangeFilter),
+                   ('senaste_ändring', DateRangeFilter),
     )
 
     search_fields = ('term',
@@ -184,7 +180,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'utländsk_term',
                     'synonym__synonym')
 
-    date_hierarchy = 'begrepp_version_nummer'
+    date_hierarchy = 'senaste_ändring'
 
     def changed_fields(self, obj):
         if obj.prev_record:
@@ -196,27 +192,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                 till --> <span class="text_highlight_green">{getattr(delta.new_record, field)}</span></p>"""
             return mark_safe(return_text)
         return None
-        
-    def skicka_epost_till_beställaren_beslutad(self, request, queryset):
-        admin_actions.skicka_epost_till_beställaren_beslutad(queryset)
-        self.message_user(request, 'Mail skickat till beställaren.')
-    skicka_epost_till_beställaren_beslutad.short_description = "Skicka epost till beställaren: Beslutat"
-
-    
-    def skicka_epost_till_beställaren_status(self, request, queryset):
-        admin_actions.skicka_epost_till_beställaren_status(queryset)
-        self.message_user(request, 'Mail skickat till beställaren.')
-    skicka_epost_till_beställaren_status.short_description = "Skicka epost till beställaren: Status"
-
-    def skicka_epost_till_beställaren_validate(self, request, queryset):
-        admin_actions.skicka_epost_till_beställaren_validate(queryset)
-        self.message_user(request, 'Mail skickat till beställaren.')
-    skicka_epost_till_beställaren_validate.short_description = "Skicka epost till beställaren: Validera"
-
-    def ändra_status_översättning(queryset, request):
-        admin_actions.ändra_status_till_översättning(queryset)
-        
-    ändra_status_översättning.short_description = "Ändra status -> Översättning"
 
     def export_chosen_attrs_view(request):
 
@@ -234,10 +209,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     def export_chosen_begrepp_attrs_action(self, request, queryset):
 
         db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
-                                                                                                            'kommenterabegreppdefinition', 
-                                                                                                            'email_extra',
+                                                                                                            'kommenterabegrepp',
                                                                                                             'begreppexternalfiles'])
-        #chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
         chosen_begrepp_ids = queryset.values_list('pk', flat=True)
         chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
 
@@ -248,11 +221,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     export_chosen_begrepp_attrs_action.short_description = "Exportera valde begrepp"
 
-    actions = ['skicka_epost_till_beställaren_beslutad',
-               'skicka_epost_till_beställaren_status',
-               'skicka_epost_till_beställaren_validate',
-               'ändra_status_översättning',
-               'export_chosen_begrepp_attrs_action']
+    actions = ['export_chosen_begrepp_attrs_action',]
 
     def önskad_slutdatum(self, obj):
         
@@ -293,8 +262,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
             display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         elif (obj.status == 'Preliminär'):
             display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
-        elif (obj.status == 'Översättning'):
-            display_text = f'<button class="btn-xs btn-översättning text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         elif (obj.status == 'Beslutad'):
             display_text = f'<button class="btn-xs btn-grön text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
         else:
@@ -368,7 +335,7 @@ class ContextFilesInline(admin.StackedInline):
     exclude = ('begrepp',)
 
 
-class KommenteraBegreppDefinitionAdmin(admin.ModelAdmin):
+class KommenteraBegreppAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
@@ -451,7 +418,7 @@ admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
-admin.site.register(KommenteraBegreppDefinition, KommenteraBegreppDefinitionAdmin)
+admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
