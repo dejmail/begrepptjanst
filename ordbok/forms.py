@@ -64,9 +64,9 @@ class TermRequestForm(forms.Form):
         return self.cleaned_data.get('önskad_datum')
 
     def clean_önskad_datum(self):
-	    return self.cleaned_data.get('önskad_datum')
+        return self.cleaned_data.get('önskad_datum')
 
-    def clean_not_previously_mentioned_in_workstream(self):        
+    def clean_not_previously_mentioned_in_workstream(self):
         return self.cleaned_data.get('other')
 
     def clean_önskad_datum(self):
