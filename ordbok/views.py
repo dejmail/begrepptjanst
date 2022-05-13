@@ -1,35 +1,32 @@
 import json
+import logging
+import re
+from datetime import datetime
 from pdb import set_trace
 from urllib.parse import unquote
-from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
-from datetime import datetime
+
+from begrepptjanst.logs import setup_logging
+from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.core.mail import EmailMessage, send_mail
+from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Q
-from django.core.mail import EmailMessage
-from django.core.files.storage import FileSystemStorage
-from django.conf import settings
-from django.urls import reverse, get_script_prefix
-
-from django.utils.safestring import mark_safe
-from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
-
-from ordbok.models import *
-from ordbok import models
-from .forms import TermRequestForm, KommenteraTermForm
-from .functions import mäta_sök_träff, mäta_förklaring_träff, Xlator, nbsp2space, HTML_TAGS, sort_begrepp_keys
-
-import re
-import logging
-from begrepptjanst.logs import setup_logging
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
+from django.urls import get_script_prefix, reverse
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.views.generic import ListView
 
-from django.core.paginator import Paginator
-
-from django.core.mail import send_mail
+from ordbok.forms import KommenteraTermForm, TermRequestForm
+from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
+                              mäta_sök_träff, nbsp2space, sort_begrepp_keys)
+from ordbok.models import (Begrepp, BegreppExternalFiles, Bestallare,
+                           Dictionary, Doman, KommenteraBegrepp)
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +45,16 @@ färg_status_dict = {'Avråds' : 'table-danger',
 
 def retur_general_sök(url_parameter):
 
+    """ Check whether the  :model:`ordbok.Begrepp` contains entries in the 
+    attributes specified.
+    
+    Arguments: 
+    url_parameter {str} -- Search string sent by the user
+    :return: A queryset of matches
+    :rtype: Queryset
+        
+    """
+
     queryset = Begrepp.objects.all().exclude(
                          status='Publicera ej'
                      ).filter(
@@ -63,6 +70,16 @@ def retur_general_sök(url_parameter):
 
 def filter_by_first_letter(letter):
 
+    """ A filter of :model:`ordbok.Begrepp` which returns a queryset 
+    where the terms start with a certain letter.
+    
+    Arguments: 
+    letter {str} -- String letter to filter with
+    :return: A queryset of matches
+    :rtype: Queryset
+        
+    """ 
+
     queryset = Begrepp.objects.filter(
         ~Q(status="Publicera ej")).filter(
             term__istartswith=letter).values_list(
@@ -76,21 +93,48 @@ def filter_by_first_letter(letter):
                 'synonym__synonym_status')
     return queryset
 
-def retur_komplett_förklaring_custom_sql(url_parameter):
+def return_single_term(id):
 
-    return Begrepp.objects.get(pk=url_parameter)
+    """Return a single match of :model:`ordbok.Begrepp`
+
+    Arguments: 
+    id {str} -- ID of the match requested by the user
+    :return: A queryset match
+    :rtype: Queryset
+
+    >>>return_single_term(1) #doctest: +ELLIPSIS
+    [<Begrepp: doctest_unpredicatable.Begrepp>]
+
+    """
+
+    return Begrepp.objects.get(pk=id)
 
 
-def sort_returned_sql_search_according_to_search_term_position(lines, delim, position=1):
+def sort_results_according_to_search_term(queryset, url_parameter, position=1):
     
-    '''
-    Returns a sorted list based on "column" from list-of-dictionaries data.
-    '''
+    """Returns a sorted list based on "column" from list-of-dictionaries data.
 
-    return sorted(lines, key=lambda x: x.get('term').lower().split(delim))
+    Arguments: 
+    queryset {queryset} -- queryset containing terms to be returned to the UI
+    url_parameter {str} -- The str with which to split each term with
+    :return: Sorted list
+    :rtype: list
+    """
+
+    return sorted(queryset, key=lambda x: x.get('term').lower().split(url_parameter))
 
 
 def highlight_search_term_i_definition(search_term, begrepp_dict_list):
+
+    """Encapsulate the search string with HTML <mark> tag in the definition of 
+    the term.
+
+    Arguments: 
+    search_term {str} -- the string which should be encased in HTML <mark>
+    begrepp_dict_list -- class of type Queryset
+    :return: A list of dictionaries
+    :rtype: class of type Queryset
+    """
 
     for idx, begrepp in enumerate(begrepp_dict_list):
         begrepp_dict_list[idx]['definition'] = begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>')
@@ -100,41 +144,75 @@ def highlight_search_term_i_definition(search_term, begrepp_dict_list):
 
 def return_list_of_term_and_definition():
     
+    
+    """Return values "term" and "definition" from a queryset of all terms in
+     :model:`ordbok.Begrepp`.
+
+    Arguments: 
+    :return: A queryset of dictionaries all terms excluding those with status 'Publicer ej'
+    :rtype: class of type Queryset
+    """
+
     result = Begrepp.objects.all().exclude(status='Publicera ej').values('term','definition')
 
     return result
 
 def clean_dict_of_extra_characters(incoming_dict):
 
+    """ Using regular expression, replace all \xa0 characters that are present
+    in the definition strings.
+
+    Arguments:
+    incoming_dict {dict} -- A dictionary of with key:value as term:definition
+    
+    :return: A dictionary
+    :rtype: dict
+    """
+
     clean_dict = {}
     for keys,values in incoming_dict.items():
         clean_dict[keys.strip()] = re.sub('\xa0', ' ', values)
+
     return clean_dict
 
 def concatentate_all_dictionary_values_to_single_string(dictionary : dict, key : str):
 
+    """ Concatenate all the dictionary values into a single string with a 
+    spacer.
+
+    Arguments: 
+    dictionary {dict} -- 
+    :return: A string created by joining all the values of a given key
+    :rtype: str
+    """
+
     return ' ½ '.join([i.get(key) for i in dictionary])
 
+def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, key='definition'):
 
-def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(begrepp_dict_list, term_def_dict):
+    """ Manipulate an incoming dictionary that has a 'term' and 'definition'
+     key:value so that when a definition has references to other term/s
+     within :model:`ordbok.Begrepp`, those references have a tooltip 
+     connected show the definition on the UI.
+     
+     Arguments: 
+    begrepp_dict_list {dict} -- A list of  key:values of the search results
+    term_def_dict {} -- A list of all the term:definitions within :model:`ordbok.Begrepp`
 
-    #create a set as there are duplicates in the database
-    #term_def_set = set([(record.get('term'),record.get('definition')) for record in term_def_dict])
-    # create a dictionary with the term as key and definition containing the HTML needed to show the hover definition
-
+    :return:
+    :rtype:
+    """
+    
+    # create dictionary of term:definition where the value contains the term definition and tooltip HTML
     term_def_dict_uncleaned = {
-        record.get('term'):f'''<div class="definitiontooltip">{record.get('term').strip()}<div class="definitiontooltiptext">{record.get('definition')}</div></div>&nbsp;''' for record in term_def_dict
+        record.get('term'):f'''<div class="definitiontooltip">{record.get('term').strip()}<div class="definitiontooltiptext">{record.get(key)}</div></div>&nbsp;''' for record in term_def_dict
         }
-
-    #term_def_dict_uncleaned = {}
 
     term_def_dict = clean_dict_of_extra_characters(term_def_dict_uncleaned)
 
     # Would be good to be able to send a list of plurals that we could 
     # group togther in the pattern creation, but as Xlator is a dict
-    # class, I'm not sure how to do that-
-
-    #plurals = {'hälso- och sjukvårdsaktivitet' : 'er'}
+    # class, I'm not sure how to accomplish that.
 
     translator = Xlator(term_def_dict)
     
@@ -143,7 +221,7 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all 
     # the occurrences of begrepp in definitions with a hover tooltip text.
 
-    joined_definitions = concatentate_all_dictionary_values_to_single_string(begrepp_dict_list, 'definition')
+    joined_definitions = concatentate_all_dictionary_values_to_single_string(begrepp_dict_list, key)
     joined_definitions_minus_nbsp = nbsp2space(joined_definitions)
     gt_brackets, lt_brackets = find_all_angular_brackets(joined_definitions_minus_nbsp)
     
@@ -155,16 +233,23 @@ def creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result
     # resplit the now altered string back into a list
     resplit_altered_strings = altered_strings.split(' ½ ')
 
-    #begrepp_list = {}
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
-           begrepp_dict_list[index]['definition'] = resplit_altered_strings[index]
+           begrepp_dict_list[index][key] = resplit_altered_strings[index]
         except (re.error, KeyError) as e:
            print(e)
 
     return begrepp_dict_list
 
 def find_all_angular_brackets(bracket_string):
+
+    """ Definitions of terms often include < > brackets within the definitions which
+    are interpreted as HTML which confused the template engine. This function finds
+    all the < > that do not enclose a standard HTML tag.
+
+    :return: two lists containing the positions of either < or >
+    :rtype: list
+    """
 
     lt_brackets = []
     gt_brackets = []
@@ -180,38 +265,71 @@ def find_all_angular_brackets(bracket_string):
 
 def replace_str_index(text,index, index_shifter, replacement):
 
+    """ Return a string where string formatting was used to replace a 
+    certain character at a certain index with a different string.
+
+    Arguments:
+    text {str} -- The string from which the indices are calculated 
+    index {int} -- An index of interest
+    index_shifter {int} -- How much the original index needs to be shifted by
+    replacement {str} -- The replacement string
+
+    :return: a string with a bracket replaced with HTML character for < or >
+    :rtype: str
+    """
+
     return f"{text[:index+index_shifter]}{replacement}{text[index+1+index_shifter:]}"
 
 def replace_non_html_brackets(edit_string, gt_brackets, lt_brackets):
 
-    position_shifter = 0
-    logger.info(f'unedited string - {edit_string}')
-    logger.info(f'lt_brackets - {lt_brackets}')
+    """ Iterate through a string and replace the < and > characters with the 
+    corresponding HTML equivalent.
+    
+    Arguments:
+    edit_string {str} -- String containing <> that are not HTML
+    gt_brackets {list} -- String positions representing greater than character
+    lt_brackets {list} -- String positions representing lesser than character
+    :return: string with non-html < > characters
+    :rtype: str
+    """
+
+    index_shifter = 0
+    logger.debug(f'unedited string - {edit_string}')
+    logger.debug(f'lt_brackets - {lt_brackets}')
     for lt_position in lt_brackets:
-        edit_string = replace_str_index(edit_string, lt_position, position_shifter, '&lt;')
-        logging.info(f'edited_string - {edit_string}')
-        position_shifter += 3
+        edit_string = replace_str_index(edit_string, lt_position, index_shifter, '&lt;')
+        logging.debug(f'edited_string - {edit_string}')
+        index_shifter += 3
     
     logger.info(f'gt_brackets before index change - {gt_brackets}')
     
     stepped_range = [i*3-1 for i in range(1, 4)]
-    logger.info(f'stepped_range - {stepped_range}')
+    logger.debug(f'stepped_range - {stepped_range}')
     zipped_lists = zip(stepped_range, gt_brackets)
     adjusted_gt_indexes = [x + y for (x, y) in zipped_lists]
     
-    logger.info(f'gt_brackets after index change - {adjusted_gt_indexes}')
-    logger.info('replacing > brackets')
-    position_shifter=0
+    logger.debug(f'gt_brackets after index change - {adjusted_gt_indexes}')
+    logger.debug('replacing > brackets')
+    index_shifter=0
     for gt_position in adjusted_gt_indexes:        
-        edit_string = replace_str_index(edit_string, gt_position, position_shifter, '&#62;')
-        logging.info(f'edited_string - {edit_string}')
-        position_shifter += 4
+        edit_string = replace_str_index(edit_string, gt_position, index_shifter, '&#62;')
+        logging.debug(f'edited_string - {edit_string}')
+        index_shifter += 4
 
     return edit_string
 
 def mark_fields_as_safe_html(list_of_dict, fields):
 
+    """ Make certain fields within a list of dictionary
+    objects as safe html
 
+    Arguments:
+    list_of_dict {list} -- A list of dictionary objects containing term search results
+    fields {list} -- A list of fields to make HTML safe
+    :return: A list of dictionary objects where supplied key values are HTML safe
+    :rtype: list
+    """
+    
     for index, item in enumerate(list_of_dict):
         for field in fields:
             list_of_dict[index][field] = format_html(item.get(field))
@@ -219,6 +337,15 @@ def mark_fields_as_safe_html(list_of_dict, fields):
     return list_of_dict
 
 def hämta_data_till_begrepp_view(url_parameter):
+
+    """Main method that couples together all the submethods needed to
+    produce the HTML needed for the initial search view.
+
+    Arguments:
+    url_parameter {str} -- The search string sent by the user search
+    :return: HTML page formatted with the search results
+    :rtype: str
+    """
 
     if (len(url_parameter) == 1) and (url_parameter.isupper()):
         search_request = filter_by_first_letter(letter=url_parameter)
@@ -232,7 +359,7 @@ def hämta_data_till_begrepp_view(url_parameter):
     # this is all the terms and definitions from the DB
     all_terms_and_definitions_dict = return_list_of_term_and_definition()
     
-    return_list_dict = creating_tooltip_hover_with_definition_of_all_terms_present_in_search_result(
+    return_list_dict = creating_tooltip_hover_with_search_result(
         begrepp_dict_list = search_request.values(),
         term_def_dict = all_terms_and_definitions_dict
         )
@@ -243,7 +370,7 @@ def hämta_data_till_begrepp_view(url_parameter):
             return_list_dict
             )
     
-    return_list_dict = sort_returned_sql_search_according_to_search_term_position(
+    return_list_dict = sort_results_according_to_search_term(
         return_list_dict, 
         url_parameter
         )
@@ -261,7 +388,14 @@ def hämta_data_till_begrepp_view(url_parameter):
     return html, return_list_dict
 
 def begrepp_view(request):
-    
+
+    """ The view that processes the initial search from the user
+
+    Arguments:
+    request -- Incoming requrest object from the browser
+    :return: HttpResponse object containing template and context
+    :rtype: HttpResponse
+    """
     url_parameter = request.GET.get("q")
     
     if request.is_ajax():
@@ -277,10 +411,18 @@ def begrepp_view(request):
 
 def begrepp_förklaring_view(request):
 
+    """ View that processes the request for detailed information about a certain term
+
+    Arguments:
+    request: {HttpRequest} -- Request containing the id of the term of interest
+    :return: HttpResponse object containing template and context of a single term
+    :rtype: HttpResponse
+    """
+
     url_parameter = request.GET.get("q")
     
     if url_parameter:
-        single_term = retur_komplett_förklaring_custom_sql(url_parameter)
+        single_term = return_single_term(url_parameter)
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
 
@@ -305,6 +447,16 @@ def begrepp_förklaring_view(request):
 
 def hantera_request_term(request):
 
+    """ Send the form data when a user wants to request a new term or 
+    manage the POST data if the user submits the request.
+
+    Arguments:
+    request: {HttpRequest} -- Request object containing the POST information that
+    will be saved to db for processing.
+    :return: A HttpResponse containing a Bootstrap alert is sent back
+    :rtype: {HttpResponse}
+    """
+
     if request.method == 'POST':
 
         form = TermRequestForm(request.POST, request.FILES)
@@ -326,12 +478,20 @@ def hantera_request_term(request):
                             </div>''')
             else:
 
-                ny_beställare = Bestallare()
-                ny_beställare.beställare_namn = form.clean_name()
-                ny_beställare.beställare_email = form.clean_epost()
-                ny_beställare.beställare_telefon = form.clean_telefon()
-                ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
-                ny_beställare.save()
+                existing_beställare = Bestallare.objects.filter(
+                    Q(beställare_name__icontains=form.clean_name()) |
+                    Q(beställare_email__icontains=form.clean_epost)
+                )
+
+                if existing_beställare and len(existing_beställare) == 1:
+                    ny_beställare = existing_beställare
+                else:
+                    ny_beställare = Bestallare()
+                    ny_beställare.beställare_namn = form.clean_name()
+                    ny_beställare.beställare_email = form.clean_epost()
+                    ny_beställare.beställare_telefon = form.clean_telefon()
+                    ny_beställare.önskad_slutdatum = form.clean_önskad_datum()
+                    ny_beställare.save()
 
                 ny_term = Begrepp()
                 ny_term.utländsk_term = form.clean_utländsk_term()
@@ -383,6 +543,16 @@ def hantera_request_term(request):
 
 def kommentera_term(request):
 
+    """ Send back either the form to allow the submission of comments or
+    process the submitted form and save the data to db.
+
+    Arguments:
+    request {HttpRequest} -- HttpRequest object containing the POST/GET data
+    :return: HttpResponse with a Bootstrap alert response if form submitted via 
+    POST and saved successfully, or an empty form via GET that can be filled out.
+    :rtype: {HttpResponse}
+    """
+
     url_parameter = request.GET.get("q")
     
     if request.method == 'GET':
@@ -401,7 +571,7 @@ def kommentera_term(request):
                     uploaded_file_url = fs.url(filename)
                     file_list.append(file.name)
 
-            kommentera_term = KommenteraBegreppDefinition()
+            kommentera_term = KommenteraBegrepp()
             kommentera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
             kommentera_term.epost = form.cleaned_data.get('epost')
             kommentera_term.namn = form.cleaned_data.get('namn')
@@ -424,6 +594,13 @@ def kommentera_term(request):
 
 def prenumera_till_epost(request):
 
+    """ A view that takes in a request containing an email address that is
+    then emailed to the generic email address to be added to a subscription.
+
+    :return: HttpResponseRedirect back to the base page
+    :rtype: {HttpResponseRedirect} 
+    """
+
     if request.method == 'GET':
         epost = request.GET.get('epost')
 
@@ -440,22 +617,50 @@ def prenumera_till_epost(request):
     return HttpResponseRedirect(get_script_prefix())
 
 
-def return_number_of_recent_comments(request):
+def return_number_of_comments(request):
     
+    """ Returns JSON with total number of comments, and total number of unread comments
+    based on a status of Beslutad
+    
+    :return: JSON response containing the total number of comments, and total number of
+    unread comments.
+    :rtype: {JsonResponse}
+    """
+
     if request.method == 'GET':
-        total_comments = KommenteraBegreppDefinition.objects.all()
+        total_comments = KommenteraBegrepp.objects.all()
         status_list = [i.get('status') for i in total_comments.values()]
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})
 
-def whatDoYouWant(request):
+def no_search_result(request):
+
+    """ A view that was used to provide different choices based on what the user
+    chose to do if the initial search had zero results.
+
+    :return: A HttpResponse with HTML template and context
+    :rtype: {HttpResponse}
+    """
 
     url_parameter = request.GET.get("q")
     if request.method == 'GET':
         
-         return render(request, "whatDoYouWant.html", context={'searched_for_term' : url_parameter})    
+         return render(request, "no_search_result.html", context={'searched_for_term' : url_parameter})    
  
 def autocomplete_suggestions(request, attribute, search_term):
+
+    """ In the admin pages, there are certain fields where it is helpful to have
+    previously entered values shown to increase consistency across records.
+
+    Arguments:
+    request {HttpRequest}
+    attribute {str} -- The attribute in the DB to apply the filter to. A field 
+    in the form.
+    search_term {str} -- String content that has been entered in the form
+    :return: Json response containing a list of terms in the DB filtered by
+    what has been typed in
+    :rtype: {JsonResponse}
+    """
 
     logger = logging.getLogger(__name__)
 
@@ -486,11 +691,16 @@ def autocomplete_suggestions(request, attribute, search_term):
 
     return JsonResponse(suggestions, safe=False)
 
-
 def all_non_beslutade_begrepp(request):
 
+    """ Returns a JSON response with all the terms that have status 'Beslutad'
+    or 'Publicera ej'.
+
+    :return: JSON response with a list of terms
+    :rtype: {JsonResponse}
+    """
+
     queryset = Begrepp.objects.all().filter(~Q(status='Beslutad') & 
-                                            ~Q(status__icontains='översättning') & 
                                             ~Q(status__icontains='publicera ej')).prefetch_related().values()
 
 
@@ -498,27 +708,45 @@ def all_non_beslutade_begrepp(request):
 
 def all_beslutade_terms(request):
 
-    queryset = Begrepp.objects.all().filter(~Q(status__icontains='översättning') & 
-                                            ~Q(status__icontains='publicera ej')).prefetch_related().values()
+    """ Returns a JSON list of all terms with status 'Publicera ej'
+
+    :return: JSON list of term dictionaries
+    :rtype: {JsonResponse}
+    """
+
+    queryset = Begrepp.objects.all().filter(~Q(status__icontains='publicera ej')).prefetch_related().values()
     
     return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
 
 from django.core import serializers
 
+
 def get_term(request, id):
+
+    """ Obtain a single term from :model:`ordbok.Begrepp` and return a Queryset
+    dictionary that is presented as JSON. 
+
+    :return: JSON object of a single term
+    :rtype: {JsonResponse}
+    """
 
     logger.info(f'Getting begrepp {id}')
     queryset = Begrepp.objects.filter(pk=id).values()
 
-    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+    if queryset:
+        return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+    else:
+        return JsonResponse({'error' : 'No terms that match that id'})
 
 
 def all_synonyms(request):
-        querylist = list(Synonym.objects.all().values())
-        return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
 
-def all_översättningar(request):
-        querylist = list(Begrepp.objects.filter(status='Översättning').values())
-        return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
+    """ Obtain all the synonyms from the :model:`ordbok.Synonym` and return
+    a Queryset dictionary presented as JSON 
 
+    :return: Json object of all synonyms
+    :rtype: {JsonResponse}
+    """
+    querylist = list(Synonym.objects.all().values())
+    return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
