@@ -148,12 +148,12 @@
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
-function whatDoYouWant(requested_term)
+function no_search_result(requested_term)
     {
     $.ajax({
     type: "get", 
     dataType: "html",
-    url: "{% url 'whatDoYouWant' %}?q="+requested_term,
+    url: "{% url 'no_search_result' %}?q="+requested_term,
     success: function(data) {
       var display_html = data.html_from_view;
       $('#mitten-span-middle-column').html(data);
