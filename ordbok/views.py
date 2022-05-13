@@ -722,7 +722,7 @@ def all_beslutade_terms(request):
 from django.core import serializers
 
 
-def get_term_as_json(request, id):
+def get_term(request, id):
 
     """ Obtain a single term from :model:`ordbok.Begrepp` and return a Queryset
     dictionary that is presented as JSON. 
