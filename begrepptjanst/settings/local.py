@@ -15,6 +15,8 @@ DEBUG = True
 
 INTERNAL_IPS = ['127.0.0.1',]
 
+SECRET_KEY = "j4kf!tlx#w%=0+t(u38(1jqno8x)b$-^gb@$@%5s2q$wki*mx^"
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
