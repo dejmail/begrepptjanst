@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1. Installation &mdash; OLLI Begreppstjänst 1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="2. Configuration" href="configuration.html" />
+    <link rel="prev" title="Welcome to OLLI Begreppstjänst documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> OLLI Begreppstjänst
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">1. Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#clone-the-repository">1.1. Clone the repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-package-requirements">1.2. Install package requirements</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#setup-the-database">1.3. Setup the database</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">2. Configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ordbok.html">3. ordbok package</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">OLLI Begreppstjänst</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li><span class="section-number">1. </span>Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1><span class="section-number">1. </span>Installation<a class="headerlink" href="#installation" title="Permalink to this headline"></a></h1>
+<section id="clone-the-repository">
+<h2><span class="section-number">1.1. </span>Clone the repository<a class="headerlink" href="#clone-the-repository" title="Permalink to this headline"></a></h2>
+<p>The repo can be cloned from the Github repo <a class="reference external" href="https://github.com/dejmail/begrepptjanst/">Begreppstjänst</a> into a suitable local directory.</p>
+<p>Certain Python dependencies are required for the app to function.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">data</span><span class="o">-</span><span class="n">wizard</span><span class="o">==</span><span class="mf">1.3.0</span>
+<span class="n">Django</span><span class="o">==</span><span class="mf">3.2.13</span>
+<span class="n">django</span><span class="o">-</span><span class="n">admin</span><span class="o">-</span><span class="n">multiple</span><span class="o">-</span><span class="n">choice</span><span class="o">-</span><span class="nb">list</span><span class="o">-</span><span class="nb">filter</span><span class="o">==</span><span class="mf">0.1.1</span>
+<span class="n">django</span><span class="o">-</span><span class="n">admin</span><span class="o">-</span><span class="n">rangefilter</span><span class="o">==</span><span class="mf">0.8.1</span>
+<span class="n">django</span><span class="o">-</span><span class="n">crispy</span><span class="o">-</span><span class="n">forms</span><span class="o">==</span><span class="mf">1.9.0</span>
+<span class="n">django</span><span class="o">-</span><span class="n">debug</span><span class="o">-</span><span class="n">toolbar</span><span class="o">==</span><span class="mf">2.2</span>
+<span class="n">django</span><span class="o">-</span><span class="n">extensions</span><span class="o">==</span><span class="mf">2.2.9</span>
+<span class="n">django</span><span class="o">-</span><span class="n">simple</span><span class="o">-</span><span class="n">history</span><span class="o">==</span><span class="mf">3.0.0</span>
+<span class="n">djangorestframework</span><span class="o">==</span><span class="mf">3.12.4</span>
+<span class="n">mysqlclient</span><span class="o">==</span><span class="mf">2.0.1</span>
+<span class="n">Sphinx</span><span class="o">==</span><span class="mf">4.5.0</span>
+<span class="n">sphinx</span><span class="o">-</span><span class="n">rtd</span><span class="o">-</span><span class="n">theme</span><span class="o">==</span><span class="mf">1.0.0</span>
+<span class="n">sphinxcontrib</span><span class="o">-</span><span class="n">applehelp</span><span class="o">==</span><span class="mf">1.0.2</span>
+<span class="n">sphinxcontrib</span><span class="o">-</span><span class="n">devhelp</span><span class="o">==</span><span class="mf">1.0.2</span>
+<span class="n">sphinxcontrib</span><span class="o">-</span><span class="n">htmlhelp</span><span class="o">==</span><span class="mf">2.0.0</span>
+<span class="n">sphinxcontrib</span><span class="o">-</span><span class="n">jsmath</span><span class="o">==</span><span class="mf">1.0.1</span>
+<span class="n">sphinxcontrib</span><span class="o">-</span><span class="n">qthelp</span><span class="o">==</span><span class="mf">1.0.3</span>
+<span class="n">sphinxcontrib</span><span class="o">-</span><span class="n">serializinghtml</span><span class="o">==</span><span class="mf">1.1.5</span>
+<span class="n">XlsxWriter</span><span class="o">==</span><span class="mf">3.0.1</span>
+</pre></div>
+</div>
+</section>
+<section id="install-package-requirements">
+<h2><span class="section-number">1.2. </span>Install package requirements<a class="headerlink" href="#install-package-requirements" title="Permalink to this headline"></a></h2>
+<p>If your hosting solution offers the possibility of Python virtual environments, you need to activate that environment on the server and install the required packages using the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
+</pre></div>
+</div>
+</section>
+<section id="setup-the-database">
+<h2><span class="section-number">1.3. </span>Setup the database<a class="headerlink" href="#setup-the-database" title="Permalink to this headline"></a></h2>
+<p>Set up your hosted database. This app was originally configured to run on MySQL / MariaDB, but there is no reason why it cannot be used on Postgresql instead.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to OLLI Begreppstjänst documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration.html" class="btn btn-neutral float-right" title="2. Configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Liam J. Thompson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

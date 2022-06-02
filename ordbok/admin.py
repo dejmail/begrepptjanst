@@ -30,6 +30,13 @@ admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
 def add_non_breaking_space_to_status(status_item):
 
+    """ Add nonbreaking spaces to status buttons based on the length
+    of the button.
+
+    :return: Status button with nonbreaking spaces
+    :rtype: str
+    """
+
     length = len(status_item)
     length_to_add = 12 - length
     for x in range(length_to_add):
@@ -39,21 +46,22 @@ def add_non_breaking_space_to_status(status_item):
             status_item = '&nbsp;' + status_item
     return mark_safe(status_item)
 
-class SynonymInlineForm(forms.ModelForm):
+# class SynonymInlineForm(forms.ModelForm):
 
-    class Meta:
-        model = Synonym
-        fields = "__all__"
+#     class Meta:
+#         model = TermRelationships
+#         fields = "__all__"
 
-    def clean(self):
-        super(SynonymInlineForm, self).clean()
-        if self.cleaned_data.get('synonym') == None:
-            self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
+#     def clean(self):
+#         super(SynonymInlineForm, self).clean()
+#         if self.cleaned_data.get('synonym') == None:
+#             self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
 
-class SynonymInline(admin.StackedInline):
+class TermRelationshipInline(admin.StackedInline):
 
-    model = Synonym
-    form = SynonymInlineForm
+    model = TermRelationship
+    #form = SynonymInlineForm
+    fk_name = "from_term"
     extra = 1
 
 class BegreppExternalFilesInline(admin.StackedInline):
@@ -124,7 +132,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                )
          }
     
-    inlines = [BegreppExternalFilesInline, SynonymInline, ValideradAvDomänerInline]
+    inlines = [BegreppExternalFilesInline, TermRelationshipInline, ValideradAvDomänerInline]
 
     change_form_template = 'change_form_autocomplete.html'
 
@@ -159,7 +167,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     save_on_top = True
 
     list_display = ('term',
-                    'synonym',
+                    'relationship',
                     'definition',
                     'utländsk_term',
                     'get_domäner',
@@ -178,7 +186,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'begrepp_kontext',    
                     'annan_ordlista',
                     'utländsk_term',
-                    'synonym__synonym')
+                    'relationship')
 
     date_hierarchy = 'senaste_ändring'
 
@@ -227,20 +235,23 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
         
         return obj.beställare.önskad_slutdatum
 
-    def synonym(self, obj):
+    def relationship(self, obj):
         
-        display_text = ", ".join([
-            "<a href={}>{}</a>".format(
-                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[2].name),
-                    args=(synonym.id,)),
-                synonym.synonym)
-             for synonym in obj.synonym_set.all()
-        ])
-        if display_text:
-            return mark_safe(display_text)
-        return "-"
+        relationships = TermRelationship.objects.filter(to_term__term=obj.term)
+        urls = []
+        for relation in relationships:
+            link = f"<a href={reverse(f'admin:{obj._meta.app_label}_{obj._meta.model_name}_change',args=(obj.id,))}\
+                >{relation.relationship}</a>"
+            if link not in urls:
+                urls.append(link)
+            else:
+                pass
+        display_text = mark_safe(', '.join(urls))
 
-    synonym.admin_order_field = 'synonym'
+        if display_text:
+            return display_text
+        else:
+            return '-'
 
     def get_queryset(self, obj):
         qs = super(BegreppAdmin, self).get_queryset(obj)
@@ -307,23 +318,23 @@ class DomanAdmin(admin.ModelAdmin):
     list_filter = ("domän_namn",)
     search_fields = ('begrepp__term',)
 
-class SynonymAdmin(admin.ModelAdmin):
+# class SynonymAdmin(admin.ModelAdmin):
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == "begrepp":
-            kwargs["queryset"] = Begrepp.objects.filter().order_by(Lower('term'))
-        return super(SynonymAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+#         if db_field.name == "begrepp":
+#             kwargs["queryset"] = Begrepp.objects.filter().order_by(Lower('term'))
+#         return super(SynonymAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    ordering = ['begrepp__term']
-    list_display = ('begrepp',
-                    'synonym',
-                    'synonym_status')
+#     ordering = ['begrepp__term']
+#     list_display = ('begrepp',
+#                     'synonym',
+#                     'synonym_status')
 
-    list_select_related = (
-        'begrepp',
-    )
-    list_filter = ("synonym_status",)
-    search_fields = ("begrepp__term", "synonym")
+#     list_select_related = (
+#         'begrepp',
+#     )
+#     list_filter = ("synonym_status",)
+#     search_fields = ("begrepp__term", "synonym")
 
 
 class ContextFilesInline(admin.StackedInline):
@@ -417,8 +428,10 @@ class BegreppExternalFilesAdmin(admin.ModelAdmin):
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
-admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
+admin.site.register(Dictionary)
+admin.site.register(TermRelationship)
+admin.site.register(TypeOfRelationship)

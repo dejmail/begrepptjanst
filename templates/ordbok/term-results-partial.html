@@ -2,6 +2,12 @@
 {% spaceless %}
 
 {% block mitten-span %}
+
+{% block definition-modal %}
+<div class="modal" id="term-details-modal" role="dialog">
+</div>
+{% endblock definition-modal %}
+
 {% if begrepp %}
 
 {% load get_item %}

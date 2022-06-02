@@ -48,7 +48,7 @@ logging_schema = {
             "mode": "a",
             "encoding": "utf-8",
             "maxBytes": 500000,
-            "backupCount": 4
+            "backupCount": 1
         }
     },
     # Loggers use the handler names declared above
@@ -62,7 +62,7 @@ logging_schema = {
     },
     # Just a standalone kwarg for the root logger
     "root" : {
-        "level": "DEBUG",
+        "level": "INFO",
         "handlers": ["file"]
     }
 }

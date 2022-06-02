@@ -21,6 +21,8 @@ from django.urls import get_script_prefix, reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.views.generic import ListView
+from django.utils.translation import gettext as _
+
 
 from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
@@ -56,7 +58,7 @@ def retur_general_sök(url_parameter):
     """
 
     queryset = Begrepp.objects.all().exclude(
-                         status='Publicera ej'
+                         status='Publicera ej'  
                      ).filter(
                      Q(id__contains=url_parameter) |
                      Q(term__icontains=url_parameter) |
@@ -432,7 +434,7 @@ def begrepp_förklaring_view(request):
         template_context = {'begrepp_full': single_term,
                             'färg_status' : status_färg_dict}
 
-        html = render_to_string(template_name="term_forklaring.html", context=template_context)
+        html = render_to_string(template_name="term_details.html", context=template_context)
 
     if request.is_ajax():        
         return HttpResponse(html, content_type="html")
@@ -472,9 +474,9 @@ def hantera_request_term(request):
                     file_list.append(file.name)
             
             if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
-                    
-                return HttpResponse('''<div class="alert alert-danger text-center" id="ajax_response_message">
-                            Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
+                msg = _('Begreppet ni önskade finns redan i systemet, var god och sök igen.')
+                return HttpResponse(f'''<div class="alert alert-danger text-center" id="ajax_response_message">
+                            {msg}
                             </div>''')
             else:
 
@@ -521,8 +523,9 @@ def hantera_request_term(request):
                     new_file.support_file = filename
                     new_file.save()
 
-                return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
-                                Tack! Begrepp skickades in för granskning.
+                msg = _('Tack! Begrepp skickades in för granskning')
+                return HttpResponse(f'''<div class="alert alert-success text-center" id="ajax_response_message">
+                                {msg}
                                 </div>''')
         else:
             
@@ -588,9 +591,10 @@ def kommentera_term(request):
                 new_file.support_file = filename
                 new_file.save()
 
-            return HttpResponse('''<div class="alert alert-success">
-                                   Tack för dina synpunkter.
-                                   </div>''')
+            msg = _('Tack för dina synpunkter.')
+
+            return HttpResponse(f'''<div class="alert alert-success">\
+                 {msg} </div>''')
 
 def prenumera_till_epost(request):
 
@@ -717,10 +721,6 @@ def all_beslutade_terms(request):
     queryset = Begrepp.objects.all().filter(~Q(status__icontains='publicera ej')).prefetch_related().values()
     
     return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
-
-
-from django.core import serializers
-
 
 def get_term(request, id):
 
