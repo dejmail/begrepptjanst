@@ -27,7 +27,7 @@ from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, nbsp2space, sort_begrepp_keys)
 from ordbok.models import (Begrepp, BegreppExternalFiles, Bestallare,
-                           Dictionary, Doman, KommenteraBegrepp)
+                           Doman, KommenteraBegrepp)
 
 logger = logging.getLogger(__name__)
 
