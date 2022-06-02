@@ -7,6 +7,7 @@ from urllib.parse import unquote
 
 from begrepptjanst.logs import setup_logging
 from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
+from ordbok.models import DEFAULT_STATUS
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.core.mail import EmailMessage, send_mail
@@ -552,7 +553,6 @@ def kommentera_term(request):
     POST and saved successfully, or an empty form via GET that can be filled out.
     :rtype: {HttpResponse}
     """
-
     url_parameter = request.GET.get("q")
     
     if request.method == 'GET':
@@ -561,6 +561,7 @@ def kommentera_term(request):
         return render(request, 'kommentera_term.html', {'kommentera': form})
 
     elif request.method == 'POST':
+    
         form = KommenteraTermForm(request.POST)
         if form.is_valid():
             file_list = []
@@ -575,7 +576,7 @@ def kommentera_term(request):
             kommentera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
             kommentera_term.epost = form.cleaned_data.get('epost')
             kommentera_term.namn = form.cleaned_data.get('namn')
-            kommentera_term.status = models.DEFAULT_STATUS
+            kommentera_term.status = DEFAULT_STATUS
             kommentera_term.telefon = form.cleaned_data.get('telefon')
             # entries with doublets cause a problem, so we take the first one
             kommentera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
@@ -626,6 +627,7 @@ def return_number_of_comments(request):
     unread comments.
     :rtype: {JsonResponse}
     """
+    
 
     if request.method == 'GET':
         total_comments = KommenteraBegrepp.objects.all()
