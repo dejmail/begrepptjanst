@@ -1,0 +1,80 @@
+Ordbok package
+==============
+
+admin module
+------------
+ 
+.. automodule:: ordbok.admin
+   :members:
+   :undoc-members:
+
+admin\_actions module
+---------------------
+
+.. automodule:: ordbok.admin_actions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+admin\_views module
+-------------------
+
+.. automodule:: ordbok.admin_views
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+apps module
+-----------
+
+.. automodule:: ordbok.apps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+forms module
+------------
+
+.. automodule:: ordbok.forms
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+functions module
+----------------
+
+.. automodule:: ordbok.functions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+models module
+-------------
+
+.. automodule:: ordbok.models
+   :members:
+   :undoc-members:
+
+tests module
+------------
+
+.. automodule:: ordbok.tests
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+urls module
+-----------
+
+.. automodule:: ordbok.urls
+   :members:
+   :undoc-members:
+
+views module
+------------
+
+.. automodule:: ordbok.views
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
