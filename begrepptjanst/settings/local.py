@@ -42,7 +42,7 @@ DATABASES = {
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
-TEMPLATE_DIRS = ['/templates/',]
+TEMPLATE_DIRS = ['/templates/','/templates/ordbok/']
 
 MEDIA_URL = '/begrepptjanst/media/'
 MEDIA_ROOT = 'media'
@@ -50,6 +50,7 @@ MEDIA_ROOT = 'media'
 
 STATICFILES_DIRS = [
     "static",
+    
 ]
 
 STATIC_URL = '/static/'

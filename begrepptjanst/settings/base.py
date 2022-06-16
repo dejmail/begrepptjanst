@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_admin_multiple_choice_list_filter',
     'rangefilter',
-    'simple_history',    
+    'simple_history',
 ]
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'
@@ -61,7 +61,7 @@ ROOT_URLCONF = 'begrepptjanst.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates/ordbok','templates/admin','templates'],
+        'DIRS': ['templates/ordbok','templates/admin','templates','docs'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
