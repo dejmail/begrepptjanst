@@ -32,6 +32,13 @@ admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
 def add_non_breaking_space_to_status(status_item):
 
+    """ Add nonbreaking spaces to status buttons based on the length
+    of the button.
+
+    :return: Status button with nonbreaking spaces
+    :rtype: str
+    """
+
     length = len(status_item)
     length_to_add = 12 - length
     for x in range(length_to_add):

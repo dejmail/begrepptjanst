@@ -26,6 +26,10 @@ SYSTEM_VAL = (('Millennium', "Millennium"),
 
 class Begrepp(models.Model):
 
+    """Model that contains all the metadata regarding a term. Model has
+    historical copies.
+    """
+
     class Meta:
         verbose_name_plural = "Begrepp"
 
@@ -50,6 +54,9 @@ class Begrepp(models.Model):
     history = HistoricalRecords('datum_skapat')
 
     def __str__(self):
+
+        """Return the actual term
+        """
         return self.term
 
 class BegreppExternalFiles(models.Model):
@@ -118,6 +125,10 @@ class KommenteraBegreppDefinition(models.Model):
 
 class SökData(models.Model):
 
+    """Table that collects the IP address, the term search for and the 
+    timestamp.
+    """
+
     class Meta:
         verbose_name_plural = 'Sök data'
 
@@ -130,6 +141,9 @@ class SökData(models.Model):
         return self.sök_term
 
 class SökFörklaring(models.Model):
+
+    """Table taking note of which term definitions are clicked on.
+    """
 
     class Meta:
         verbose_name = ('Sök Förklaring')
