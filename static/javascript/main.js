@@ -70,7 +70,8 @@ user_input.keyup(function () {
 
 	// rehide the colour panel
 	$("#färg_panel").addClass('d-none');
-
+	$("#about-card").addClass('d-none');
+	$("#about-card").removeClass('d-inline-block');
 
 	// if scheduled_function is NOT false, cancel the execution of the function
 	if (scheduled_function) {
@@ -81,6 +82,27 @@ user_input.keyup(function () {
 	scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
 
 });
+
+document.body.addEventListener("change",  function(e) {
+	if ($("#filterForm input:checkbox:checked").length > 0)
+	{
+		var ajax_call = function (endpoint, request_parameters) {
+			var skapad_url = (endpoint + '?' + Object.keys(request_parameters) + '=' + Object.values(request_parameters));
+			$.getJSON(endpoint, request_parameters)
+				.done(response => {
+					begrepp_div.fadeTo('fast', 0).promise().then(() => {
+						// replace the HTML contents
+						begrepp_div.html(response);
+					});
+				});
+			}
+	} else {
+		console.alert('Checkboxes are ticked');
+	}
+}
+);
+	
+
 
 document.body.addEventListener("click", function(e) {
 	// e.target was the clicked element
@@ -108,8 +130,6 @@ function getPage(link_url, div) {
 		$('#replaceable-content-middle-column').empty();
 		$("#mitten-span-middle-column").empty();
 		div.html(data);
-		
-		
 		changeBrowserURL(data, this.url);
 	}).fail(function(data,textStatus,jqXHR) {
 		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");

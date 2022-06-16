@@ -20,7 +20,30 @@ body {
   width : auto;
 }
 
+.p1px {
+  padding : 0px !important;
+}
 
+
+.shift-div-upwards-60 {
+  top: -60px;
+}
+
+.shift-div-upwards-70 {
+  top: -70px;
+}
+
+.shift-div-upwards-80 {
+  top: -80px;
+}
+
+.shift-div-upwards-90 {
+  top: -90px;
+}
+
+.shift-div-upwards-100 {
+  top: -100px;
+}
 
 
 @font-face {
