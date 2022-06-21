@@ -141,7 +141,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     fieldsets = [
         ['Main', {
-        'fields': [('datum_skapat','begrepp_version_nummer'), ('status', 'id_vgr',)],
+        'fields': [('datum_skapat','senaste_ändring'), ('status', 'id_vgr',)],
         }],
         [None, {
         #'classes': ['collapse'],
@@ -160,7 +160,11 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
         }]
     ]
 
-    readonly_fields = ['begrepp_version_nummer','datum_skapat','beställare__beställare_epost']
+    readonly_fields = [
+        'senaste_ändring',
+        'datum_skapat',
+        'beställare__beställare_epost'
+        ]
     history_list_display = ['changed_fields']
 
     def beställare__beställare_epost(self, obj):
@@ -174,14 +178,14 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'utländsk_term',
                     'get_domäner',
                     'status_button',
-                    #'visa_html_i_begrepp_kontext',    
+                    #'visa_html_i_begrepp_kontext',
                     'annan_ordlista',
-                    'begrepp_version_nummer',
+                    'senaste_ändring',
                     'beställare',
                     'önskad_slutdatum')
 
     list_filter = (StatusListFilter,
-                   ('begrepp_version_nummer', DateRangeFilter),
+                   ('senaste_ändring', DateRangeFilter),
     )
 
     search_fields = ('term',
@@ -191,7 +195,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'utländsk_term',
                     'synonym__synonym')
 
-    date_hierarchy = 'begrepp_version_nummer'
+    date_hierarchy = 'senaste_ändring'
 
     def changed_fields(self, obj):
         if obj.prev_record:
@@ -241,7 +245,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     def export_chosen_begrepp_attrs_action(self, request, queryset):
 
         db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
-                                                                                                            'kommenterabegreppdefinition', 
+                                                                                                            'kommenterabegrepp', 
                                                                                                             'email_extra',
                                                                                                             'begreppexternalfiles'])
         #chosen_begrepp_ids = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -375,7 +379,7 @@ class ContextFilesInline(admin.StackedInline):
     exclude = ('begrepp',)
 
 
-class KommenteraBegreppDefinitionAdmin(admin.ModelAdmin):
+class KommenteraBegreppAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
@@ -431,8 +435,6 @@ class KommenteraBegreppDefinitionAdmin(admin.ModelAdmin):
                 instance.save()
         formset.save_m2m()
 
-
-
 class SökFörklaringAdmin(admin.ModelAdmin):
 
     list_display = ('sök_term',
@@ -446,7 +448,6 @@ class SökDataAdmin(admin.ModelAdmin):
                     'sök_timestamp',
                     'records_returned')
 
-
 class BegreppExternalFilesAdmin(admin.ModelAdmin):
 
     model = BegreppExternalFiles
@@ -458,7 +459,7 @@ admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Doman, DomanAdmin)
 admin.site.register(Synonym, SynonymAdmin)
-admin.site.register(KommenteraBegreppDefinition, KommenteraBegreppDefinitionAdmin)
+admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)

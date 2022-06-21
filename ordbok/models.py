@@ -34,7 +34,7 @@ class Begrepp(models.Model):
         verbose_name_plural = "Begrepp"
 
     begrepp_kontext = models.TextField(default='Inte definierad')
-    begrepp_version_nummer = models.DateTimeField(auto_now=True, verbose_name='Senaste ändring')
+    senaste_ändring = models.DateTimeField(auto_now=True, verbose_name='Senaste ändring')
     datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
     definition = models.TextField(blank=True)
@@ -61,7 +61,7 @@ class Begrepp(models.Model):
 
 class BegreppExternalFiles(models.Model):
     begrepp = models.ForeignKey("Begrepp", to_field='id', on_delete=models.CASCADE)
-    kommentar = models.ForeignKey("KommenteraBegreppDefinition", to_field='id', null=True, blank=True, on_delete=models.CASCADE)
+    kommentar = models.ForeignKey("KommenteraBegrepp", to_field='id', null=True, blank=True, on_delete=models.CASCADE)
     support_file = models.FileField(blank=True, null=True, upload_to='')
 
     def __str__(self):
@@ -110,7 +110,7 @@ class Synonym(models.Model):
     def __str__(self):
         return self.synonym
 
-class KommenteraBegreppDefinition(models.Model):
+class KommenteraBegrepp(models.Model):
 
     class Meta:
         verbose_name_plural = 'Kommenterade Begrepp'

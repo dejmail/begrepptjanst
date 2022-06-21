@@ -55,21 +55,6 @@ models module
    :members:
    :undoc-members:
 
-tests module
-------------
-
-.. automodule:: ordbok.tests
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-urls module
------------
-
-.. automodule:: ordbok.urls
-   :members:
-   :undoc-members:
-
 views module
 ------------
 

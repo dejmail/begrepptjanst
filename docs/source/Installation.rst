@@ -20,5 +20,5 @@ If your hosting solution offers the possibility of Python virtual environments, 
 Setup the database
 ------------------
 
-Set up your hosted database. This app was originally configured to run on MySQL / MariaDB, but there is no reason why it cannot be used on Postgresql as well, though this has not been tested.
+Set up your hosted database. This app was originally configured to run on MySQL / MariaDB, but there is no reason why it cannot be used on Postgresql as well, although this has not been tested.
 

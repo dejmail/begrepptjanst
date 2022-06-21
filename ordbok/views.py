@@ -567,7 +567,7 @@ def kommentera_term(request):
                     uploaded_file_url = fs.url(filename)
                     file_list.append(file.name)
 
-            kommentera_term = KommenteraBegreppDefinition()
+            kommentera_term = KommenteraBegrepp()
             kommentera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
             kommentera_term.epost = form.cleaned_data.get('epost')
             kommentera_term.namn = form.cleaned_data.get('namn')
@@ -624,7 +624,7 @@ def return_number_of_recent_comments(request):
     """
 
     if request.method == 'GET':
-        total_comments = KommenteraBegreppDefinition.objects.all()
+        total_comments = KommenteraBegrepp.objects.all()
         status_list = [i.get('status') for i in total_comments.values()]
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})

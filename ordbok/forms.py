@@ -32,7 +32,6 @@ class CustomDateInput(forms.DateInput):
     input_type = 'date'
 
 
-
 class TermRequestForm(forms.Form):
 
     def clean(self):
@@ -64,7 +63,7 @@ class TermRequestForm(forms.Form):
         return self.cleaned_data.get('önskad_datum')
 
     def clean_önskad_datum(self):
-	    return self.cleaned_data.get('önskad_datum')
+        return self.cleaned_data.get('önskad_datum')
 
     def clean_not_previously_mentioned_in_workstream(self):        
         return self.cleaned_data.get('other')
@@ -98,9 +97,6 @@ class TermRequestForm(forms.Form):
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
     file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
-
-
-
 
 class KommenteraTermForm(forms.Form):
 
