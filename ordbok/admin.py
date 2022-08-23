@@ -128,7 +128,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     change_form_template = 'change_form_autocomplete.html'
 
-    form = BegreppForm    
+    form = BegreppForm
 
     fieldsets = [
         ['Main', {
@@ -138,6 +138,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
         #'classes': ['collapse'],
         'fields' : ['term',
                     'definition',
+                    'link',
                     'källa',
                     'tidigare_definition_och_källa',
                     'anmärkningar',
@@ -167,7 +168,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'annan_ordlista',
                     'senaste_ändring',
                     'beställare',
-                    'önskad_slutdatum')
+                    'önskad_slutdatum',
+                    'has_link')
 
     list_filter = (StatusListFilter,
                    ('senaste_ändring', DateRangeFilter),
@@ -181,6 +183,23 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'synonym__synonym')
 
     date_hierarchy = 'senaste_ändring'
+
+    def has_link(self, obj):
+
+        if (obj.link != None) and (obj.link != ''):
+            return format_html(
+                f'''<a href={obj.link}>
+                <i class="fas fa-file-download">
+                </i>
+                </a>''')
+        else:
+                return format_html(
+                    f'''
+                    <i class="fas fa-exclamation-triangle" style="color:red">
+                    </i>
+                    ''')
+
+    has_link.short_description = "URL Länk"
 
     def changed_fields(self, obj):
         if obj.prev_record:
