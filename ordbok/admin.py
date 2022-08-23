@@ -119,9 +119,10 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     class Media:
         css = {
-        'all': (f'{settings.STATIC_URL}css/main.css',
-                f'{settings.STATIC_URL}css/begrepp_custom.css',
-               )
+        'all': (
+            f'{settings.STATIC_URL}css/main.css',
+            f'{settings.STATIC_URL}css/begrepp_custom.css',
+           )
          }
     
     inlines = [BegreppExternalFilesInline, SynonymInline, ValideradAvDomänerInline]
@@ -185,19 +186,14 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     date_hierarchy = 'senaste_ändring'
 
     def has_link(self, obj):
-
         if (obj.link != None) and (obj.link != ''):
             return format_html(
-                f'''<a href={obj.link}>
-                <i class="fas fa-file-download">
-                </i>
-                </a>''')
+                f'<a href="{obj.link}"><img src="/static/admin/img/icon-yes.svg" alt="True"></a>'
+                )            
         else:
-                return format_html(
-                    f'''
-                    <i class="fas fa-exclamation-triangle" style="color:red">
-                    </i>
-                    ''')
+            return format_html(
+                f'<img src="/static/admin/img/icon-no.svg" alt="True">'
+                )
 
     has_link.short_description = "URL Länk"
 
