@@ -19,6 +19,7 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from ordbok.forms import BegreppForm
 from ordbok.models import *
+from django.conf import settings
 
 from ordbok import admin_actions
 from ordbok.forms import BegreppExternalFilesForm, ChooseExportAttributes
@@ -188,11 +189,11 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     def has_link(self, obj):
         if (obj.link != None) and (obj.link != ''):
             return format_html(
-                f'<a href="{obj.link}"><img src="/static/admin/img/icon-yes.svg" alt="True"></a>'
-                )            
+            f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="True">'
+            )
         else:
             return format_html(
-                f'<img src="/static/admin/img/icon-no.svg" alt="True">'
+                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="True">'
                 )
 
     has_link.short_description = "URL Länk"
@@ -256,10 +257,6 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
         return "-"
 
     synonym.admin_order_field = 'synonym'
-
-    def get_queryset(self, obj):
-        qs = super(BegreppAdmin, self).get_queryset(obj)
-        return qs.prefetch_related('begrepp_fk')
 
     def get_domäner(self, obj):
         domäner = Doman.objects.filter(begrepp_id=obj.pk)
