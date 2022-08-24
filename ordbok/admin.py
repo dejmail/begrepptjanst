@@ -189,7 +189,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     def has_link(self, obj):
         if (obj.link != None) and (obj.link != ''):
             return format_html(
-            f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="True">'
+            f'<img src="/{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="True">'
             )
         else:
             return format_html(
