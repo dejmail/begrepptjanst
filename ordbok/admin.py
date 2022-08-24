@@ -193,7 +193,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
             )
         else:
             return format_html(
-                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="True">'
+                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="False">'
                 )
 
     has_link.short_description = "URL Länk"

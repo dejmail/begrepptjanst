@@ -2,7 +2,7 @@ from begrepptjanst.settings.base import *
 
 DEBUG=False
 
-SUBDOMAIN = 'begreppstjanst'
+SUBDOMAIN = 'begrepptjanst'
 
 DB_NAME = os.getenv('DB_NAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
