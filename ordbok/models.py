@@ -48,7 +48,7 @@ class Begrepp(models.Model):
     anmärkningar = models.TextField(null=True)
     kommentar_handläggning = models.TextField(null=True)
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
-    link = models.URLField(help_text="Länk till begreppsutredning", verbose_name='länk', null=True, blank=True)
+    link = models.URLField(help_text="Länk till externt dokument", verbose_name='Länk till begreppsutredning', null=True, blank=True)
     history = HistoricalRecords('datum_skapat')
 
     def __str__(self):
