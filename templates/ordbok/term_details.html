@@ -1,0 +1,175 @@
+
+{% if begrepp_full %}
+<div class="modal" id="Comment" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
+        </div>
+        <div class="modal-body">
+            <div id="förklaring" class="förklaring">
+            <div class="searchTable">
+            <table id="term_förklaring_tabell" class="table table-bordered">
+                <tbody>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Status</td>
+                        <td>{{begrepp_full.status}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Term</td>
+                        <td>{{begrepp_full.term}}</td>
+                    </tr>
+                    <tr>
+                        <td>Synonym</td>
+                        <td >
+                            {% for synonym in begrepp_full.synonym_set.all %}
+                                {% if synonym.synonym is not None %}
+                                    {% if synonym.synonym_status == "Avråds" %}
+                                        -&nbsp;
+                                        <button type="button" class="btn-sm btn-avrådd strike">
+                                            <s class="strike">{{synonym.synonym}}</s>
+                                        </button><br>
+                                    {% else %}
+                                        -&nbsp;
+                                        {{synonym.synonym}}<br>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Definition</td>
+                        <td>{{begrepp_full.definition|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Källa</td>
+                        <td>{{begrepp_full.källa|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Anmärkning</td>
+                        <td>{{begrepp_full.anmärkningar|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Term på annat språk</td>
+                        <td>{{begrepp_full.term_på_annat_språk|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Annan referens</td>
+                        <td>{{begrepp_full.annan_referens|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Kod</td>
+                        <td>{{begrepp_full.kod|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Term ID</td>
+                        <td>{{begrepp_full.id|default_if_none:"-"}}</td>
+                    </tr>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="kommentera_button">Kommentera</button>
+                            </td>
+                            <td>
+                                <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </tbody>
+            </table>
+            </div>
+            </div>
+
+            <div class="modal" id="Comment" role="dialog">
+                <div class="modal-dialog">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
+                    </div>
+                    <div class="modal-body">
+                    <h4 style="font-family: frutiger;">Kommentera begrepp</h4>
+                    <p style="font-family: Calibri;">
+                        Funktionen Kommentera är tänkt att vara en möjlighet att framföra synpunkter om ett begrepp, 
+                        hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma termer 
+                        som kan vara aktuella, ev översättning m m. Det är viktigt att kommentaren tydligt anger vad 
+                        som avses samt motiveras på ett adekvat sätt. Ange även den kontext som din kommentar gäller.
+                        Kommentarerna kommer sedan bearbetas av BegreppsByrån. <br>Gör så här:<br>
+                        <ol style="font-family: Calibri;">
+                            <li>Tryck på knappen Kommentera</li>
+                            <li>Fyll i kontaktuppgifter men namn, E-post och telefon så att vi kan nå dig för att ställa frågor.</li>
+                            <li>Avge dina kommentarer om begreppet. Var så tydlig du kan!</li>
+                            <li>Tryck på Skicka</li>
+                        </ol> 
+                        <br>
+                    </p>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Stäng</button>
+                    </div>
+                </div>			
+                </div>
+            </div>
+
+{% else %}
+<p>Ingen definition hittades...</p>
+{% endif %}
+
+<div id="kommentera_bekräfta">
+</div>
+
+{% block extra_javascript %}
+
+<script>
+
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+// create an observer instance
+var observer = new MutationObserver(function(mutations) {
+mutations.forEach(function(mutation) {
+if (mutation.type === 'childList') {
+    if ($('input[name=namn]').length > 0) {
+        $('input[name=namn]').focus();
+    } else {
+        $('input[name=epost]').focus();
+    }
+}
+});
+});
+
+// configuration of the observer:
+var config = {childList: true}
+
+var target = document.querySelector('#kommentera_bekräfta');
+// pass in the target node, as well as the observer options
+observer.observe(target, config); 
+
+function get_form_function(url, div_to_replace, type_method){
+
+$.ajax({
+    url : url,
+    type : type_method,
+    success: function(response){
+        $(div_to_replace).html(response);
+        $("#kommenteraModal").modal('show');
+    },
+    error: function() {
+$(div_to_replace).html("There has been an error loading this form");
+},
+});
+};
+
+$(document).ready(function(){
+
+$("#kommentera_button").click(function(){
+
+get_form_function(url="{% url 'kommentera_term' %}?q={{begrepp_full.term}}", 
+                  div_to_replace="#kommentera_bekräfta",
+                  type_method="GET");
+            });
+        });
+
+</script>
+{% endblock extra_javascript %}

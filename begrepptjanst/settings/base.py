@@ -27,18 +27,20 @@ ALLOWED_HOSTS = ['vgrinformatik.se', '127.0.0.1','localhost']
 # Application definition
 
 INSTALLED_APPS = [
+    'ordbok.apps.OrdbokConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'ordbok.apps.OrdbokConfig',
     'crispy_forms',
     'django_admin_multiple_choice_list_filter',
     'rangefilter',
     'simple_history',    
 ]
+
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -50,7 +52,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-
 ]
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'

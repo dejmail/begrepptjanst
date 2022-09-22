@@ -20,7 +20,7 @@ SECRET_KEY = "j4kf!tlx#w%=0+t(u38(1jqno8x)b$-^gb@$@%5s2q$wki*mx^"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'vgrinfor_begrepp_prod',
+        'NAME': 'vgrinfor_olli_test',
         'USER': 'vgrinfor_admin',
         'PASSWORD': 'YqvyYGm5cJMLmzt',
         'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on

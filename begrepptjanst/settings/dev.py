@@ -8,18 +8,12 @@ logger = logging.getLogger(__name__)
 SUBDOMAIN = 'begreppstjanst-dev'
 DEBUG=True
 
-DB_NAME = os.getenv('DB_NAME')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_USER = os.getenv('DB_USER')
-
-logger.debug(f'DB login credentials - {DB_NAME}, {DB_USER}, {DB_PASSWORD}')
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': DB_NAME,
-        'USER': DB_USER,
-        'PASSWORD': DB_PASSWORD,
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
         'HOST': 'localhost',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
         'OPTIONS': {
@@ -45,9 +39,9 @@ STATIC_URL = '/begreppstjanst-dev/static/'
 # media files 
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
-EMAIL_HOST = 'mail.vgrinformatik.se'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'info@vgrinformatik.se'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 

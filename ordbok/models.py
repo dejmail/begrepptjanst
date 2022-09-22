@@ -11,15 +11,38 @@ STATUS_VAL = (('Avråds', "Avråds"),
               ('Beslutad', 'Beslutad'), 
               ('Definiera ej', 'Definiera ej'), 
               ('För validering', 'För validering'), 
-              ("Internremiss", "Internremiss"),
+              ("Internremiss", "Internremiss"), 
               ('Preliminär', 'Preliminär'),
               ('Publicera ej', 'Publicera ej'),
               ('Pågår', 'Pågår'), 
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
+USAGE_RECOMMENDATION = ((),)
+
+
 SYSTEM_VAL = (('Millennium', "Millennium"),
               ('Annat system', "Annat system"),
               ('VGR Begreppsystem',"VGR Begreppsystem"))
+
+class Dictionary(models.Model):
+
+    """Dictionary model that all terms belong to. The reverse relationship used 
+    is ManytoMany as terms can belong to multiple dictionaries.
+    """
+
+    class Meta: 
+        verbose_name_plural = "Ordlista"
+        app_label = 'ordbok'
+
+    title = models.CharField(max_length=72, default='Main')
+    description = models.TextField(max_length=1000, null=True)
+
+    def __str__(self):
+
+        """Return the title of the dictionary
+        """
+        return self.title
+
 
 class Begrepp(models.Model):
 
@@ -49,6 +72,9 @@ class Begrepp(models.Model):
     kommentar_handläggning = models.TextField(null=True)
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
     link = models.URLField(help_text="Länk till externt dokument", verbose_name='Länk till begreppsutredning', null=True, blank=True)
+    usage_recommendation = models.CharField(max_length=50, null=True)
+
+    dictionaries = models.ManyToManyField(Dictionary)
     history = HistoricalRecords('datum_skapat')
 
     def __str__(self):
@@ -56,6 +82,24 @@ class Begrepp(models.Model):
         """Return the actual term
         """
         return self.term
+
+class TypeOfRelationship(models.Model):
+
+    relationship = models.CharField(max_length=255)
+
+    def __str__(self):
+
+        return self.relationship
+
+class TermRelationship(models.Model):
+
+    from_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name='from_term')
+    to_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name="to_term")
+    relationship = models.ForeignKey(to="TypeOfRelationship", to_field="id", on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+
+        return f"{self.to_term.term},{self.relationship},{self.from_term.term}"
 
 class BegreppExternalFiles(models.Model):
 

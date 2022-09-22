@@ -1,6 +1,8 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
 const begrepp_div = $('#mitten-span-middle-column');
+const term_details = $('#mitten-span-modal');
+
 
 function endpoint_check() {
 
@@ -84,19 +86,19 @@ document.body.addEventListener("click", function(e) {
 	// e.target was the clicked element
 	if(e.target && e.target.nodeName == "A") {
     // Stop the browser redirecting to  the HREF value.
-    event.preventDefault();    
+    e.preventDefault();    
     console.log("sending", e.target.id, "ID to URL", e.target.href);
     // Attach event listeners for browser history and hash changes.
     
     //changeBrowserURL(null, e.target.href);            
 	// Get page and replace current content.
 	//debugger;
-	getPage(e.target.href);
+	getPage(e.target.href, begrepp_div);
 	popStateHandler();
 	}
 });
 
-function getPage(link_url) {
+function getPage(link_url, div) {
 	
 	console.log('entering ajax getPage function');
 	$.ajax({
@@ -105,7 +107,7 @@ function getPage(link_url) {
 	}).done(function(data, textStatus, jqXHR) {
 		$('#replaceable-content-middle-column').empty();
 		$("#mitten-span-middle-column").empty();
-		begrepp_div.html(data);
+		div.html(data);
 		
 		
 		changeBrowserURL(data, this.url);
