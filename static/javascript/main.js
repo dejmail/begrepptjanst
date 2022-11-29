@@ -1,6 +1,6 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
-const begrepp_div = $('#mitten-span-middle-column');
+const search_result_div = $('#search-row-middle-column');
 const term_details = $('#mitten-span-modal');
 
 
@@ -30,8 +30,8 @@ function toggle_element(element_id) {
 }
 
 user_input.keyup(function () {
-	$("#mitten-span-middle-column").empty();
-	toggle_element("replaceable-content-middle-column");
+	$("#search-row-middle-column").empty();
+	//toggle_element("replaceable-content-middle-column");
 	
 	const request_parameters = {
 		
@@ -42,20 +42,27 @@ user_input.keyup(function () {
 
 	var ajax_call = function (endpoint, request_parameters) {
 		$("#term_förklaring_tabell").remove();
-		$("#mitten-span-middle-column").empty();
+		$("#result_columns").empty();
+		// #$("#search-row-middle-column").r();
+		$("#search-row-right-column").empty();
+
 		var skapad_url = (endpoint + '?' + Object.keys(request_parameters) + '=' + Object.values(request_parameters));
 		$.getJSON(endpoint, request_parameters)
 			.done(response => {
+				
 				console.log("document.URL", document.URL)
 		        console.log("endpoint", endpoint);
 				changeBrowserURL(response, skapad_url);
-				// fade out the begrepp_div, then:
-				begrepp_div.fadeTo('fast', 0).promise().then(() => {
-					// replace the HTML contents
-					begrepp_div.html(response);
+				// fade out the search result, then:
+				search_result_div.fadeTo('fast', 0).promise().then(() => {
+					// replace the HTML contents & display the filter bar
 					
+					$("#result_columns").html(response);
+					
+					//document.getElementById("sidebar").style.display = "block";
+
 					// fade-in the div with new contents
-					begrepp_div.fadeTo('fast', 1);
+					search_result_div.fadeTo('fast', 1);
 					// stop animating search icon
 					search_icon.removeClass('blink');
 					popStateHandler();
@@ -97,7 +104,7 @@ document.body.addEventListener("change",  function(e) {
 				});
 			}
 	} else {
-		console.alert('Checkboxes are ticked');
+		console.log('Checkboxes are not ticked');
 	}
 }
 );

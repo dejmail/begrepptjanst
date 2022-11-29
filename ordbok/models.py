@@ -24,6 +24,27 @@ SYSTEM_VAL = (('Millennium', "Millennium"),
               ('Annat system', "Annat system"),
               ('VGR Begreppsystem',"VGR Begreppsystem"))
 
+
+class OwnerofDictionary(models.Model):
+
+    """Dictionary model that all terms belong to. The reverse relationship used 
+    is ManytoMany as terms can belong to multiple dictionaries.
+    """
+
+    class Meta: 
+        verbose_name_plural = "Region"
+        app_label = 'ordbok'
+
+    title = models.CharField(max_length=72, default='Main')
+    description = models.TextField(max_length=1000, null=True)
+    concept = models.ForeignKey('Begrepp', to_field='id', on_delete=models.PROTECT)
+
+    def __str__(self):
+
+        """Return the title of the dictionary
+        """
+        return self.title
+
 class Dictionary(models.Model):
 
     """Dictionary model that all terms belong to. The reverse relationship used 
@@ -31,7 +52,7 @@ class Dictionary(models.Model):
     """
 
     class Meta: 
-        verbose_name_plural = "Ordlista"
+        verbose_name_plural = "Ordlistor"
         app_label = 'ordbok'
 
     title = models.CharField(max_length=72, default='Main')
@@ -93,13 +114,19 @@ class TypeOfRelationship(models.Model):
 
 class TermRelationship(models.Model):
 
-    from_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name='from_term')
-    to_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name="to_term")
+    base_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name='base_term', null=True)
+    child_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name="child_term", null=True)
     relationship = models.ForeignKey(to="TypeOfRelationship", to_field="id", on_delete=models.CASCADE)
 
-    def __str__(self) -> str:
+    class Meta:
+        indexes = [
+            models.Index(fields=['base_term', 'child_term']),
+            models.Index(fields=['base_term'], name='base_term_idx'),
+        ]
 
-        return f"{self.to_term.term},{self.relationship},{self.from_term.term}"
+    def __str__(self) -> str:
+        #set_trace()
+        return f"{self.child_term},{self.relationship},{self.base_term}"
 
 class BegreppExternalFiles(models.Model):
 
@@ -162,29 +189,29 @@ class Doman(models.Model):
         """Return the name of the domain"""
         return self.domän_namn
 
-class Synonym(models.Model):
+# class Synonym(models.Model):
 
-    """The model containings synonyms
-    """
+#     """The model containings synonyms
+#     """
 
-    SYNONYM_STATUS =  (('Avråds', "Avråds"),
-                       ('Tillåten', "Tillåten"),
-                       ('Inte angiven','Inte angiven'))
+#     SYNONYM_STATUS =  (('Avråds', "Avråds"),
+#                        ('Tillåten', "Tillåten"),
+#                        ('Inte angiven','Inte angiven'))
 
-    class Meta:
-        verbose_name_plural = "Synonymer"
-        app_label = 'ordbok'
+#     class Meta:
+#         verbose_name_plural = "Synonymer"
+#         app_label = 'ordbok'
 
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
-    synonym = models.CharField(max_length=255, blank=True, null=True)
-    synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
+#     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
+#     synonym = models.CharField(max_length=255, blank=True, null=True)
+#     synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
 
-    history = HistoricalRecords()
+#     history = HistoricalRecords()
 
-    def __str__(self):
+#     def __str__(self):
 
-        """Retrun the term that is the synonym"""
-        return self.synonym
+#         """Retrun the term that is the synonym"""
+#         return self.synonym
 
 class KommenteraBegrepp(models.Model):
 

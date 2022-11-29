@@ -62,7 +62,7 @@ class TermRelationshipInline(admin.StackedInline):
 
     model = TermRelationship
     #form = SynonymInlineForm
-    fk_name = "from_term"
+    fk_name = "base_term"
     extra = 1
 
 class BegreppExternalFilesInline(admin.StackedInline):
@@ -100,7 +100,7 @@ class BegreppSearchResultsAdminMixin(object):
                 When(Q(term__iexact=search_term), then=Value(1)),
                 When(Q(term__istartswith=search_term), then=Value(2)),
                 When(Q(term__icontains=search_term), then=Value(3)), 
-                When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
+                #When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
                 When(Q(utländsk_term__icontains=search_term), then=Value(5)),
                 When(Q(definition__icontains=search_term), then=Value(6)), 
                 default=Value(6), output_field=IntegerField()
@@ -136,7 +136,11 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     
     inlines = [BegreppExternalFilesInline, TermRelationshipInline, ValideradAvDomänerInline]
 
-    change_form_template = 'change_form_autocomplete.html'
+    def formfield_for_many_to_many(self, db_field, *args, **kwargs):
+        formfield = super(BegreppAdmin, self).formfield_for_many_to_many(db_field, *args, **kwargs)
+        if db_field.name == 'begrepp':
+            formfield.queryset = formfield.queryset.select_related('foo')
+        return formfield
 
     form = BegreppForm
 
@@ -173,7 +177,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'relationship',
                     'definition',
                     'utländsk_term',
-                    'get_domäner',
+                    #'get_domäner',
                     'status_button',
                     'annan_ordlista',
                     'senaste_ändring',
@@ -189,8 +193,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'definition',
                     'begrepp_kontext',    
                     'annan_ordlista',
-                    'utländsk_term',
-                    'relationship')
+                    'utländsk_term')#,
+                    #'relationship')
 
     date_hierarchy = 'senaste_ändring'
 
@@ -252,28 +256,36 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
         return obj.beställare.önskad_slutdatum
 
     def relationship(self, obj):
-        
-        relationships = TermRelationship.objects.filter(to_term__term=obj.term)
-        urls = []
-        for relation in relationships:
-            link = f"<a href={reverse(f'admin:{obj._meta.app_label}_{obj._meta.model_name}_change',args=(obj.id,))}\
-                >{relation.relationship}</a>"
-            if link not in urls:
-                urls.append(link)
-            else:
-                pass
-        display_text = mark_safe(', '.join(urls))
 
-        if display_text:
-            return display_text
+        #set_trace()
+        relationships = TermRelationship.objects.filter(child_term__id=obj.id).prefetch_related('base_term__term')
+        if relationships:
+        #    set_trace()
+            print(relationships.base_term.term)
+            return list(relationships)
         else:
-            return '-'
+        #set_trace()
+            return None
+        # urls = []
+        # for relation in relationships:
+        #     link = f'<a title="{relation.relationship.relationship}" href={reverse(f"admin:{obj._meta.app_label}_{obj._meta.model_name}_change",args=(obj.id,))}\
+        #         >{relation.base_term.term}</a>'
+        #     if link not in urls:
+        #         urls.append(link)
+        #     else:
+        #         pass
+        # display_text = mark_safe(', '.join(urls))
 
-    def get_domäner(self, obj):
-        domäner = Doman.objects.filter(begrepp_id=obj.pk)
-        return list(domäner)
+        # if display_text:
+        #     return display_text
+        # else:
+        #     return '-'
 
-    get_domäner.short_description = 'Validerad av'
+    # def get_domäner(self, obj):
+    #     domäner = Doman.objects.filter(begrepp_id=obj.pk)
+    #     return list(domäner)
+
+    # get_domäner.short_description = 'Validerad av'
     
     def status_button(self, obj):
 
@@ -429,6 +441,11 @@ class SökDataAdmin(admin.ModelAdmin):
                     'sök_timestamp',
                     'records_returned')
 
+class DictionaryAdmin(admin.ModelAdmin):
+
+    verbose_name = "Ordbok"
+    verbose_name_plural = "Ordböcker"
+
 
 class BegreppExternalFilesAdmin(admin.ModelAdmin):
 
@@ -444,6 +461,6 @@ admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
-admin.site.register(Dictionary)
+admin.site.register(Dictionary, DictionaryAdmin)
 admin.site.register(TermRelationship)
 admin.site.register(TypeOfRelationship)

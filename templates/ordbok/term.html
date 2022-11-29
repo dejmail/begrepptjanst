@@ -1,63 +1,36 @@
 {% extends 'base_front.html' %}
 {% load static %}
 
-{% block header %}
-	{% block header_row1 %}
-		{{ block.super }}
+{% block body_left_column %}
+  {% include 'sidebar.html' %}
+{% endblock body_left_column %}
 
-	{% endblock header_row1 %}
+{% block body_middle_column %}
 
-{% endblock header %}
-{# start of the row containing the search bar #}
-{% block search_bar %}
-<div class="row mt-5" id="search_bar_row">
-	{% block search-left-column %}
-	<div class="col-3" id="search-left-column"></div>
-	{% endblock search-left-column %}
-	{% block search-middle-column %}
-		<div class="col-6" id="search-middle-column">
-			<div class="flex-row">
-				<form class="form-inline" onsubmit="return false;">
-				<i id="search-icon" class="fas fa-search" style="position:relative; left:-0.5%;" aria-hidden="true"></i>
-				<input id="user-input" class="form-control form-control-md" style="flex:2" type="text" placeholder="Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
-				</form>
-				<div class="row justify-content-between mt-2">
-					&nbsp;&nbsp;&nbsp;&nbsp;
-					{% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
-						<a href="{% url 'begrepp'  %}?q={{letter}}">{{letter}}</a>&nbsp;
-					{% endfor %}
+	<div class="col-12 mt-4" id="search-row-middle-column">
+		<div class="row">
+
+		<div class="col-3"></div>
+		<div class="col-6 " id="om_olli">
+			<div class="mx-auto">
+				<h5 class="text-center">
+					Om OLLI
+				</h5>
+			</div>
+			<div class="card mt-3" style="background-color:#aed9f0;">
+				<div class="card-body text-justify">
+					OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. 
+					Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, 
+					allt från rent klinisk terminologi till olika administrativa och tekniska begrepp. OLLI är tänkt 
+					att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra 
+					till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar
+					i regionen och olika verksamheter samt personal med administrativa uppgifter eller andra stödfunktioner.
 				</div>
 			</div>
 		</div>
-	{% endblock search-middle-column %}
-	{% block search-right-column %}
-		<div class="col-3" id="search-right-column"></div>
-	{% endblock search-right-column %}
+		<div class="col-3"></div>
 	</div>
-	
-{% endblock search_bar %}
-
-{% block replaceable-content %}
-
-<div id="om_olli">
-<div class="row mt-4" id="replaceable-content-row">
-    <div class="col-4" id="replaceable-content-left-column"></div>
-    <div class="col-4" text-left" id="replaceable-content-middle-column">
-
-	<div class="row" style="text-align: center;"> 
-		<h5 class="mx-auto" style="width: 100px;">Om OLLI</h5>
-		  <div class="card" style="background-color:#aed9f0;">
-		  <div class="card-body text-justify" style="font-family: Calibri;">
-			OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, allt från rent klinisk terminologi till olika administrativa och tekniska begrepp. OLLI är tänkt att användas som en uppslagsbok, ett stöd för ett enhetligt språk inom regionen. OLLI kan bidra till en bättre förståelse inom hälso- och sjukvården, för hälso-och sjukvårdpersonal i olika delar i regionen och olika verksamheter samt personal med administrativa uppgifter eller andra stödfunktioner.
-		  </div>
-		</div>
-	  </div>
-
-	</div>
-    <div class="col-4" id="replaceable-content-right-column"></div>
-  </div>
 </div>
 
-{% endblock replaceable-content %}
 
-{# end of the row containing the search bar #}
+{% endblock body_middle_column %}

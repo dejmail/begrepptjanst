@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 from pdb import set_trace
 from urllib.parse import unquote
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from begrepptjanst.logs import setup_logging
 from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
@@ -28,8 +29,15 @@ from django.utils.translation import gettext as _
 from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, nbsp2space, sort_begrepp_keys)
-from ordbok.models import (Begrepp, BegreppExternalFiles, Bestallare,
-                           Doman, KommenteraBegrepp)
+from ordbok.models import (
+    Dictionary,
+    TypeOfRelationship,
+    Begrepp, 
+    BegreppExternalFiles, 
+    Bestallare,
+    Doman, 
+    KommenteraBegrepp, 
+    TermRelationship)
 
 logger = logging.getLogger(__name__)
 
@@ -65,9 +73,8 @@ def retur_general_sök(url_parameter):
                      Q(term__icontains=url_parameter) |
                      Q(anmärkningar__icontains=url_parameter) |
                      Q(definition__icontains=url_parameter) |
-                     Q(utländsk_term__icontains=url_parameter) |
-                     Q(synonym__synonym__icontains=url_parameter)
-                     ).distinct()
+                     Q(utländsk_term__icontains=url_parameter)
+                     ).distinct().prefetch_related()    
 
     return queryset
 
@@ -90,10 +97,7 @@ def filter_by_first_letter(letter):
                 'definition',\
                 'term',\
                 'utländsk_term',\
-                'status',\
-                'synonym__begrepp_id',\
-                'synonym__synonym',\
-                'synonym__synonym_status')
+                'status')
     return queryset
 
 def return_single_term(id):
@@ -229,8 +233,7 @@ def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, 
     gt_brackets, lt_brackets = find_all_angular_brackets(joined_definitions_minus_nbsp)
     
     joined_definitions_minus_nbsp = replace_non_html_brackets(joined_definitions_minus_nbsp, gt_brackets, lt_brackets)    
-    logger.info(f'joined_definitions_minus_nbsp - {joined_definitions_minus_nbsp}')
-
+    
     # only here are the regex patterns created in Xlator, couple to the substitution 
     altered_strings = translator.xlat(joined_definitions_minus_nbsp)
     # resplit the now altered string back into a list
@@ -339,7 +342,7 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
     return list_of_dict
 
-def hämta_data_till_begrepp_view(url_parameter):
+def hämta_data_till_begrepp_view(url_parameter, page_number):
 
     """Main method that couples together all the submethods needed to
     produce the HTML needed for the initial search view.
@@ -355,9 +358,14 @@ def hämta_data_till_begrepp_view(url_parameter):
         highlight=False
     else: 
         search_request = retur_general_sök(url_parameter)
-        logger.info(f'len of search result = {len(search_request)}')
+        logger.debug(f'len of search result = {len(search_request)}')
 
         highlight=True
+
+
+
+    simple_terms = TermRelationship.objects.all().values_list('base_term', flat=True)
+    search_request = search_request.exclude(id__in=simple_terms)
 
     # this is all the terms and definitions from the DB
     all_terms_and_definitions_dict = return_list_of_term_and_definition()
@@ -380,12 +388,28 @@ def hämta_data_till_begrepp_view(url_parameter):
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
 
+    
+    paginator = Paginator(return_list_dict, 8)
+
+    try:
+        page_obj = paginator.page(page_number)
+    except PageNotAnInteger:
+        # if page is not an integer, deliver the first page
+        page_obj = paginator.page(1)
+    except EmptyPage:
+        # if the page is out of range, deliver the last page
+        page_obj = paginator.page(paginator.num_pages)
+    
+    dictionaries = Dictionary.objects.all()
+
+    set_trace()
     html = render_to_string(
-        template_name="term-results-partial.html", context={'begrepp': return_list_dict,
-                                                            'färg_status' : färg_status_dict,
-                                                            'queryset' : search_request,
-                                                            'searched_for_term' : url_parameter
-                                                            }
+        template_name="search-results.html", context={'page_obj': page_obj,
+                                                    'färg_status' : färg_status_dict,
+                                                    'queryset' : search_request,
+                                                    'searched_for_term' : url_parameter,
+                                                    'dictionary' : dictionaries
+                                                    }
                             )
     
     return html, return_list_dict
@@ -402,7 +426,10 @@ def begrepp_view(request):
     url_parameter = request.GET.get("q")
     
     if request.is_ajax():
-        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
+        
+        page_number = request.GET.get('page', 1)
+        
+        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter, page_number)
 
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
         return JsonResponse(data=data_dict, safe=False)
@@ -410,7 +437,11 @@ def begrepp_view(request):
     else:
         begrepp = Begrepp.objects.none()
     
-    return render(request, "term.html", context={'begrepp' : begrepp})
+    
+    return render(request, "term.html", context={
+        'begrepp' : begrepp,
+        'dictionaries' : Dictionary.objects.all(),
+        'relationship_types' : TypeOfRelationship.objects.all()})
 
 def begrepp_förklaring_view(request):
 
@@ -427,12 +458,14 @@ def begrepp_förklaring_view(request):
     if url_parameter:
         single_term = return_single_term(url_parameter)
 
+        get_related_terms = TermRelationship.objects.filter(child_term__id=single_term.id)
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
 
         status_färg_dict = {'begrepp' : färg_status_dict.get(single_term.status),
-                            'synonym' : [[i.synonym,i.synonym_status] for i in single_term.synonym_set.all()]}
+                            'relationships' : get_related_terms}
         
-        template_context = {'begrepp_full': single_term,
+        template_context = {'term': single_term,
+                            'relationships' : get_related_terms,
                             'färg_status' : status_färg_dict}
 
         html = render_to_string(template_name="term_details.html", context=template_context)
