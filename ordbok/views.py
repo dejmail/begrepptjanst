@@ -480,7 +480,7 @@ def hantera_request_term(request):
             else:
 
                 existing_beställare = Bestallare.objects.filter(
-                    Q(beställare_name__icontains=form.clean_name()) |
+                    Q(beställare_namn__icontains=form.clean_name()) |
                     Q(beställare_email__icontains=form.clean_epost)
                 )
 
