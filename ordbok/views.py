@@ -82,16 +82,11 @@ def filter_by_first_letter(letter):
     """ 
 
     queryset = Begrepp.objects.filter(
-        ~Q(status="Publicera ej")).filter(
-            term__istartswith=letter).values_list(
-                'id',\
-                'definition',\
-                'term',\
-                'utländsk_term',\
-                'status',\
-                'synonym__begrepp_id',\
-                'synonym__synonym',\
-                'synonym__synonym_status')
+        ~Q(status="Publicera ej")
+        ).filter(
+        term__istartswith=letter
+        ).distinct()
+
     return queryset
 
 def return_single_term(id):
@@ -354,7 +349,6 @@ def hämta_data_till_begrepp_view(url_parameter):
     else: 
         search_request = retur_general_sök(url_parameter)
         logger.info(f'len of search result = {len(search_request)}')
-
         highlight=True
 
     # this is all the terms and definitions from the DB
