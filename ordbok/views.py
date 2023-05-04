@@ -1,7 +1,5 @@
-import json
 import logging
 import re
-from datetime import datetime
 from pdb import set_trace
 from urllib.parse import unquote
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -11,18 +9,15 @@ from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
 from ordbok.models import DEFAULT_STATUS
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
-from django.core.mail import EmailMessage, send_mail
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db import connection, transaction
+from django.db import connection
 from django.db.models import Q
-from django.forms.models import model_to_dict
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.template.loader import render_to_string
-from django.urls import get_script_prefix, reverse
+from django.urls import get_script_prefix
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
-from django.views.generic import ListView
 from django.utils.translation import gettext as _
 
 
@@ -91,13 +86,11 @@ def filter_by_first_letter(letter):
     """ 
 
     queryset = Begrepp.objects.filter(
-        ~Q(status="Publicera ej")).filter(
-            term__istartswith=letter).values_list(
-                'id',\
-                'definition',\
-                'term',\
-                'utländsk_term',\
-                'status')
+        ~Q(status="Publicera ej")
+        ).filter(
+        term__istartswith=letter
+        ).distinct()
+
     return queryset
 
 def return_single_term(id):
@@ -362,8 +355,6 @@ def hämta_data_till_begrepp_view(url_parameter, page_number):
 
         highlight=True
 
-
-
     simple_terms = TermRelationship.objects.all().values_list('base_term', flat=True)
     search_request = search_request.exclude(id__in=simple_terms)
 
@@ -425,7 +416,7 @@ def begrepp_view(request):
     """
     url_parameter = request.GET.get("q")
     
-    if request.is_ajax():
+    if url_parameter: #request.is_ajax():
         
         page_number = request.GET.get('page', 1)
         
@@ -515,7 +506,7 @@ def hantera_request_term(request):
             else:
 
                 existing_beställare = Bestallare.objects.filter(
-                    Q(beställare_name__icontains=form.clean_name()) |
+                    Q(beställare_namn__icontains=form.clean_name()) |
                     Q(beställare_email__icontains=form.clean_epost)
                 )
 

@@ -15,7 +15,7 @@
   <link rel="icon" type="image/png" href="{% static '/images/favicon-16x16.png' %}" sizes="16x16" />
 
   {% block base_static %}  
-      <script src="{% static '/javascript/jquery-3.6.1.min.js' %}"></script>
+      <script src="{% static '/javascript/jquery-3.4.1.min.js' %}"></script>
       <script src="{% static '/javascript/bootstrap.bundle.min.js' %}" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>      
       <link rel="stylesheet" href="{% static '/css/bootstrap5.min.css' %}" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">        
       
@@ -94,8 +94,6 @@
             </button>
           </div>
 
-
-            
           </div>
         {% endblock header_row1_column_right %}
           </div>
@@ -105,7 +103,7 @@
   {% block header_row2 %}
   <div class="row bg-lighter" id="thermos_flask_icon_row">
     <div class="text-center col-12 m-1">
-      <img src="{% static '/images/termos_new.png' %}">
+      <img src="{% static '/images/termos.png' %}">
     </div>
   </div>
   {% endblock header_row2 %}
@@ -118,7 +116,7 @@
       {% block body_left_column %}
           <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="search-row-left-column"></div>
       {% endblock body_left_column %}
-      <div class="col-10" id="result_columns">
+      <div class="col-12" id="result_columns">
         <div class="row">
           {% block body_middle_column %}
               <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" id="search-row-middle-column"></div>

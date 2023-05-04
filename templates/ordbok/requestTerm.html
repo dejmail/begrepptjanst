@@ -58,7 +58,7 @@
             setTimeout(function(){
             $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
             document.getElementById('user-input').value = '';
-            history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', '/');
+            history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', endpoint);
         },
         error: function(response) {
             $("#mitten-span-middle-column").html(response.responseText);

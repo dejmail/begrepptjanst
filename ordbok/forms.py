@@ -97,7 +97,7 @@ class TermRequestForm(forms.Form):
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
-    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+    file_field = forms.FileField(widget=forms.ClearableFileInput(), label="Bifogar en skärmklipp eller komprimerad fil som kan hjälp oss", required=False)
 
 
 
@@ -109,7 +109,7 @@ class KommenteraTermForm(forms.Form):
     telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())
-    file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+    file_field = forms.FileField(widget=forms.ClearableFileInput(), label="Bifogar en skärmklipp eller komprimerad fil som kan hjälp oss", required=False)
 
 class ExternalFilesForm(forms.ModelForm):
 
