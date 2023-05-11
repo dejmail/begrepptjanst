@@ -2,16 +2,15 @@
 {% load static %}
 
 {% block body_left_column %}
-  {% include 'sidebar.html' %}
+  {% include 'left_sidebar.html' %}
 {% endblock body_left_column %}
 
 {% block body_middle_column %}
 
-	<div class="col-12 mt-4" id="search-row-middle-column">
-		<div class="row">
-
-		<div class="col-3"></div>
-		<div class="col-6 " id="om_olli">
+	<div class="col-lg-8 col-md-8 mt-4 bg-pale-yellow" id="search-row-middle-column">
+	<div class="row">
+		<div class="col-2" id="about-spacer-left">about spacer left</div>
+		<div class="col-8" id="om_olli">
 			<div class="mx-auto">
 				<h5 class="text-center">
 					Om OLLI
@@ -28,9 +27,13 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-3"></div>
+		
+		<div class="col-2" id="about-spacer-right">about spacer right</div>
 	</div>
-</div>
-
+	</div>
 
 {% endblock body_middle_column %}
+
+{% block body_right_column %}
+  {% include 'right_sidebar.html' %}
+{% endblock body_right_column %}

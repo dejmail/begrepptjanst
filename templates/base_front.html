@@ -111,23 +111,26 @@
   {% endblock header_row3 %}
 
   {% endblock header %}
-  <div class="row mt-10 bg-light" id="body-row">
+  
+  
   {% block body %}
+  <div class="row mt-10 bg-light align-middle" id="body-row">
+      
       {% block body_left_column %}
-          <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="search-row-left-column"></div>
-      {% endblock body_left_column %}
-      <div class="col-12" id="result_columns">
-        <div class="row">
-          {% block body_middle_column %}
-              <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12" id="search-row-middle-column"></div>
-          {% endblock body_middle_column %}
-          {% block body_right_column %}
-              <div class="col-lg-6 col-md-6 col-sm-0 col-xs-0" id="search-row-right-column"></div>
-          {% endblock body_right_column %}
-        </div>
-    </div>
+          
+      {% endblock body_left_column %}      
+      
+      {% block body_middle_column %}
+          
+      {% endblock body_middle_column %}
+      
+      {% block body_right_column %}
+              
+      {% endblock body_right_column %}
+      
   </div>
   {% endblock body %}  
+  
 
   {% block replaceable-content %}
     
