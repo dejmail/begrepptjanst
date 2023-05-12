@@ -392,18 +392,26 @@ def hämta_data_till_begrepp_view(url_parameter, page_number):
         page_obj = paginator.page(paginator.num_pages)
     
     dictionaries = Dictionary.objects.all()
+    relationships = TypeOfRelationship.objects.all()
 
-    set_trace()
     html = render_to_string(
         template_name="search-results.html", context={'page_obj': page_obj,
                                                     'färg_status' : färg_status_dict,
                                                     'queryset' : search_request,
                                                     'searched_for_term' : url_parameter,
-                                                    'dictionary' : dictionaries
+                                                    'dictionaries' : dictionaries,
+                                                    'relationships' : relationships
                                                     }
                             )
     
     return html, return_list_dict
+
+def is_request_ajax(request):
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return True
+    else:
+        return False
 
 def begrepp_view(request):
 
@@ -416,7 +424,7 @@ def begrepp_view(request):
     """
     url_parameter = request.GET.get("q")
     
-    if url_parameter: #request.is_ajax():
+    if is_request_ajax(request) == True:
         
         page_number = request.GET.get('page', 1)
         

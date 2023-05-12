@@ -1,3 +1,40 @@
 {% load static %}
 
-<div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 bg-lighter d-inline-block mx-0 px-0" id="search-row-left-column"">left column</div>
+<div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 bg-lighter d-inline-block" id="search-row-left-column"">
+
+    <form class="form-inline" onsubmit="return false;">
+        <i id="search-icon" class="fas fa-search"  aria-hidden="true"></i>
+        <input id="user-input" class="form-control form-control-md" style="flex:3" type="text" placeholder="&nbsp;&nbsp;&nbsp;Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
+    
+
+    <fieldset>
+        <legend>Filter</legend>
+
+        <DL>
+        <DT class="mb-2">Dictionaries</DT>        
+        {% for dictionary in dictionaries %}
+          <DD class="dd">
+            <label for="title_1">
+              <input type="checkbox" id="{{dictionary.title}}" name="{{dictionary.title}}" />
+                   {{dictionary.title}}
+            </label>
+          </DD>
+        {% endfor %}
+        
+
+        <DT class="mb-2">Relationship</DT>
+        {% for relationship in relationship_types %}       
+
+        <DD class="dd">
+            <label for="title_1">
+              <input type="checkbox" id="{{relationship.relationship}}" name="{{relationship.relationship}}" />
+              {{relationship.relationship}}
+            </label>
+        </DD>
+        
+        {% endfor %}
+
+        </DL>
+    </fieldset>
+</form>
+</div>
