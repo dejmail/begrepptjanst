@@ -687,22 +687,19 @@ def autocomplete_suggestions(request, attribute, search_term):
 
     return JsonResponse(suggestions, safe=False)
 
-def all_non_beslutade_begrepp(request):
+def redirect_to_all_beslutade_terms(request):
 
-    """ Returns a JSON response with all the terms that have status 'Beslutad'
-    or 'Publicera ej'.
+    """ Returns a redirect response to all the terms that have been accepted.
 
-    :return: JSON response with a list of terms
+    :return: HTTP Response redirect
     :rtype: {JsonResponse}
     """
 
-    queryset = Begrepp.objects.all().filter(~Q(status='Beslutad') & 
-                                            ~Q(status__icontains='publicera ej')).prefetch_related().values()
+    logger.info('Base url for terms hit, keyword "all" not supplied, redirecting')
 
+    return HttpResponseRedirect(reverse('get_all_accepted_terms_as_json'))
 
-    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
-
-def all_beslutade_terms(request):
+def all_accepted_terms(request):
 
     """ Returns a JSON list of all terms with status 'Publicera ej'
 

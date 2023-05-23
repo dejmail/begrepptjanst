@@ -14,9 +14,9 @@ urlpatterns = [
     path('no-search-result/', views.no_search_result, name='no_search_result'),
     path('autocomplete-suggestions/<str:attribute>/<search_term>/', views.autocomplete_suggestions, name='autocomplete_suggestions'),
     
-    path('json/begrepp/', views.all_beslutade_terms, name='all_beslutade_terms'),
+    path('json/begrepp/', views.redirect_to_all_beslutade_terms, name='get_json_terms'),
     path('json/begrepp/<int:id>', views.get_term, name='get_terms'),
-    path('json/begrepp/all/', views.all_non_beslutade_begrepp, name='all_non_beslutade_begrepp'),
+    path('json/begrepp/all/', views.all_accepted_terms, name='get_all_accepted_terms_as_json'),
     path('json/synonymer/', views.all_synonyms, name='all_synonyms'),
     
     path('export/attrs/', admin_views.BegreppAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
