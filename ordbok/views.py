@@ -710,6 +710,8 @@ def all_accepted_terms(request):
     queryset = Begrepp.objects.all().filter(
         ~Q(status__icontains='publicera ej'),
         ~Q(status__icontains='ej påbörjad'),
+        ~Q(status__icontains='pågår'),
+        ~Q(status__icontains='internremiss'),
         ).prefetch_related().values()
     
     return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
