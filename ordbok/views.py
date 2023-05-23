@@ -707,7 +707,10 @@ def all_accepted_terms(request):
     :rtype: {JsonResponse}
     """
 
-    queryset = Begrepp.objects.all().filter(~Q(status__icontains='publicera ej')).prefetch_related().values()
+    queryset = Begrepp.objects.all().filter(
+        ~Q(status__icontains='publicera ej'),
+        ~Q(status__icontains='ej påbörjad'),
+        ).prefetch_related().values()
     
     return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
