@@ -27,7 +27,7 @@ from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, nbsp2space, sort_begrepp_keys)
 from ordbok.models import (Begrepp, BegreppExternalFiles, Bestallare,
-                           Doman, KommenteraBegrepp)
+                           Doman, KommenteraBegrepp, Synonym)
 
 logger = logging.getLogger(__name__)
 
@@ -747,4 +747,8 @@ def all_synonyms(request):
     :rtype: {JsonResponse}
     """
     querylist = list(Synonym.objects.all().values())
+
+    for index, synonym_qs in enumerate(querylist):
+        querylist[index]['term'] = Begrepp.objects.get(pk=synonym_qs.get('begrepp_id')).term
+
     return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
