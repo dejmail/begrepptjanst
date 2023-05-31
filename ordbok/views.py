@@ -15,7 +15,12 @@ from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Q
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import (
+    HttpRequest, 
+    HttpResponse, 
+    HttpResponseRedirect, 
+    JsonResponse
+)
 from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import get_script_prefix, reverse
@@ -332,6 +337,9 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
     return list_of_dict
 
+def is_ajax(request: HttpRequest) -> HttpResponse:
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
 def hämta_data_till_begrepp_view(url_parameter):
 
     """Main method that couples together all the submethods needed to
@@ -372,13 +380,16 @@ def hämta_data_till_begrepp_view(url_parameter):
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
 
+    #set_trace()
+
     html = render_to_string(
-        template_name="term-results-partial.html", context={'begrepp': return_list_dict,
-                                                            'färg_status' : färg_status_dict,
-                                                            'queryset' : search_request,
-                                                            'searched_for_term' : url_parameter
-                                                            }
-                            )
+        template_name="term-results-partial.html", 
+        context={'begrepp': return_list_dict,
+        'färg_status' : färg_status_dict,
+        'queryset' : search_request,
+        'searched_for_term' : url_parameter
+        }
+        )    
     
     return html, return_list_dict
 
@@ -393,7 +404,7 @@ def begrepp_view(request):
     """
     url_parameter = request.GET.get("q")
     
-    if request.is_ajax():
+    if is_ajax(request):
         data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
 
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
@@ -426,17 +437,16 @@ def begrepp_förklaring_view(request):
         
         template_context = {'begrepp_full': single_term,
                             'färg_status' : status_färg_dict}
+        html = render_to_string(template_name="term_forklaring_ajax.html", context=template_context)
 
-        html = render_to_string(template_name="term_forklaring.html", context=template_context)
-
-    if request.is_ajax():        
+    if is_ajax(request):        
         return HttpResponse(html, content_type="html")
 
-    elif request.method=='GET':
+    elif request.method == 'GET':
         if url_parameter is None:
             return render(request, "term.html", context={})
         else:
-            return render(request, "term_forklaring_only.html", context=template_context)
+            return render(request, "term_forklaring.html", context=template_context)
 
     return render(request, "base.html", context={})
 
@@ -525,7 +535,7 @@ def hantera_request_term(request):
                                                         'whichTemplate' : 'requestTerm'}, 
                                                         status=500)
 
-    elif request.is_ajax():
+    elif is_ajax(request):
        
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
         

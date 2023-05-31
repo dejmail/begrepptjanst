@@ -38,7 +38,7 @@
                   <td><a href="{% url 'begrepp_förklaring' %}?q={{term.id}}" id={{term.id}}>{{term.term}}</a></td>              
                   <td>
                     {% for item in queryset %}
-                        {% ifequal item.id term.id %}
+                        {% if item.id == term.id %}
                           {% for synonym in item.synonym_set.all %}
                             {% if synonym.synonym_status == "Avråds" %}
                               <div class="tooltip">  - <s class="text-danger">{{synonym.synonym}}</s>
@@ -54,7 +54,7 @@
                                   <br>
                           {% endif %} 
                         {% endfor %}
-                      {% endifequal %}
+                      {% endif %}
                   {% endfor %}
                 </td>
                 <td>{{term.definition}}</td>
@@ -86,7 +86,7 @@
 </script>
   </div>
 
-  {% endif %}
+{% endif %}
 
 {% endblock mitten-span %}
 
