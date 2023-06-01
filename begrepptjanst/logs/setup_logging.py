@@ -43,7 +43,7 @@ logging_schema = {
         "file": {  
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "standard",
-            "level": "DEBUG",
+            "level": "ERROR",
             "filename": "logs.log",
             "mode": "a",
             "encoding": "utf-8",
@@ -56,13 +56,13 @@ logging_schema = {
         "__main__": {  # if __name__ == "__main__"
             # Use a list even if one handler is used
             "handlers": ["file"],
-            "level": "DEBUG",
+            "level": "ERROR",
             "propagate": False
         }
     },
     # Just a standalone kwarg for the root logger
     "root" : {
-        "level": "DEBUG",
+        "level": "ERROR",
         "handlers": ["file"]
     }
 }
