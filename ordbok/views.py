@@ -11,6 +11,7 @@ from ordbok.models import DEFAULT_STATUS
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.core.mail import EmailMessage, send_mail
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Q
@@ -759,6 +760,10 @@ def all_synonyms(request):
     querylist = list(Synonym.objects.all().values())
 
     for index, synonym_qs in enumerate(querylist):
-        querylist[index]['term'] = Begrepp.objects.get(pk=synonym_qs.get('begrepp_id')).term
+        try:
+            querylist[index]['term'] = Begrepp.objects.get(Q(pk=synonym_qs.get('begrepp_id')) & Q(status__in=['Avråds','Avställd','Beslutad'])).term
+        except ObjectDoesNotExist as e:
+            logger.debug('Attempted to get synyonym for a non')
+            pass
 
     return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
