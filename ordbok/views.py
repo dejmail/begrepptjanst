@@ -758,13 +758,11 @@ def all_synonyms(request):
     :rtype: {JsonResponse}
     """
     querylist = list(Synonym.objects.filter(Q(synonym_status__in=['Beslutad', 'Tillåten', 'Avråds', 'Rekommenderad'])).values())
-    for index, synonym_qs in enumerate(querylist):
-        if synonym_qs.get('begrepp_id') == 658: set_trace()
+    
+    for index, synonym_qs in enumerate(querylist):    
         try:
             term = Begrepp.objects.get(Q(pk=synonym_qs.get('begrepp_id')) & Q(status__in=['Avråds','Avställd','Beslutad'])).term
             querylist[index]['term'] = term
         except ObjectDoesNotExist as e:
-            del querylist[index]
-            continue
-
+            pass
     return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)
