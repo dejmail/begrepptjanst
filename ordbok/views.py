@@ -710,6 +710,23 @@ def redirect_to_all_beslutade_terms(request):
 
     return HttpResponseRedirect(reverse('get_all_accepted_terms_as_json'))
 
+def merge_term_and_synonym(qs, syn_qs):
+
+    for synonym in syn_qs:
+        synonyms = {'tillåten': [],
+                    'avråds' : []}
+        try:
+            if synonym.get('synonym_status').lower() == 'tillåten':
+                synonyms['tillåten'].append(synonym.get('synonym'))
+            else:
+                synonyms['avråds'].append(synonym.get('synonym'))
+            
+            qs[synonym.get('begrepp_id')]['synonyms'] = synonyms
+        except (IndexError, TypeError) as e:
+            print(e)
+            set_trace()
+    return qs
+
 def all_accepted_terms(request):
 
     """ Returns a JSON list of all terms with status 'Publicera ej'
@@ -725,6 +742,15 @@ def all_accepted_terms(request):
         ~Q(status__icontains='internremiss'),
         ).prefetch_related().values()
     
+    qs_dict = {i.get('id'): i for i in queryset}
+
+    synonym_qs = Synonym.objects.filter(
+        begrepp_id__in=queryset.values_list(
+        'id', flat=True)
+        ).values()
+    
+    merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
+
     return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
 
