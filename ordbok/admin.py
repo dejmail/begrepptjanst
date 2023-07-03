@@ -72,42 +72,6 @@ class ValideradAvDomänerInline(admin.StackedInline):
     verbose_name_plural = "Validerad av"
     exclude = ['domän_kontext']
 
-class BegreppSearchResultsAdminMixin(object):
-
-    def get_search_results(self, request, queryset, search_term):
-    
-        ''' Show exact match for title at top of admin search results.
-        '''
-    
-        qs, use_distinct = \
-            super(BegreppSearchResultsAdminMixin, self).get_search_results(
-                request, queryset, search_term)
-        
-        search_term = search_term.strip()
-        if not search_term:
-            return qs, use_distinct
-
-        qs = qs.annotate(
-            position=Case(
-                When(Q(term__iexact=search_term), then=Value(1)),
-                When(Q(term__istartswith=search_term), then=Value(2)),
-                When(Q(term__icontains=search_term), then=Value(3)), 
-                When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
-                When(Q(utländsk_term__icontains=search_term), then=Value(5)),
-                When(Q(definition__icontains=search_term), then=Value(6)), 
-                default=Value(6), output_field=IntegerField()
-            )
-        )
-
-        order_by = []
-        if qs.filter(position=1).exists():
-            order_by.append('position')
-
-        if order_by:
-            qs = qs.order_by(*order_by)
-
-        return qs, use_distinct
-
 class StatusListFilter(MultipleChoiceListFilter):
     title = 'Status'
     template = "admin/multiple_status_filter.html"
@@ -116,7 +80,7 @@ class StatusListFilter(MultipleChoiceListFilter):
     def lookups(self, request, model_admin):
         return STATUS_VAL
 
-class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
+class BegreppAdmin(SimpleHistoryAdmin):
 
     class Media:
         css = {
@@ -161,7 +125,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     save_on_top = True
 
-    list_display = ('term',
+    list_display = ('id',
+                    'term',
                     'synonym',
                     'definition',
                     'utländsk_term',
@@ -179,21 +144,44 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     search_fields = ('term',
                     'definition',
-                    'begrepp_kontext',    
-                    'annan_ordlista',
                     'utländsk_term',
-                    'synonym__synonym')
+                    'synonym__synonym',
+                    'begrepp_kontext',    
+                    'annan_ordlista')
 
     date_hierarchy = 'senaste_ändring'
 
+    def get_queryset(self, request):
+        
+        queryset = super().get_queryset(request)
+        search_term = request.GET.get('q')        
+        queryset = queryset.annotate(
+            position=Case(
+                When(Q(term__iexact=search_term), then=Value(1)),
+                When(Q(term__istartswith=search_term), then=Value(2)),
+                When(Q(term__icontains=search_term), then=Value(3)), 
+                When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
+                When(Q(utländsk_term__icontains=search_term), then=Value(5)),
+                When(Q(definition__icontains=search_term), then=Value(6)), 
+                default=Value(0),
+                output_field=IntegerField()
+            )
+        ).order_by('position').distinct()
+        return queryset
+
+    def position(self, obj):
+        return obj.position
+    position.short_description = 'Position'
+
+    
     def has_link(self, obj):
         if (obj.link != None) and (obj.link != ''):
             return format_html(
-            f'<img src="/{settings.SUBDOMAIN}/static/admin/img/icon-yes.svg" alt="True">'
+            f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-yes.svg" alt="True">'
             )
         else:
             return format_html(
-                f'<img src="/{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="False">'
+                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="False">'
                 )
 
     has_link.short_description = "URL Länk"
