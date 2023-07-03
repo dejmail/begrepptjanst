@@ -154,25 +154,28 @@ class BegreppAdmin(SimpleHistoryAdmin):
     def get_queryset(self, request):
         
         queryset = super().get_queryset(request)
-        search_term = request.GET.get('q')        
-        queryset = queryset.annotate(
-            position=Case(
-                When(Q(term__iexact=search_term), then=Value(1)),
-                When(Q(term__istartswith=search_term), then=Value(2)),
-                When(Q(term__icontains=search_term), then=Value(3)), 
-                When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
-                When(Q(utländsk_term__icontains=search_term), then=Value(5)),
-                When(Q(definition__icontains=search_term), then=Value(6)), 
-                default=Value(0),
-                output_field=IntegerField()
-            )
-        ).order_by('position').distinct()
-        return queryset
+        if request.GET.get('q'):
+            search_term = request.GET.get('q')
+            queryset = queryset.annotate(
+                position=Case(
+                    When(Q(term__iexact=search_term), then=Value(1)),
+                    When(Q(term__istartswith=search_term), then=Value(2)),
+                    When(Q(term__icontains=search_term), then=Value(3)), 
+                    When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
+                    When(Q(utländsk_term__icontains=search_term), then=Value(5)),
+                    When(Q(definition__icontains=search_term), then=Value(6)), 
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by('position').distinct()
+
+            return queryset
+        else:
+            return queryset
 
     def position(self, obj):
         return obj.position
     position.short_description = 'Position'
-
     
     def has_link(self, obj):
         if (obj.link != None) and (obj.link != ''):
