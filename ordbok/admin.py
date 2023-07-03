@@ -125,18 +125,11 @@ class BegreppAdmin(SimpleHistoryAdmin):
 
     save_on_top = True
 
-    list_display = ('id',
-                    'term',
+    list_display = ('term',
                     'synonym',
                     'definition',
-                    'utländsk_term',
-                    'get_domäner',
                     'status_button',
-                    'annan_ordlista',
-                    'senaste_ändring',
-                    'beställare',
-                    'önskad_slutdatum',
-                    'has_link')
+                    'senaste_ändring',)
 
     list_filter = (StatusListFilter,
                    ('senaste_ändring', DateRangeFilter),
