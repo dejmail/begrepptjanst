@@ -139,8 +139,7 @@ class BegreppAdmin(SimpleHistoryAdmin):
                     'definition',
                     'utländsk_term',
                     'synonym__synonym',
-                    'begrepp_kontext',    
-                    'annan_ordlista')
+                    )
 
     date_hierarchy = 'senaste_ändring'
 
