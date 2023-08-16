@@ -713,18 +713,32 @@ def redirect_to_all_beslutade_terms(request):
 def merge_term_and_synonym(qs, syn_qs):
 
     for synonym in syn_qs:
-        synonyms = {'tillåten': [],
-                    'avråds' : []}
+        synonym_list = []
         try:
-            if synonym.get('synonym_status').lower() == 'tillåten':
-                synonyms['tillåten'].append(synonym.get('synonym'))
-            else:
-                synonyms['avråds'].append(synonym.get('synonym'))
-            
-            qs[synonym.get('begrepp_id')]['synonyms'] = synonyms
+            synonym_list.append(
+                {'term': synonym.get('synonym'),
+                 'status': synonym.get('synonym_status')}
+                )            
         except (IndexError, TypeError) as e:
             print(e)
-            set_trace()
+            logger.error(e)
+        
+        # likely only a single term being retrieved
+        if len(qs) == 1:
+            if qs[0].get('synonym') == None:
+                qs[0]['synonyms'] = []
+            qs[0]['synonyms'].extend(synonym_list)
+
+        elif len(qs) > 1:    
+            #set_trace()        
+            try:
+                if qs[synonym.get('begrepp_id')].get('synonyms') == None:
+                    qs[synonym.get('begrepp_id')]['synonyms'] = []
+                qs[synonym.get('begrepp_id')]['synonyms'].extend(synonym_list)
+            except IndexError as e:
+                print(e)
+                set_trace()
+    
     return qs
 
 def all_accepted_terms(request):
@@ -742,6 +756,7 @@ def all_accepted_terms(request):
         ~Q(status__icontains='internremiss'),
         ).prefetch_related().values()
     
+    
     qs_dict = {i.get('id'): i for i in queryset}
 
     synonym_qs = Synonym.objects.filter(
@@ -750,8 +765,10 @@ def all_accepted_terms(request):
         ).values()
     
     merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
+    
+    merged_result = list(merged_result.values())
 
-    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+    return JsonResponse(merged_result, json_dumps_params={'ensure_ascii':False}, safe=False)
 
 
 from django.core import serializers
@@ -769,8 +786,15 @@ def get_term(request, id):
     logger.info(f'Getting begrepp {id}')
     queryset = Begrepp.objects.filter(pk=id).values()
 
+    synonym_qs = Synonym.objects.filter(
+        begrepp_id__in=queryset.values_list(
+        'id', flat=True)
+        ).values()
+    
+    merged_result = merge_term_and_synonym(queryset, synonym_qs)
+
     if queryset:
-        return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+        return JsonResponse(list(merged_result), json_dumps_params={'ensure_ascii':False}, safe=False)
     else:
         return JsonResponse({'error' : 'No terms that match that id'})
 
