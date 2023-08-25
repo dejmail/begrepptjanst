@@ -746,15 +746,7 @@ def merge_term_and_synonym(qs, syn_qs):
                 qs[id]['synonyms'] = synonym_list        
             else:
                 qs[id]['synonyms'] = synonym_list
-            #set_trace()
-        # try:
-        #     if qs[synonym.get('begrepp_id')].get('synonyms') == None:
-        #         qs[synonym.get('begrepp_id')]['synonyms'] = []
-        #     qs[synonym.get('begrepp_id')]['synonyms'].extend(synonym_list)
-        # except IndexError as e:
-        #     print(e)
-        #     set_trace()
-    #set_trace()
+
     return qs
 
 def all_accepted_terms(request):
