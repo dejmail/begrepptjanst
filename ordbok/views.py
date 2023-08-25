@@ -712,33 +712,49 @@ def redirect_to_all_beslutade_terms(request):
 
 def merge_term_and_synonym(qs, syn_qs):
 
-    for synonym in syn_qs:
-        synonym_list = []
-        try:
-            synonym_list.append(
-                {'term': synonym.get('synonym'),
-                 'status': synonym.get('synonym_status')}
-                )            
-        except (IndexError, TypeError) as e:
-            print(e)
-            logger.error(e)
-        
-        # likely only a single term being retrieved
-        if len(qs) == 1:
-            if qs[0].get('synonym') == None:
-                qs[0]['synonyms'] = []
-            qs[0]['synonyms'].extend(synonym_list)
+    synonym_list = {
+        "prohibited_synonyms" : [],
+        "approved_synonyms" : []
+                }
+    if len(qs) == 1:
 
-        elif len(qs) > 1:    
-            #set_trace()        
-            try:
-                if qs[synonym.get('begrepp_id')].get('synonyms') == None:
-                    qs[synonym.get('begrepp_id')]['synonyms'] = []
-                qs[synonym.get('begrepp_id')]['synonyms'].extend(synonym_list)
-            except IndexError as e:
-                print(e)
-                set_trace()
+        for synonym in syn_qs:
+            if synonym.get('synonym_status') == "Tillåten":
+                synonym_list['approved_synonyms'].append(synonym.get('synonym'))
+            elif synonym.get('synonym_status') == "Avråds":
+                synonym_list['prohibited_synonyms'].append(synonym.get('synonym'))
     
+        if qs[0].get('synonym') == None:
+            qs[0]['synonyms'] = []
+        qs[0]['synonyms'] = synonym_list
+
+    elif len(qs) > 1:
+        for id, record in qs.items():
+
+            synonym_list = {
+                "prohibited_synonyms" : [],
+                "approved_synonyms" : []
+                }
+
+            synonyms = syn_qs.filter(begrepp_id=id)
+            if synonyms and len(synonyms) > 0:
+                for synonym in synonyms:
+                    if synonym.get('synonym_status') == "Tillåten":
+                        synonym_list['approved_synonyms'].append(synonym.get('synonym'))
+                    elif synonym.get('synonym_status') == "Avråds":
+                        synonym_list['prohibited_synonyms'].append(synonym.get('synonym'))
+                qs[id]['synonyms'] = synonym_list        
+            else:
+                qs[id]['synonyms'] = synonym_list
+            #set_trace()
+        # try:
+        #     if qs[synonym.get('begrepp_id')].get('synonyms') == None:
+        #         qs[synonym.get('begrepp_id')]['synonyms'] = []
+        #     qs[synonym.get('begrepp_id')]['synonyms'].extend(synonym_list)
+        # except IndexError as e:
+        #     print(e)
+        #     set_trace()
+    #set_trace()
     return qs
 
 def all_accepted_terms(request):
