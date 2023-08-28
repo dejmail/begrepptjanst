@@ -2,9 +2,9 @@
 
 <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 bg-lighter d-inline-block" id="search-row-left-column"">
 
-    <form class="form-inline" onsubmit="return false;">
+    <form class="form-inline" id="filter-form" onsubmit="return false;">{% csrf_token %}
         <i id="search-icon" class="fas fa-search"  aria-hidden="true"></i>
-        <input id="user-input" class="form-control form-control-md" style="flex:3" type="text" placeholder="&nbsp;&nbsp;&nbsp;Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
+        <input id="user-input" class="form-control form-control-md mb-2" style="flex:3" type="text" placeholder="&nbsp;&nbsp;&nbsp;Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
     
 
     <fieldset>
@@ -13,10 +13,10 @@
         <DL>
         <DT class="mb-2">Dictionaries</DT>        
         {% for dictionary in dictionaries %}
-          <DD class="dd">
-            <label for="title_1">
-              <input type="checkbox" id="{{dictionary.title}}" name="{{dictionary.title}}" />
-                   {{dictionary.title}}
+          <DD class="dd pl-1">
+            <label for="dictionary-filter-checkbox-{{ forloop.counter }}">{{dictionary.title}}
+              <input type="checkbox" name="{{dictionary.title}}" id="dictionary-filter-checkbox-{{ forloop.counter }}" />
+                   
             </label>
           </DD>
         {% endfor %}
@@ -26,9 +26,9 @@
         {% for relationship in relationship_types %}       
 
         <DD class="dd">
-            <label for="title_1">
-              <input type="checkbox" id="{{relationship.relationship}}" name="{{relationship.relationship}}" />
-              {{relationship.relationship}}
+            <label for="relationship-filter-checkbox-{{ forloop.counter }}">{{relationship.relationship}}
+              <input type="checkbox" name="{{relationship.relationship}}" id="relationship-filter-checkbox-{{ forloop.counter }}" />
+              
             </label>
         </DD>
         

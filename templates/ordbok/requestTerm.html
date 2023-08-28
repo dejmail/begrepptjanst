@@ -53,15 +53,15 @@
         processData:false,
         data : formdata,
         success : function(response){
-            $("#mitten-span-middle-column").html(response);
+            $("#search-row-middle-column").html(response);
             history.pushState(post_url, '', post_url)
             setTimeout(function(){
-            $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
+            $("#search-row-middle-column").html('<div id="search-row-middle-column"></div>')}, 2500);
             document.getElementById('user-input').value = '';
             history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', endpoint);
         },
         error: function(response) {
-            $("#mitten-span-middle-column").html(response.responseText);
+            $("#search-row-middle-column").html(response.responseText);
         }
     });
 });

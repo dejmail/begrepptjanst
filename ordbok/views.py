@@ -3,6 +3,7 @@ import re
 from pdb import set_trace
 from urllib.parse import unquote
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.utils.translation import gettext as _
 
 from begrepptjanst.logs import setup_logging
 from begrepptjanst.settings.production import EMAIL_HOST_PASSWORD
@@ -13,17 +14,23 @@ from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db import connection
 from django.db.models import Q
-from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+from django.http import (
+    HttpRequest, 
+    HttpResponse, 
+    HttpResponseRedirect, 
+    JsonResponse
+)
+from django.db.models.query import QuerySet
+
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import get_script_prefix
 from django.utils.html import format_html
-from django.utils.translation import gettext as _
 
 
 from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
-                              mäta_sök_träff, nbsp2space, sort_begrepp_keys)
+                              mäta_sök_träff, nbsp2space)
 from ordbok.models import (
     Dictionary,
     TypeOfRelationship,
@@ -49,7 +56,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
-def retur_general_sök(url_parameter):
+def get_search_results_from_db(search_parameter: str, dictionaries: list, relationships: list) -> QuerySet:
 
     """ Check whether the  :model:`ordbok.Begrepp` contains entries in the 
     attributes specified.
@@ -60,20 +67,44 @@ def retur_general_sök(url_parameter):
     :rtype: Queryset
         
     """
-
-    queryset = Begrepp.objects.all().exclude(
-                         status='Publicera ej'  
+    child_terms = TermRelationship.objects.all().values_list('child_term_id')
+    search_parameter_length = len(search_parameter)
+    dictionary_length = len(dictionaries)
+    
+    if search_parameter_length > 2:
+        queryset = Begrepp.objects.all().exclude(
+                         status__in=['Publicera ej','Ej Påbörjad'],
+                         id__in=child_terms
                      ).filter(
-                     Q(id__contains=url_parameter) |
-                     Q(term__icontains=url_parameter) |
-                     Q(anmärkningar__icontains=url_parameter) |
-                     Q(definition__icontains=url_parameter) |
-                     Q(utländsk_term__icontains=url_parameter)
-                     ).distinct().prefetch_related()    
+                     Q(id__contains=search_parameter) |
+                     Q(term__icontains=search_parameter) |
+                     Q(anmärkningar__icontains=search_parameter) |
+                     Q(definition__icontains=search_parameter) |
+                     Q(utländsk_term__icontains=search_parameter)
+                     ).distinct().prefetch_related()
+    
+    if (search_parameter_length > 2) and (dictionary_length > 0):
+        queryset = queryset.filter(dictionaries__title__in=dictionaries)
+    
+    if (search_parameter_length == 0) and (dictionary_length > 0):
+
+        queryset = Begrepp.objects.all().exclude(
+                         status__in=['Publicera ej','Ej Påbörjad'],
+                         id__in=child_terms
+                     ).filter(dictionaries__title__in=dictionaries)
+    
+    if (search_parameter_length == 0) and (dictionary_length == 0):
+
+        queryset = Begrepp.objects.none()
+
+    if (len(relationships) > 0) and (search_parameter_length > 0):
+        queryset = TermRelationship.objects.filter(
+                base_term__icontains=search_parameter
+                )
 
     return queryset
 
-def filter_by_first_letter(letter):
+def filter_terms_by_first_letter(letter: str) -> QuerySet:
 
     """ A filter of :model:`ordbok.Begrepp` which returns a queryset 
     where the terms start with a certain letter.
@@ -93,7 +124,7 @@ def filter_by_first_letter(letter):
 
     return queryset
 
-def return_single_term(id):
+def return_single_term(id: str) -> QuerySet:
 
     """Return a single match of :model:`ordbok.Begrepp`
 
@@ -110,7 +141,7 @@ def return_single_term(id):
     return Begrepp.objects.get(pk=id)
 
 
-def sort_results_according_to_search_term(queryset, url_parameter, position=1):
+def sort_results_according_to_search_term(queryset: QuerySet, search_term: str, position: int = 1) -> list:
     
     """Returns a sorted list based on "column" from list-of-dictionaries data.
 
@@ -120,11 +151,13 @@ def sort_results_according_to_search_term(queryset, url_parameter, position=1):
     :return: Sorted list
     :rtype: list
     """
+    if len(search_term) > 0:
+        return sorted(queryset, key=lambda x: x.get('term').lower().split(search_term))
+    else:
+        return queryset
 
-    return sorted(queryset, key=lambda x: x.get('term').lower().split(url_parameter))
 
-
-def highlight_search_term_i_definition(search_term, begrepp_dict_list):
+def highlight_search_term_i_definition(search_term: str, begrepp_dict_list: QuerySet) -> QuerySet:
 
     """Encapsulate the search string with HTML <mark> tag in the definition of 
     the term.
@@ -136,13 +169,18 @@ def highlight_search_term_i_definition(search_term, begrepp_dict_list):
     :rtype: class of type Queryset
     """
 
-    for idx, begrepp in enumerate(begrepp_dict_list):
-        begrepp_dict_list[idx]['definition'] = begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>')
+    if len(search_term) > 0:
+        for idx, begrepp in enumerate(begrepp_dict_list):
+            begrepp_dict_list[idx]['definition'] = begrepp.get(
+                'definition'
+                ).replace(search_term, f'<mark>{search_term}</mark>')
+    else:
+        pass
         
     return begrepp_dict_list
 
 
-def return_list_of_term_and_definition():
+def return_list_of_term_and_definition() -> QuerySet:
     
     
     """Return values "term" and "definition" from a queryset of all terms in
@@ -157,7 +195,7 @@ def return_list_of_term_and_definition():
 
     return result
 
-def clean_dict_of_extra_characters(incoming_dict):
+def clean_dict_of_extra_characters(incoming_dict: dict) -> dict:
 
     """ Using regular expression, replace all \xa0 characters that are present
     in the definition strings.
@@ -185,10 +223,13 @@ def concatentate_all_dictionary_values_to_single_string(dictionary : dict, key :
     :return: A string created by joining all the values of a given key
     :rtype: str
     """
+    
+    # Run it through a filter function to take into account terms that have no definition
+    # such as when they are a synonym or other 
 
-    return ' ½ '.join([i.get(key) for i in dictionary])
+    return ' ½ '.join(filter(None, map(str, [i.get(key) for i in dictionary])))
 
-def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, key='definition'):
+def creating_tooltip_hover_with_search_result(begrepp_dict_list: QuerySet, term_def_dict: dict, key: str = 'definition') -> QuerySet:
 
     """ Manipulate an incoming dictionary that has a 'term' and 'definition'
      key:value so that when a definition has references to other term/s
@@ -220,7 +261,7 @@ def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, 
     # definitions separated by the ' ½ ' string. Without the spaces, certain instances of words
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all 
     # the occurrences of begrepp in definitions with a hover tooltip text.
-
+    
     joined_definitions = concatentate_all_dictionary_values_to_single_string(begrepp_dict_list, key)
     joined_definitions_minus_nbsp = nbsp2space(joined_definitions)
     gt_brackets, lt_brackets = find_all_angular_brackets(joined_definitions_minus_nbsp)
@@ -231,16 +272,18 @@ def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, 
     altered_strings = translator.xlat(joined_definitions_minus_nbsp)
     # resplit the now altered string back into a list
     resplit_altered_strings = altered_strings.split(' ½ ')
-
+    
     for index, begrepp in enumerate(begrepp_dict_list):
         try:
+           #if index == 292: set_trace()
            begrepp_dict_list[index][key] = resplit_altered_strings[index]
         except (re.error, KeyError) as e:
-           print(e)
-
+           #set_trace()
+           logger.error(e)
+    
     return begrepp_dict_list
 
-def find_all_angular_brackets(bracket_string):
+def find_all_angular_brackets(bracket_string: str) -> tuple:
 
     """ Definitions of terms often include < > brackets within the definitions which
     are interpreted as HTML which confused the template engine. This function finds
@@ -262,7 +305,7 @@ def find_all_angular_brackets(bracket_string):
     
     return gt_brackets, lt_brackets
 
-def replace_str_index(text,index, index_shifter, replacement):
+def replace_str_index(text: str, index: int, index_shifter: int, replacement: str) -> str:
 
     """ Return a string where string formatting was used to replace a 
     certain character at a certain index with a different string.
@@ -279,7 +322,7 @@ def replace_str_index(text,index, index_shifter, replacement):
 
     return f"{text[:index+index_shifter]}{replacement}{text[index+1+index_shifter:]}"
 
-def replace_non_html_brackets(edit_string, gt_brackets, lt_brackets):
+def replace_non_html_brackets(edit_string: str, gt_brackets: list, lt_brackets: list) -> str:
 
     """ Iterate through a string and replace the < and > characters with the 
     corresponding HTML equivalent.
@@ -317,7 +360,7 @@ def replace_non_html_brackets(edit_string, gt_brackets, lt_brackets):
 
     return edit_string
 
-def mark_fields_as_safe_html(list_of_dict, fields):
+def mark_fields_as_safe_html(list_of_dict: list, fields: list) -> list:
 
     """ Make certain fields within a list of dictionary
     objects as safe html
@@ -335,7 +378,7 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
     return list_of_dict
 
-def hämta_data_till_begrepp_view(url_parameter, page_number):
+def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, relationships: list, page_number: int) -> str:
 
     """Main method that couples together all the submethods needed to
     produce the HTML needed for the initial search view.
@@ -345,22 +388,19 @@ def hämta_data_till_begrepp_view(url_parameter, page_number):
     :return: HTML page formatted with the search results
     :rtype: str
     """
-
-    if (len(url_parameter) == 1) and (url_parameter.isupper()):
-        search_request = filter_by_first_letter(letter=url_parameter)
+    if (len(search_parameter) == 1) and (search_parameter.isupper()):
+        search_request = filter_terms_by_first_letter(search_parameter, dictionaries, relationships)
         highlight=False
     else: 
-        search_request = retur_general_sök(url_parameter)
+        search_request = get_search_results_from_db(search_parameter, dictionaries, relationships)
         logger.debug(f'len of search result = {len(search_request)}')
-
         highlight=True
 
-    simple_terms = TermRelationship.objects.all().values_list('base_term', flat=True)
+    simple_terms = TermRelationship.objects.all().values_list('child_term', flat=True)
     search_request = search_request.exclude(id__in=simple_terms)
 
     # this is all the terms and definitions from the DB
     all_terms_and_definitions_dict = return_list_of_term_and_definition()
-    
     return_list_dict = creating_tooltip_hover_with_search_result(
         begrepp_dict_list = search_request.values(),
         term_def_dict = all_terms_and_definitions_dict
@@ -368,17 +408,16 @@ def hämta_data_till_begrepp_view(url_parameter, page_number):
 
     if highlight==True:
         return_list_dict = highlight_search_term_i_definition(
-            url_parameter, 
+            search_parameter, 
             return_list_dict
             )
     
     return_list_dict = sort_results_according_to_search_term(
         return_list_dict, 
-        url_parameter
+        search_parameter
         )
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
-
     
     paginator = Paginator(return_list_dict, 8)
 
@@ -392,28 +431,37 @@ def hämta_data_till_begrepp_view(url_parameter, page_number):
         page_obj = paginator.page(paginator.num_pages)
     
     dictionaries = Dictionary.objects.all()
-    relationships = TypeOfRelationship.objects.all()
+    relationship_types = TypeOfRelationship.objects.all()
+    
+    term_relationships  = TermRelationship.objects.filter(
+        base_term__in=search_request.values_list('id', flat=True)
+        )
 
     html = render_to_string(
-        template_name="search-results.html", context={'page_obj': page_obj,
-                                                    'färg_status' : färg_status_dict,
-                                                    'queryset' : search_request,
-                                                    'searched_for_term' : url_parameter,
-                                                    'dictionaries' : dictionaries,
-                                                    'relationships' : relationships
-                                                    }
-                            )
+        template_name="searchResults.html", 
+        context={
+            'page_obj': page_obj,
+            'färg_status' : färg_status_dict,
+            'queryset' : search_request,
+            'searched_for_term' : search_parameter,
+            'dictionaries' : dictionaries,
+            'relationship_types' : relationship_types,
+            'term_relationships' : term_relationships
+            }
+        )
     
+    # set_trace()
+
     return html, return_list_dict
 
-def is_request_ajax(request):
+def is_request_ajax(request: HttpRequest) -> bool:
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return True
     else:
         return False
 
-def begrepp_view(request):
+def begrepp_view(request: HttpRequest) -> HttpResponse:
 
     """ The view that processes the initial search from the user
 
@@ -422,27 +470,34 @@ def begrepp_view(request):
     :return: HttpResponse object containing template and context
     :rtype: HttpResponse
     """
-    url_parameter = request.GET.get("q")
-    
+
+    search_term = request.GET.get("term")
+    dictionaries = request.GET.get('dictionaries','')
+    if dictionaries:
+        dictionaries = dictionaries.split(',')
+    relationships = request.GET.get('relationships','')
+    if relationships:
+        relationships = relationships.split(',')
+
     if is_request_ajax(request) == True:
         
         page_number = request.GET.get('page', 1)
         
-        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter, page_number)
+        data_dict, return_list_dict = hämta_data_till_begrepp_view(search_term, dictionaries, relationships, page_number)
 
-        mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
+        mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
         return JsonResponse(data=data_dict, safe=False)
 
     else:
-        begrepp = Begrepp.objects.none()
-    
+        
+        concept = Begrepp.objects.none()    
     
     return render(request, "term.html", context={
-        'begrepp' : begrepp,
+        'concept' : concept,
         'dictionaries' : Dictionary.objects.all(),
         'relationship_types' : TypeOfRelationship.objects.all()})
 
-def begrepp_förklaring_view(request):
+def begrepp_förklaring_view(request: HttpRequest) -> HttpResponse:
 
     """ View that processes the request for detailed information about a certain term
 
@@ -469,7 +524,7 @@ def begrepp_förklaring_view(request):
 
         html = render_to_string(template_name="term_details.html", context=template_context)
 
-    if request.is_ajax():        
+    if is_request_ajax(request) == True:
         return HttpResponse(html, content_type="html")
 
     elif request.method=='GET':
@@ -480,7 +535,7 @@ def begrepp_förklaring_view(request):
 
     return render(request, "base.html", context={})
 
-def hantera_request_term(request):
+def hantera_request_term(request: HttpRequest) -> HttpResponse:
 
     """ Send the form data when a user wants to request a new term or 
     manage the POST data if the user submits the request.
@@ -566,7 +621,7 @@ def hantera_request_term(request):
                                                         'whichTemplate' : 'requestTerm'}, 
                                                         status=500)
 
-    elif request.is_ajax():
+    elif is_request_ajax(request):
        
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
         
@@ -577,7 +632,7 @@ def hantera_request_term(request):
     else:
         return render(request, 'term.html', {})
 
-def kommentera_term(request):
+def kommentera_term(request: HttpRequest) -> HttpResponse:
 
     """ Send back either the form to allow the submission of comments or
     process the submitted form and save the data to db.
@@ -629,7 +684,7 @@ def kommentera_term(request):
             return HttpResponse(f'''<div class="alert alert-success">\
                  {msg} </div>''')
 
-def prenumera_till_epost(request):
+def prenumera_till_epost(request: HttpRequest) -> HttpResponseRedirect:
 
     """ A view that takes in a request containing an email address that is
     then emailed to the generic email address to be added to a subscription.
@@ -654,7 +709,7 @@ def prenumera_till_epost(request):
     return HttpResponseRedirect(get_script_prefix())
 
 
-def return_number_of_comments(request):
+def return_number_of_comments(request: HttpRequest) -> JsonResponse:
     
     """ Returns JSON with total number of comments, and total number of unread comments
     based on a status of Beslutad
@@ -671,7 +726,7 @@ def return_number_of_comments(request):
         return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
                              'totalcomments' : len(status_list)})
 
-def no_search_result(request):
+def no_search_result(request: HttpRequest) -> HttpResponse:
 
     """ A view that was used to provide different choices based on what the user
     chose to do if the initial search had zero results.
@@ -681,11 +736,10 @@ def no_search_result(request):
     """
 
     url_parameter = request.GET.get("q")
-    if request.method == 'GET':
-        
+    if request.method == 'GET':        
          return render(request, "no_search_result.html", context={'searched_for_term' : url_parameter})    
  
-def autocomplete_suggestions(request, attribute, search_term):
+def autocomplete_suggestions(request: HttpRequest, attribute: str, search_term: str) -> JsonResponse:
 
     """ In the admin pages, there are certain fields where it is helpful to have
     previously entered values shown to increase consistency across records.
@@ -729,7 +783,7 @@ def autocomplete_suggestions(request, attribute, search_term):
 
     return JsonResponse(suggestions, safe=False)
 
-def all_non_beslutade_begrepp(request):
+def all_non_beslutade_begrepp(request: HttpRequest) -> JsonResponse:
 
     """ Returns a JSON response with all the terms that have status 'Beslutad'
     or 'Publicera ej'.
@@ -742,9 +796,24 @@ def all_non_beslutade_begrepp(request):
                                             ~Q(status__icontains='publicera ej')).prefetch_related().values()
 
 
-    return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+def merge_term_and_synonym(qs, syn_qs):
 
-def all_beslutade_terms(request):
+    for synonym in syn_qs:
+        synonyms = {'tillåten': [],
+                    'avråds' : []}
+        try:
+            if synonym.get('synonym_status').lower() == 'tillåten':
+                synonyms['tillåten'].append(synonym.get('synonym'))
+            else:
+                synonyms['avråds'].append(synonym.get('synonym'))
+            
+            qs[synonym.get('begrepp_id')]['synonyms'] = synonyms
+        except (IndexError, TypeError) as e:
+            print(e)
+            set_trace()
+    return qs
+
+def all_accepted_terms(request: HttpRequest) -> JsonResponse:
 
     """ Returns a JSON list of all terms with status 'Publicera ej'
 
@@ -752,11 +821,16 @@ def all_beslutade_terms(request):
     :rtype: {JsonResponse}
     """
 
-    queryset = Begrepp.objects.all().filter(~Q(status__icontains='publicera ej')).prefetch_related().values()
+    queryset = Begrepp.objects.all().filter(
+        ~Q(status__icontains='publicera ej'),
+        ~Q(status__icontains='ej påbörjad'),
+        ~Q(status__icontains='pågår'),
+        ~Q(status__icontains='internremiss'),
+        ).prefetch_related().values()
     
     return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
 
-def get_term(request, id):
+def get_term(request: HttpRequest, id: int) -> JsonResponse:
 
     """ Obtain a single term from :model:`ordbok.Begrepp` and return a Queryset
     dictionary that is presented as JSON. 
@@ -768,8 +842,16 @@ def get_term(request, id):
     logger.info(f'Getting begrepp {id}')
     queryset = Begrepp.objects.filter(pk=id).values()
 
+    synonym_qs = Synonym.objects.filter(
+        begrepp_id__in=queryset.values_list(
+        'id', flat=True)
+        ).values()
+    qs_dict = {i.get('id'): i for i in queryset}
+
+    merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
+
     if queryset:
-        return JsonResponse(list(queryset), json_dumps_params={'ensure_ascii':False}, safe=False)
+        return JsonResponse(merged_result, json_dumps_params={'ensure_ascii':False}, safe=False)
     else:
         return JsonResponse({'error' : 'No terms that match that id'})
 
@@ -783,4 +865,8 @@ def all_synonyms(request):
     :rtype: {JsonResponse}
     """
     querylist = list(Synonym.objects.all().values())
+
+    for index, synonym_qs in enumerate(querylist):
+        querylist[index]['term'] = Begrepp.objects.get(pk=synonym_qs.get('begrepp_id')).term
+
     return JsonResponse(querylist, json_dumps_params={'ensure_ascii':False}, safe=False)

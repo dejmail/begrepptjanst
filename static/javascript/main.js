@@ -29,49 +29,69 @@ function toggle_element(element_id) {
 	}
 }
 
+function ajaxCall(endpoint, request_parameters, url, csrf_token) {
+	$("#term_förklaring_tabell").remove();
+	search_result_div.empty();
+	// #$("#search-row-middle-column").r();
+	$("#search-row-right-column").empty();
+
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+		   // Typical action to be performed when the document is ready:
+		    console.log("document.URL", document.URL)
+		    console.log("endpoint", endpoint);
+			changeBrowserURL(xhttp.responseText, url);
+			// fade out the search result, then:
+			search_result_div.fadeTo('fast', 0).promise().then(() => {
+    		// replace the HTML contents & display the filter bar
+			
+			document.getElementById("search-row-middle-column").outerHTML = JSON.parse(xhttp.responseText);
+				
+			//document.getElementById("sidebar").style.display = "block";
+
+			// fade-in the div with new contents
+			search_result_div.fadeTo('fast', 1);
+			// stop animating search icon
+			search_icon.removeClass('blink');
+			popStateHandler();
+			})
+		};
+	}
+	xhttp.open("GET", url, true);
+	xhttp.setRequestHeader("x-requested-with", "XMLHttpRequest");
+	xhttp.send();
+	popStateHandler();
+	}
+	// $.getJSON(url, request_parameters)
+	// 	.done(response => {
+			
+			// console.log("document.URL", document.URL)
+			// console.log("endpoint", endpoint);
+			// changeBrowserURL(response, url);
+			// // fade out the search result, then:
+			// search_result_div.fadeTo('fast', 0).promise().then(() => {
+			// 	// replace the HTML contents & display the filter bar
+				
+			// 	search_result_div.html(response);
+				
+			// 	//document.getElementById("sidebar").style.display = "block";
+
+			// 	// fade-in the div with new contents
+			// 	search_result_div.fadeTo('fast', 1);
+			// 	// stop animating search icon
+			// 	search_icon.removeClass('blink');
+			// 	popStateHandler();
+		// 	})
+		// });
+	// popStateHandler();
+// }
+
 user_input.keyup(function () {
 	$("#search-row-middle-column").empty();
 	//toggle_element("replaceable-content-middle-column");
 	
-	const request_parameters = {
-		
-		q: $(this).val() // value of user_input: the HTML element with ID user-input
-	}
-	
-	if (request_parameters.q.length > 1) {
 
-	var ajax_call = function (endpoint, request_parameters) {
-		$("#term_förklaring_tabell").remove();
-		$("#result_columns").empty();
-		// #$("#search-row-middle-column").r();
-		$("#search-row-right-column").empty();
-
-		var skapad_url = (endpoint + '?' + Object.keys(request_parameters) + '=' + Object.values(request_parameters));
-		$.getJSON(endpoint, request_parameters)
-			.done(response => {
-				
-				console.log("document.URL", document.URL)
-		        console.log("endpoint", endpoint);
-				changeBrowserURL(response, skapad_url);
-				// fade out the search result, then:
-				search_result_div.fadeTo('fast', 0).promise().then(() => {
-					// replace the HTML contents & display the filter bar
-					
-					$("#result_columns").html(response);
-					
-					//document.getElementById("sidebar").style.display = "block";
-
-					// fade-in the div with new contents
-					search_result_div.fadeTo('fast', 1);
-					// stop animating search icon
-					search_icon.removeClass('blink');
-					popStateHandler();
-				})
-			});
-		popStateHandler();
-	}
-} 
-	
 	// start animating the search icon with the CSS class
 	search_icon.addClass('blink')
 
@@ -81,34 +101,71 @@ user_input.keyup(function () {
 	$("#about-card").removeClass('d-inline-block');
 
 	// if scheduled_function is NOT false, cancel the execution of the function
-	if (scheduled_function) {
-		clearTimeout(scheduled_function)
-	}
 
-	// setTimeout returns the ID of the function to be executed
-	scheduled_function = setTimeout(ajax_call, delay_by_in_ms, endpoint, request_parameters)
 
 });
 
-document.body.addEventListener("change",  function(e) {
-	if ($("#filterForm input:checkbox:checked").length > 0)
-	{
-		var ajax_call = function (endpoint, request_parameters) {
-			var skapad_url = (endpoint + '?' + Object.keys(request_parameters) + '=' + Object.values(request_parameters));
-			$.getJSON(endpoint, request_parameters)
-				.done(response => {
-					begrepp_div.fadeTo('fast', 0).promise().then(() => {
-						// replace the HTML contents
-						begrepp_div.html(response);
-					});
-				});
-			}
-	} else {
-		console.log('Checkboxes are not ticked');
+  function processCheckboxes(checkboxes) {
+	var results = [];
+  
+	for (var i = 0; i < checkboxes.length; i++) {
+	  var checkbox = checkboxes[i];
+	  var isChecked = checkbox.checked;
+	  if (isChecked) {
+		results.push(checkbox.name);
+	  }
 	}
-}
-);
+  
+	return results;
+  }
+
+  function buildURL(search_term, dictionary_checkboxes, relation_checkboxes) {
 	
+	return (endpoint + 
+			'?term=' + 
+			search_term + 
+			'&dictionaries=' + 
+			dictionary_checkboxes.join(',') + 
+			'&relationships=' + 
+			relation_checkboxes.join(','));
+  }
+
+
+  function docReady() {
+
+	// Intercept form submission
+	const input = document.querySelector("#filter-form");
+	input.addEventListener("input", updateFilter);
+	function updateFilter(event) {
+	  // Prevent the form from submitting traditionally
+
+	  event.preventDefault();
+	  const search_term = document.getElementById("user-input").value
+	  const dictionary_checkboxes = document.querySelectorAll('input[id^="dictionary-filter-checkbox-"]')
+	  const relation_checkboxes = document.querySelectorAll('input[id^="relationship-filter-checkbox-"]')
+
+	  var dictionary_checked = processCheckboxes(dictionary_checkboxes);
+	  var relationship_checked = processCheckboxes(relation_checkboxes);
+	  var csrf_token = document.getElementsByName("csrfmiddlewaretoken");
+	  var post_url = buildURL(search_term, dictionary_checked, relationship_checked);
+	  
+	  // Send checkbox status to the backend, and update page
+	  if ((search_term.length > 1) || (dictionary_checkboxes.length > 0)) {
+
+		if (scheduled_function) {
+			clearTimeout(scheduled_function)
+			}
+
+	// setTimeout returns the ID of the function to be executed
+		scheduled_function = setTimeout(ajaxCall, delay_by_in_ms, endpoint, search_term, post_url, csrf_token)
+
+		// ajaxCall(endpoint, search_term, post_url, csrf_token)
+	}
+
+	}
+};
+
+docReady();
 
 
 document.body.addEventListener("click", function(e) {
@@ -135,11 +192,11 @@ function getPage(link_url, div) {
 		url: link_url,
 	}).done(function(data, textStatus, jqXHR) {
 		$('#replaceable-content-middle-column').empty();
-		$("#mitten-span-middle-column").empty();
+		$("#search-row-middle-column").empty();
 		div.html(data);
 		changeBrowserURL(data, this.url);
 	}).fail(function(data,textStatus,jqXHR) {
-		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
+		  $('#search-row-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
 		});
 	  };
 
@@ -172,7 +229,7 @@ function popStateHandler() {
 		// Get the URL from the address bar and fetch the page.
 		console.log('popstateHandler eventlistener fired, next stop getPage function')
 		//debugger;
-		$('#mitten-span-middle-column').html(history.state);
+		$('#search-row-middle-column').html(history.state);
 		//getPage(document.URL);
 	  });
 }
