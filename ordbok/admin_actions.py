@@ -21,7 +21,7 @@ from pdb import set_trace
 
 logger = logging.getLogger(__name__)
 
-predetermined_column_order =  ['id_vgr',
+predetermined_column_order =  ['official_id',
                                'term',
                                'synonym',
                                'definition',

@@ -13,7 +13,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, When, Value, IntegerField, Case
 from django.http import (
     HttpRequest, 
     HttpResponse, 
@@ -37,7 +37,6 @@ from ordbok.models import (
     Begrepp, 
     BegreppExternalFiles, 
     Bestallare,
-    Doman, 
     KommenteraBegrepp, 
     TermRelationship)
 
@@ -58,7 +57,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
 
 def get_search_results_from_db(search_parameter: str, dictionaries: list, relationships: list) -> QuerySet:
 
-    """ Check whether the  :model:`ordbok.Begrepp` contains entries in the 
+    """ Check whether the :model:`ordbok.Begrepp` contains entries in the 
     attributes specified.
     
     Arguments: 
@@ -82,6 +81,25 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
                      Q(definition__icontains=search_parameter) |
                      Q(utländsk_term__icontains=search_parameter)
                      ).distinct().prefetch_related()
+        
+        queryset = queryset.annotate(
+            position=Case(
+                When(Q(term__iexact=search_parameter), then=Value(1)),
+                When(Q(term__istartswith=search_parameter), then=Value(2)),
+                When(Q(term__icontains=search_parameter), then=Value(3)), 
+                #When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
+                When(Q(utländsk_term__icontains=search_parameter), then=Value(5)),
+                When(Q(definition__icontains=search_parameter), then=Value(6)), 
+                default=Value(6), output_field=IntegerField()
+            )
+        )
+
+    order_by = []
+    if queryset.filter(position=1).exists():
+        order_by.append('position')
+
+    if order_by:
+        queryset = queryset.order_by(*order_by)
     
     if (search_parameter_length > 2) and (dictionary_length > 0):
         queryset = queryset.filter(dictionaries__title__in=dictionaries)
@@ -89,13 +107,22 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
     if (search_parameter_length == 0) and (dictionary_length > 0):
 
         queryset = Begrepp.objects.all().exclude(
-                         status__in=['Publicera ej','Ej Påbörjad'],
+                         status__in=[
+                             'Publicera ej',
+                             'Ej Påbörjad'
+                             ],
                          id__in=child_terms
-                     ).filter(dictionaries__title__in=dictionaries)
+                     ).filter(
+                         dictionaries__title__in=dictionaries
+                         )
     
     if (search_parameter_length == 0) and (dictionary_length == 0):
 
         queryset = Begrepp.objects.none()
+
+    if (search_parameter_length > 2 ) and (dictionary_length == 0):
+
+        pass
 
     if (len(relationships) > 0) and (search_parameter_length > 0):
         queryset = TermRelationship.objects.filter(
@@ -419,7 +446,7 @@ def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, rel
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
     
-    paginator = Paginator(return_list_dict, 8)
+    paginator = Paginator(return_list_dict, 20)
 
     try:
         page_obj = paginator.page(page_number)
@@ -449,8 +476,6 @@ def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, rel
             'term_relationships' : term_relationships
             }
         )
-    
-    # set_trace()
 
     return html, return_list_dict
 

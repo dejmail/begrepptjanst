@@ -25,26 +25,6 @@ SYSTEM_VAL = (('Millennium', "Millennium"),
               ('VGR Begreppsystem',"VGR Begreppsystem"))
 
 
-class OwnerofDictionary(models.Model):
-
-    """Dictionary model that all terms belong to. The reverse relationship used 
-    is ManytoMany as terms can belong to multiple dictionaries.
-    """
-
-    class Meta: 
-        verbose_name_plural = "Region"
-        app_label = 'ordbok'
-
-    title = models.CharField(max_length=72, default='Main')
-    description = models.TextField(max_length=1000, null=True)
-    concept = models.ForeignKey('Begrepp', to_field='id', on_delete=models.PROTECT)
-
-    def __str__(self):
-
-        """Return the title of the dictionary
-        """
-        return self.title
-
 class Dictionary(models.Model):
 
     """Dictionary model that all terms belong to. The reverse relationship used 
@@ -75,25 +55,25 @@ class Begrepp(models.Model):
         verbose_name_plural = "Begrepp"
         app_label = 'ordbok'
 
-    begrepp_kontext = models.TextField(default='Inte definierad')
+    begrepp_kontext = models.TextField(null=True, blank=True)
     senaste_ändring = models.DateTimeField(auto_now=True, verbose_name='Senaste ändring')
     datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
     beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
-    definition = models.TextField(blank=True)
+    definition = models.TextField(blank=True, null=True)
     tidigare_definition_och_källa = models.TextField(blank=True, null=True)
-    externt_id = models.CharField(max_length=255, null=True, verbose_name="Kod")
-    källa = models.CharField(max_length=255, null=True)
-    annan_ordlista = models.CharField(max_length=255, null=True)
-    status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
-    term = models.CharField(max_length=255, default='Angavs ej')
-    plural = models.CharField(max_length=10, null=True)
+    external_id = models.CharField(max_length=255, null=True, verbose_name="Kod", blank=True)
+    källa = models.CharField(max_length=255, null=True, blank=True)
+    annan_ordlista = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS, blank=True)
+    term = models.CharField(max_length=255)
+    plural = models.CharField(max_length=10, null=True, blank=True)
     utländsk_term = models.CharField(max_length=255, blank=True)
-    id_vgr = models.CharField(max_length=255, null=True)
-    anmärkningar = models.TextField(null=True)
-    kommentar_handläggning = models.TextField(null=True)
+    official_id = models.CharField(max_length=255, null=True, blank=True)
+    anmärkningar = models.TextField(null=True, blank=True)
+    kommentar_handläggning = models.TextField(null=True, blank=True)
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
     link = models.URLField(help_text="Länk till externt dokument", verbose_name='Länk till begreppsutredning', null=True, blank=True)
-    usage_recommendation = models.CharField(max_length=50, null=True)
+    usage_recommendation = models.CharField(max_length=50, null=True, blank=True)
 
     dictionaries = models.ManyToManyField(Dictionary)
     history = HistoricalRecords('datum_skapat')
@@ -114,19 +94,13 @@ class TypeOfRelationship(models.Model):
 
 class TermRelationship(models.Model):
 
-    base_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name='base_term', null=True)
-    child_term = models.ForeignKey(to="Begrepp", to_field="id", on_delete=models.CASCADE, related_name="child_term", null=True)
-    relationship = models.ForeignKey(to="TypeOfRelationship", to_field="id", on_delete=models.CASCADE)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['base_term', 'child_term']),
-            models.Index(fields=['base_term'], name='base_term_idx'),
-        ]
+    base_term = models.ForeignKey(to="Begrepp", on_delete=models.CASCADE, related_name='base_term', null=True)
+    child_term = models.ForeignKey(to="Begrepp", on_delete=models.CASCADE, related_name="child_term", null=True)
+    relationship = models.ForeignKey(to="TypeOfRelationship", on_delete=models.CASCADE)
 
     def __str__(self) -> str:
         #set_trace()
-        return f"{self.child_term},{self.relationship},{self.base_term}"
+        return f"{self.child_term} är en {self.relationship} {self.base_term}"
 
 class BegreppExternalFiles(models.Model):
 
@@ -170,48 +144,6 @@ class Bestallare(models.Model):
         """Return the requesters name
         """
         return self.beställare_namn
-
-class Doman(models.Model):
-
-    """The domain that the term belongs to"""
-    
-    class Meta:     
-        verbose_name_plural = "Domäner"
-        app_label = 'ordbok'
-
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name='begrepp_fk')
-    domän_id = models.AutoField(primary_key=True)
-    domän_kontext = models.TextField(blank=True, null=True)
-    domän_namn = models.CharField(max_length=255)
-
-    def __str__(self):
-
-        """Return the name of the domain"""
-        return self.domän_namn
-
-# class Synonym(models.Model):
-
-#     """The model containings synonyms
-#     """
-
-#     SYNONYM_STATUS =  (('Avråds', "Avråds"),
-#                        ('Tillåten', "Tillåten"),
-#                        ('Inte angiven','Inte angiven'))
-
-#     class Meta:
-#         verbose_name_plural = "Synonymer"
-#         app_label = 'ordbok'
-
-#     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
-#     synonym = models.CharField(max_length=255, blank=True, null=True)
-#     synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
-
-#     history = HistoricalRecords()
-
-#     def __str__(self):
-
-#         """Retrun the term that is the synonym"""
-#         return self.synonym
 
 class KommenteraBegrepp(models.Model):
 
@@ -264,4 +196,3 @@ class SökFörklaring(models.Model):
 
     def __str__(self):
         return self.sök_term
-    

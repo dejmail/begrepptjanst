@@ -72,13 +72,13 @@ class BegreppExternalFilesInline(admin.StackedInline):
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
 
-class ValideradAvDomänerInline(admin.StackedInline):
+# class ValideradAvDomänerInline(admin.StackedInline):
     
-    model = Doman
-    extra = 1
-    verbose_name = "Validerad av"
-    verbose_name_plural = "Validerad av"
-    exclude = ['domän_kontext']
+#     model = Doman
+#     extra = 1
+#     verbose_name = "Validerad av"
+#     verbose_name_plural = "Validerad av"
+#     exclude = ['domän_kontext']
 
 class BegreppSearchResultsAdminMixin(object):
 
@@ -134,7 +134,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
            )
          }
     
-    inlines = [BegreppExternalFilesInline, TermRelationshipInline, ValideradAvDomänerInline]
+    inlines = [BegreppExternalFilesInline, TermRelationshipInline]#, ValideradAvDomänerInline]
 
     def formfield_for_many_to_many(self, db_field, *args, **kwargs):
         formfield = super(BegreppAdmin, self).formfield_for_many_to_many(db_field, *args, **kwargs)
@@ -146,7 +146,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     fieldsets = [
         ['Main', {
-        'fields': [('datum_skapat','senaste_ändring'), ('status', 'id_vgr',)],
+        'fields': [('datum_skapat','senaste_ändring'), ('status', 'official_id',)],
         }],
         [None, {
         #'classes': ['collapse'],
@@ -158,10 +158,11 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'anmärkningar',
                     'utländsk_term',
                     'term_i_system',
-                    ('annan_ordlista', 'externt_id'),
+                    ('annan_ordlista', 'external_id'),
                     ('begrepp_kontext'),
                     ('beställare','beställare__beställare_epost'),
-                    'kommentar_handläggning']
+                    'kommentar_handläggning',
+                    'dictionaries']
         }]
     ]
 
@@ -175,15 +176,13 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     list_display = ('term',
                     'relationship',
-                    'definition',
-                    'utländsk_term',
-                    #'get_domäner',
-                    'status_button',
-                    'annan_ordlista',
+                    'definition',                   
+                    'status_button',                   
                     'senaste_ändring',
-                    'beställare',
-                    'önskad_slutdatum',
-                    'has_link')
+                    'dictionary'
+                   )
+    filter_horizontal = ['dictionaries']
+    prefetch_related = ['dictionaries']
 
     list_filter = (StatusListFilter,
                    ('senaste_ändring', DateRangeFilter),
@@ -193,8 +192,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
                     'definition',
                     'begrepp_kontext',    
                     'annan_ordlista',
-                    'utländsk_term')#,
-                    #'relationship')
+                    'utländsk_term')
 
     date_hierarchy = 'senaste_ändring'
 
@@ -257,35 +255,21 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     def relationship(self, obj):
 
-        #set_trace()
-        relationships = TermRelationship.objects.filter(child_term__id=obj.id).prefetch_related('base_term__term')
+        if obj.term == "spotcheck": set_trace()
+        relationships = TermRelationship.objects.filter(child_term__id=obj.id)#.prefetch_related('base_term__term')
         if relationships:
-        #    set_trace()
-            print(relationships.base_term.term)
             return list(relationships)
+        
+        relationships = TermRelationship.objects.filter(base_term__id=obj.id)#.prefetch_related('base_term__term')
+        if relationships:
+            return list(relationships)
+        
         else:
-        #set_trace()
             return None
-        # urls = []
-        # for relation in relationships:
-        #     link = f'<a title="{relation.relationship.relationship}" href={reverse(f"admin:{obj._meta.app_label}_{obj._meta.model_name}_change",args=(obj.id,))}\
-        #         >{relation.base_term.term}</a>'
-        #     if link not in urls:
-        #         urls.append(link)
-        #     else:
-        #         pass
-        # display_text = mark_safe(', '.join(urls))
 
-        # if display_text:
-        #     return display_text
-        # else:
-        #     return '-'
-
-    # def get_domäner(self, obj):
-    #     domäner = Doman.objects.filter(begrepp_id=obj.pk)
-    #     return list(domäner)
-
-    # get_domäner.short_description = 'Validerad av'
+    def dictionary(self, obj):
+        
+        return ",\n ".join([i.title for i in obj.dictionaries.all()])
     
     def status_button(self, obj):
 
@@ -446,6 +430,9 @@ class DictionaryAdmin(admin.ModelAdmin):
     verbose_name = "Ordbok"
     verbose_name_plural = "Ordböcker"
 
+    list_display = ['title',
+                    'description']
+
 
 class BegreppExternalFilesAdmin(admin.ModelAdmin):
 
@@ -456,7 +443,7 @@ class BegreppExternalFilesAdmin(admin.ModelAdmin):
 
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
-admin.site.register(Doman, DomanAdmin)
+#admin.site.register(Doman, DomanAdmin)
 admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)

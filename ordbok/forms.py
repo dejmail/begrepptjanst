@@ -1,5 +1,5 @@
 from django import forms
-from .models import Doman, Begrepp, BegreppExternalFiles
+from .models import Begrepp, BegreppExternalFiles
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
