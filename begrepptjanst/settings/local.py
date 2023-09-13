@@ -13,17 +13,21 @@ logger = logging.getLogger(__name__)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+SUBDOMAIN=''
+
 INTERNAL_IPS = ['127.0.0.1',]
 
 SECRET_KEY = "j4kf!tlx#w%=0+t(u38(1jqno8x)b$-^gb@$@%5s2q$wki*mx^"
 
+SUBDOMAIN = ''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'vgrinfor_olli_test',
+        'NAME': 'vgrinfor_olli',
         'USER': 'vgrinfor_admin',
         'PASSWORD': 'YqvyYGm5cJMLmzt',
-        'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
+        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
 
         'OPTIONS': {
@@ -36,9 +40,7 @@ DATABASES = {
     }
 }
 
-#INSTALLED_APPS.append('debug_toolbar')
-
-#MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+MIDDLEWARE.append("django_cprofile_middleware.middleware.ProfilerMiddleware")
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
