@@ -75,7 +75,7 @@ class Begrepp(models.Model):
     link = models.URLField(help_text="Länk till externt dokument", verbose_name='Länk till begreppsutredning', null=True, blank=True)
     usage_recommendation = models.CharField(max_length=50, null=True, blank=True)
 
-    dictionaries = models.ManyToManyField(Dictionary)
+    dictionaries = models.ManyToManyField(Dictionary, related_name="dictionary_set")
     history = HistoricalRecords('datum_skapat')
 
     def __str__(self):
