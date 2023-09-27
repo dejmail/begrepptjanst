@@ -87,6 +87,7 @@ class Begrepp(models.Model):
 class TypeOfRelationship(models.Model):
 
     relationship = models.CharField(max_length=255)
+    definition = models.TextField(null=True)
 
     def __str__(self):
 
