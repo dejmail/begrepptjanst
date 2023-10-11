@@ -1,12 +1,12 @@
-const user_input = $("#user-input");
-const search_icon = $('#search-icon');
-const search_result_div = $('#search-row-middle-column');
+const userInput = $("#user-input");
+const searchIcon = $('#search-icon');
+const SearchResultDiv = $('#search-row-middle-column');
 const term_details = $('#mitten-span-modal');
 
 
 function endpoint_check() {
 
-    if (document.domain == "127.0.0.1") { 
+    if (location.hostname == "127.0.0.1") { 
 		const endpoint = '/';
 		return endpoint
     } else {
@@ -19,8 +19,8 @@ function endpoint_check() {
 const endpoint = endpoint_check();
 
 
-const delay_by_in_ms = 750
-let scheduled_function = true
+const delayMilliseconds = 750
+let scheduledFunction = true
 
 function toggle_element(element_id) {
 	var div = document.getElementById(element_id);
@@ -29,9 +29,9 @@ function toggle_element(element_id) {
 	}
 }
 
-function ajaxCall(endpoint, request_parameters, url, csrf_token) {
+function ajaxCall(endpoint, request_parameters, url, csrfToken) {
 	$("#term_förklaring_tabell").remove();
-	search_result_div.empty();
+	SearchResultDiv.empty();
 	// #$("#search-row-middle-column").r();
 	$("#search-row-right-column").empty();
 
@@ -43,7 +43,7 @@ function ajaxCall(endpoint, request_parameters, url, csrf_token) {
 		    console.log("endpoint", endpoint);
 			changeBrowserURL(xhttp.responseText, url);
 			// fade out the search result, then:
-			search_result_div.fadeTo('fast', 0).promise().then(() => {
+			SearchResultDiv.fadeTo('fast', 0).promise().then(() => {
     		// replace the HTML contents & display the filter bar
 			
 			document.getElementById("search-row-middle-column").outerHTML = JSON.parse(xhttp.responseText);
@@ -51,9 +51,9 @@ function ajaxCall(endpoint, request_parameters, url, csrf_token) {
 			//document.getElementById("sidebar").style.display = "block";
 
 			// fade-in the div with new contents
-			search_result_div.fadeTo('fast', 1);
+			SearchResultDiv.fadeTo('fast', 1);
 			// stop animating search icon
-			search_icon.removeClass('blink');
+			searchIcon.removeClass('blink');
 			popStateHandler();
 			})
 		};
@@ -63,37 +63,15 @@ function ajaxCall(endpoint, request_parameters, url, csrf_token) {
 	xhttp.send();
 	popStateHandler();
 	}
-	// $.getJSON(url, request_parameters)
-	// 	.done(response => {
-			
-			// console.log("document.URL", document.URL)
-			// console.log("endpoint", endpoint);
-			// changeBrowserURL(response, url);
-			// // fade out the search result, then:
-			// search_result_div.fadeTo('fast', 0).promise().then(() => {
-			// 	// replace the HTML contents & display the filter bar
-				
-			// 	search_result_div.html(response);
-				
-			// 	//document.getElementById("sidebar").style.display = "block";
 
-			// 	// fade-in the div with new contents
-			// 	search_result_div.fadeTo('fast', 1);
-			// 	// stop animating search icon
-			// 	search_icon.removeClass('blink');
-			// 	popStateHandler();
-		// 	})
-		// });
-	// popStateHandler();
-// }
 
-user_input.keyup(function () {
+userInput.keyup(function () {
 	$("#search-row-middle-column").empty();
 	//toggle_element("replaceable-content-middle-column");
 	
 
 	// start animating the search icon with the CSS class
-	search_icon.addClass('blink')
+	searchIcon.addClass('blink')
 
 	// rehide the colour panel
 	$("#färg_panel").addClass('d-none');
@@ -119,51 +97,136 @@ user_input.keyup(function () {
 	return results;
   }
 
-  function buildURL(search_term, dictionary_checkboxes, relation_checkboxes) {
-	
-	return (endpoint + 
+  function buildURL(searchString, selectedFilters) {
+	if (typeof selectedFilters === 'undefined') {
+
+		return (endpoint + 
 			'?term=' + 
-			search_term + 
+			searchString + 
+			'&dictionaries='
+			);
+	} else {
+	
+		return (endpoint + 
+			'?term=' + 
+			searchString + 
 			'&dictionaries=' + 
-			dictionary_checkboxes.join(',') + 
-			'&relationships=' + 
-			relation_checkboxes.join(','));
+			selectedFilters.join(',')
+			);
+	}
+
   }
 
 
-  function docReady() {
+//   function docReady() {
 
-	// Intercept form submission
-	const input = document.querySelector("#filter-form");
-	input.addEventListener("input", updateFilter);
-	function updateFilter(event) {
-	  // Prevent the form from submitting traditionally
-
-	  event.preventDefault();
-	  const search_term = document.getElementById("user-input").value
-	  const dictionary_checkboxes = document.querySelectorAll('input[id^="dictionary-filter-checkbox-"]')
-	  const relation_checkboxes = document.querySelectorAll('input[id^="relationship-filter-checkbox-"]')
-
-	  var dictionary_checked = processCheckboxes(dictionary_checkboxes);
-	  var relationship_checked = processCheckboxes(relation_checkboxes);
-	  var csrf_token = document.getElementsByName("csrfmiddlewaretoken");
-	  var post_url = buildURL(search_term, dictionary_checked, relationship_checked);
+// 	// Intercept form submission
+// 	const input = document.querySelector("#filter-form");
+// 	input.addEventListener("input", updateFilter);
+// 	function updateFilter(event) {
 	  
-	  // Send checkbox status to the backend, and update page
-	  if ((search_term.length > 1) || (dictionary_checkboxes.length > 0)) {
 
-		if (scheduled_function) {
-			clearTimeout(scheduled_function)
-			}
+// 		event.preventDefault();
+		
+// 		const selectedFilters = document.querySelectorAll("#itemList").forEach(box => 
+		
+// 		box.addEventListener("click", (event) => {
+// 			let selectedItems = [];
+// 			const selectedItem = event.target;
+// 			// Check if the clicked element is a list item
+// 			if (selectedItem.classList.contains('list-group-item')) {
+// 				// Toggle the "active" class to select/deselect the item
+				
+// 				console.log(selectedItem.innerText + " clicked");
+// 				selectedItem.classList.toggle('active');
 
-	// setTimeout returns the ID of the function to be executed
-		scheduled_function = setTimeout(ajaxCall, delay_by_in_ms, endpoint, search_term, post_url, csrf_token)
+// 				// If item is selected, add it to the selectedItems array; if deselected, remove it
+// 				if (selectedItem.classList.contains('active')) {
+// 					selectedItems.push(selectedItem.innerText);
+// 				} else {
+// 					const index = selectedItems.indexOf(selectedItem.innerText);
+// 					if (index !== -1) {
+// 						selectedItems.splice(index, 1);
+// 					}
+// 				}
+// 			}
 
-		// ajaxCall(endpoint, search_term, post_url, csrf_token)
-	}
+// 			if (typeof selectedItems === 'undefined') {
+// 				return ''
+// 			} else {
+// 				return selectedItems
+// 			}
+// 		})
+		
+// 		);
+// 		debugger;
+// 		// Access the current search string from the input field
+// 		const searchInput = document.getElementById("user-input");
+// 		const searchString = searchInput.value;
+// 		// Send the selected items and search string to a function or process
+// 		sendSelectedItemsAndSearchString(selectedFilters, searchString);
+// 	}
 
-	}
-};
+
+function docReady() {
+    const userInput = document.getElementById("user-input");
+    const filterButtons = document.querySelectorAll(".filter-button");
+    const selectedFilters = [];
+
+    userInput.addEventListener("input", function () {
+        handleInputChange();
+    });
+
+    filterButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            handleFilterButtonClick(button);
+        });
+    });
+
+    function handleInputChange() {
+        const searchString = userInput.value;
+        sendSelectedItemsAndSearchString(selectedFilters, searchString);
+    }
+
+    function handleFilterButtonClick(button) {
+        // Handle filter button click
+        const selectedFilter = button.getAttribute("data-item-id"); // Get the filter's value
+        if (selectedFilters.includes(selectedFilter)) {
+            // If the filter is already selected, remove it
+            selectedFilters.splice(selectedFilters.indexOf(selectedFilter), 1);
+        } else {
+            // If the filter is not selected, add it
+            selectedFilters.push(selectedFilter);
+        }
+        const searchString = userInput.value;
+        sendSelectedItemsAndSearchString(selectedFilters, searchString);
+    }
+
+    // Rest of your code...
+}
+// Function to send the selected items and search string
+function sendSelectedItemsAndSearchString(selectedItems, searchString) {
+    // Here, you can perform actions with the selected items and search string
+    console.log("Selected Items: ", selectedItems);
+    console.log("Search String: ", searchString);
+	var csrfToken = document.getElementsByName("csrfmiddlewaretoken");
+	var postURL = buildURL(searchString, selectedItems);
+	
+	// Send checkbox status to the backend, and update page
+	if ((searchString.length > 1) || (selectedItems.length > 0)) {
+
+	  if (scheduledFunction) {
+		  clearTimeout(scheduledFunction)
+		  }
+
+  	// setTimeout returns the ID of the function to be executed
+	  scheduledFunction = setTimeout(ajaxCall, delayMilliseconds, endpoint, searchString, postURL, csrfToken)
+
+  	}
+
+	};
+
+
 
 docReady();
 
@@ -178,8 +241,8 @@ document.body.addEventListener("click", function(e) {
     
     //changeBrowserURL(null, e.target.href);            
 	// Get page and replace current content.
-	//debugger;
-	getPage(e.target.href, begrepp_div);
+	debugger;
+	getPage(e.target.href, SearchResultDiv);
 	popStateHandler();
 	}
 });
