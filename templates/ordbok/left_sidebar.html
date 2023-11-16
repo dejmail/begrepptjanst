@@ -12,8 +12,8 @@
 
                 <hr class="my-3 w-100" style="color: black;">
 
-                <li class="text-center">
-                    <button id="apply-filter-btn" class="btn btn-sm btn-primary">    Filter</button>
+                <li class="">
+                    <div class="text-center h5" style="color:#007bff">Filter</div>
                 </li>
 
                 <li>
@@ -24,9 +24,9 @@
                         <span class="d-none d-sm-inline fw-bold">Dictionaries</span>
                     </a>
                     <div class="collapse show" id="submenu1">
-                        <ul class=" nav flex-column ms-1 list-group" id="itemList">
+                        <ul class=" nav flex-column list-group" id="itemList">
                             {% for dictionary in dictionaries %}
-                            <li class="w-100 filter-button" name="dictionary" data-item-id="{{dictionary.title}}">
+                            <li class="w-100 filter-button" onclick=toggleActiveClass(this) name="dictionary" data-item-id="{{dictionary.title}}">
                                 <a href="#" class="nav-link px-0"><span class="d-none d-sm-inline ms-3 fs-7 list-group-item">{{dictionary.title}}</span></a>
                             </li>
                             {% endfor %}
@@ -63,6 +63,17 @@
 
 <script>
 
+function toggleActiveClass(element) {
+  
+    element.classList.toggle('active');
+
+    var spanElement = element.querySelector('.list-group-item');
+    if (spanElement) {
+        spanElement.classList.toggle('active');
+    }
+}
+
+
 </script>
 
 <style>
@@ -77,12 +88,10 @@
     color: #6cb3ff;
   }
 
-  .list-group-item.active {
+.list-group-item.active {
       background-color: #007bff; /* Change to your desired selected item color */
       color: #fff; /* Change to your desired text color */
       padding: 4px;
-      
-
     }
 
 .nav-link {
