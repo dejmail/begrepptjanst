@@ -87,20 +87,22 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
                 When(Q(term__iexact=search_parameter), then=Value(1)),
                 When(Q(term__istartswith=search_parameter), then=Value(2)),
                 When(Q(term__icontains=search_parameter), then=Value(3)), 
-                #When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
                 When(Q(utländsk_term__icontains=search_parameter), then=Value(5)),
                 When(Q(definition__icontains=search_parameter), then=Value(6)), 
                 default=Value(6), output_field=IntegerField()
             )
         )
 
-    order_by = []
-    if queryset.filter(position=1).exists():
-        order_by.append('position')
+        
+        order_by = []
+        if queryset.filter(position=1).exists():
+            order_by.append('position')
 
-    if order_by:
-        queryset = queryset.order_by(*order_by)
+        if order_by:
+            queryset = queryset.order_by(*order_by)
     
+    #set_trace()
+
     if (search_parameter_length > 2) and (dictionary_length > 0):
         queryset = queryset.filter(dictionaries__title__in=dictionaries)
     
@@ -120,7 +122,7 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
 
         queryset = Begrepp.objects.none()
 
-    if (search_parameter_length > 2 ) and (dictionary_length == 0):
+    if (search_parameter_length == 1 ) and (dictionary_length > 0):
 
         pass
 
