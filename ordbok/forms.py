@@ -8,43 +8,13 @@ from pdb import set_trace
 
 from .models import STATUS_VAL
 
-workstream_choices = [('Inte relevant','Inte relevant'),
-('Akutsjukvård','Akutsjukvård'),
-('DokumentationVårdproffesion','DokumentationVårdproffesion'),
-('Resursstyrning','Resursstyrning'),
-('Kärnfunktioner','Kärnfunktioner'),
-('Läkemedel','Läkemedel'),
-('Masterdata','Masterdata'),
-('Materiallogistik','Materiallogistik'),
-('MedicinskDokumentation','MedicinskDokumentation'),
-('MödravårdObstetrik','MödravårdObstetrik'),
-('Onkologi','Onkologi'),
-('Operation','Operation'),
-('Ordination&Beställningar','Ordination&Beställningar'),
-('PAS','PAS'),
-('Primärvård','Primärvård'),
-('Psykiatri','Psykiatri'),
-('Rapporter','Rapporter'),
-('Övrigt/Annan','Övrigt/Annan')]
-
-
 class CustomDateInput(forms.DateInput):
     input_type = 'date'
-
-
 
 class TermRequestForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        workstream = cleaned_data.get("workstream")
-        other = cleaned_data.get("other")
-        
-        if (workstream == 'Övrigt/Annan') and (other is None or other == ''):
-        # Only do something if both fields are valid so far.
-            self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
-            )
-            raise ValidationError("Måste ge var begreppet används om du har valt Övrigt/Annan")
         
         return cleaned_data
 
@@ -60,47 +30,20 @@ class TermRequestForm(forms.Form):
         telefon = self.cleaned_data.get('telefon')
         return telefon
     
-    def clean_önskad_datum(self):
-        return self.cleaned_data.get('önskad_datum')
-
-    def clean_önskad_datum(self):
-        return self.cleaned_data.get('önskad_datum')
-
-    def clean_not_previously_mentioned_in_workstream(self):
-        return self.cleaned_data.get('other')
-
-    def clean_önskad_datum(self):
-        önskad_datum = self.cleaned_data.get('önskad_datum')
-        return önskad_datum
-
     def clean_kontext(self):
         kontext = self.cleaned_data.get('kontext')
         return kontext
-
-    def clean_utländsk_term(self):
-        utländsk_term = self.cleaned_data.get('utländsk_term')
-        return utländsk_term
 
     def clean_begrepp(self):
         begrepp = self.cleaned_data.get('begrepp')
         return begrepp
 
-    def clean_workstream(self):
-        return self.cleaned_data.get('workstream')
-
-    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
-    utländsk_term = forms.CharField(max_length=254, required=False, label="Engelsk term")
-    kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
-    workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
-    önskad_datum = forms.DateField(widget=CustomDateInput, label="Önskad slutdatum för prioritering", help_text="Klicka på kalendar ikon på höger sidan")
+    begrepp = forms.CharField(max_length=254, label="Skriv in den term som används för att beksriva begreppet", widget = forms.TextInput)
+    kontext = forms.CharField(widget=forms.Textarea, label="Hur används termen? I vilket sammanghang?")
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
+    telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "telefonnummer"})) 
     file_field = forms.FileField(widget=forms.ClearableFileInput(), label="Bifogar en skärmklipp eller komprimerad fil som kan hjälp oss", required=False)
-
-
-
 
 class KommenteraTermForm(forms.Form):
 
