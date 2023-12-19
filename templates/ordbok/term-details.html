@@ -1,0 +1,147 @@
+
+{% extends 'base-front.html' %}
+
+{% load static %}
+
+{% load get_item %}
+{% load extract_attribute %}
+
+{% block header_row2 %}
+    <div class="row">
+    </div>
+{% endblock header_row2 %}
+
+
+{% block body_left_column %}
+  {% include 'left-sidebar.html' %}
+{% endblock body_left_column %}
+
+{% block body_middle_column %}
+{% if term %}
+
+<div class="col-lg-8 col-md-8 mt-4" id="search-row-middle-column">
+
+    <div class="container mt-4">
+
+            <div id="förklaring" class="förklaring">
+            <div class="searchTable">
+            <table id="term_förklaring_tabell" class="table table-bordered">
+                <tbody>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Status</td>
+                        <td>{{term.status}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Term</td>
+                        <td>{{term.term}}</td>
+                    </tr>
+                    <tr>
+                        <td>Relation</td>
+                        <td >
+                            {% for synonym in term.synonym_set.all %}
+                                {% if synonym.synonym is not None %}
+                                    {% if synonym.synonym_status == "Avråds" %}
+                                        -&nbsp;
+                                        <button type="button" class="btn-sm btn-avrådd strike">
+                                            <s class="strike">{{synonym.synonym}}</s>
+                                        </button><br>
+                                    {% else %}
+                                        -&nbsp;
+                                        {{synonym.synonym}}<br>
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td style="width: 150px;">Definition</td>
+                        <td style="max-height: 100px; overflow-y: auto;">{{term.definition|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Källa</td>
+                        <td>{{term.källa|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Anmärkning</td>
+                        <td>{{term.anmärkningar|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Term på annat språk</td>
+                        <td>{{term.term_på_annat_språk|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Annan referens</td>
+                        <td>{{term.annan_referens|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Kod</td>
+                        <td>{{term.kod|default_if_none:"-"}}</td>
+                    </tr>
+                    <tr class="{{färg_status.begrepp}}">
+                        <td>Term ID</td>
+                        <td>{{term.id|default_if_none:"-"}}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="d-flex justify-content-center">
+                <form method="get" action="{% url 'comment_form' term_id=term.id %}" id="comment_term_form">
+                    <button class="btn btn-sm filter-action me-2" type="submit" id="comment_button">
+                        <img src="{% static 'images/comment.svg' %}" alt="Kommentera" width="16" height="16" class="icon-svg mr-1 mb-1 justify-content-center">
+                        <span>Kommentera</span>
+                    </button>
+                </form>
+            
+                <button class="btn btn-sm filter-action" type="button" data-toggle="modal" data-target="#Comment">
+                    <img src="{% static 'images/help.svg' %}" alt="Hjälp" width="16" height="16" class="icon-svg mb-1 justify-content-center">
+                    <span>Hjälp</span>
+                </button>
+            </div>
+            </div>
+            </div>     
+
+        </div>
+
+{% else %}
+<p>Ingen definition hittades...</p>
+{% endif %}
+
+<div id="kommentera_bekräfta">
+</div>
+
+{% endblock body_middle_column %}
+
+{% block body_right_column %}
+  {% include 'right-sidebar.html' %}
+{% endblock body_right_column %}
+
+
+{% block extra_javascript %}
+
+<script>
+
+var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+// create an observer instance
+var observer = new MutationObserver(function(mutations) {
+mutations.forEach(function(mutation) {
+if (mutation.type === 'childList') {
+    if ($('input[name=namn]').length > 0) {
+        $('input[name=namn]').focus();
+    } else {
+        $('input[name=epost]').focus();
+    }
+}
+});
+});
+
+// configuration of the observer:
+var config = {childList: true}
+
+var target = document.querySelector('#kommentera_bekräfta');
+// pass in the target node, as well as the observer options
+observer.observe(target, config); 
+
+
+</script>
+{% endblock extra_javascript %}

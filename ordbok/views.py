@@ -407,7 +407,10 @@ def mark_fields_as_safe_html(list_of_dict: list, fields: list) -> list:
 
     return list_of_dict
 
-def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, relationships: list, page_number: int) -> str:
+def assemble_data_for_concept_view(search_parameter: str, 
+                                   selected_dictionaries: list,                                    
+                                   relationships: list, 
+                                   page_number: int) -> str:
 
     """Main method that couples together all the submethods needed to
     produce the HTML needed for the initial search view.
@@ -417,13 +420,19 @@ def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, rel
     :return: HTML page formatted with the search results
     :rtype: str
     """
+
     if (len(search_parameter) == 1) and (search_parameter.isupper()):
-        search_request = filter_terms_by_first_letter(search_parameter, dictionaries, relationships)
+        search_request = filter_terms_by_first_letter(search_parameter)
         highlight=False
     else: 
-        search_request = get_search_results_from_db(search_parameter, dictionaries, relationships)
+        search_request = get_search_results_from_db(search_parameter, 
+                                                    selected_dictionaries, 
+                                                    relationships)
         logger.debug(f'len of search result = {len(search_request)}')
         highlight=True
+
+    if not search_request:
+        return None, None
 
     simple_terms = TermRelationship.objects.all().values_list('child_term', flat=True)
     search_request = search_request.exclude(id__in=simple_terms)
@@ -448,7 +457,7 @@ def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, rel
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
     
-    paginator = Paginator(return_list_dict, 20)
+    paginator = Paginator(return_list_dict, 10)
 
     try:
         page_obj = paginator.page(page_number)
@@ -459,7 +468,7 @@ def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, rel
         # if the page is out of range, deliver the last page
         page_obj = paginator.page(paginator.num_pages)
     
-    dictionaries = Dictionary.objects.all()
+    all_dictionaries = Dictionary.objects.all()
     relationship_types = TypeOfRelationship.objects.all()
     
     term_relationships  = TermRelationship.objects.filter(
@@ -467,13 +476,14 @@ def hämta_data_till_begrepp_view(search_parameter: str, dictionaries: list, rel
         )
 
     html = render_to_string(
-        template_name="searchResults.html", 
+        template_name="search-results.html", 
         context={
             'page_obj': page_obj,
             'färg_status' : färg_status_dict,
             'queryset' : search_request,
             'searched_for_term' : search_parameter,
-            'dictionaries' : dictionaries,
+            'dictionaries' : all_dictionaries,
+            'selected_dictionaries' : selected_dictionaries,
             'relationship_types' : relationship_types,
             'term_relationships' : term_relationships
             }
@@ -488,7 +498,7 @@ def is_request_ajax(request: HttpRequest) -> bool:
     else:
         return False
 
-def begrepp_view(request: HttpRequest) -> HttpResponse:
+def concept_view(request: HttpRequest) -> HttpResponse:
 
     """ The view that processes the initial search from the user
 
@@ -497,34 +507,47 @@ def begrepp_view(request: HttpRequest) -> HttpResponse:
     :return: HttpResponse object containing template and context
     :rtype: HttpResponse
     """
-
-    search_term = request.GET.get("term")
-    dictionaries = request.GET.get('dictionaries','')
+    search_term = request.GET.get("search_term")
+    dictionaries = request.GET.get('dictionaries',[])
     if dictionaries:
-        dictionaries = dictionaries.split(',')
+        selected_dictionaries = dictionaries.split(',')
+    else:
+        selected_dictionaries = []
     relationships = request.GET.get('relationships','')
     if relationships:
         relationships = relationships.split(',')
 
-    if is_request_ajax(request) == True:
+    if (is_request_ajax(request) == True) or (request.GET.get('search_term') is not None):
         
         page_number = request.GET.get('page', 1)
         
-        data_dict, return_list_dict = hämta_data_till_begrepp_view(search_term, dictionaries, relationships, page_number)
+        html, return_list_dict = assemble_data_for_concept_view(
+            search_term, 
+            selected_dictionaries, 
+            relationships, 
+            page_number)
 
-        mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
-        return JsonResponse(data=data_dict, safe=False)
-
+        if html is not None:
+            mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
+            return HttpResponse(html)
+        else:
+            form = TermRequestForm()
+            
+            return render(request, 
+                          'requestTerm.html', 
+                          context = {'form' : form,
+                                     'dictionaries' : Dictionary.objects.all(),
+                                     'selected_dictionaries' : selected_dictionaries,
+                                     'searched_for_term' : search_term,
+                                     }
+                        )
     else:
-        
-        concept = Begrepp.objects.none()    
-    
-    return render(request, "term.html", context={
-        'concept' : concept,
-        'dictionaries' : Dictionary.objects.all(),
-        'relationship_types' : TypeOfRelationship.objects.all()})
+        return render(request, "landing-page.html", context={
+            'dictionaries' : Dictionary.objects.all(),
+            }
+        )
 
-def begrepp_förklaring_view(request: HttpRequest) -> HttpResponse:
+def get_single_term_view(request: HttpRequest) -> HttpResponse:
 
     """ View that processes the request for detailed information about a certain term
 
@@ -534,8 +557,8 @@ def begrepp_förklaring_view(request: HttpRequest) -> HttpResponse:
     :rtype: HttpResponse
     """
 
-    url_parameter = request.GET.get("q")
-    
+    url_parameter = request.GET.get("search_term")
+
     if url_parameter:
         single_term = return_single_term(url_parameter)
 
@@ -547,22 +570,24 @@ def begrepp_förklaring_view(request: HttpRequest) -> HttpResponse:
         
         template_context = {'term': single_term,
                             'relationships' : get_related_terms,
+                            'dictionaries' : Dictionary.objects.all(),
                             'färg_status' : status_färg_dict}
 
-        html = render_to_string(template_name="term_details.html", context=template_context)
-
-    if is_request_ajax(request) == True:
-        return HttpResponse(html, content_type="html")
-
-    elif request.method=='GET':
+    if request.method=='GET':
         if url_parameter is None:
-            return render(request, "term.html", context={})
+            return render(request, "landing-page.html", context={})
         else:
-            return render(request, "term_forklaring_only.html", context=template_context)
+            return render(request, "term-details.html", context=template_context)
 
-    return render(request, "base.html", context={})
+    return render(request, "landing-page.html", context={})
 
-def hantera_request_term(request: HttpRequest) -> HttpResponse:
+def help_text_view(request: HttpRequest) -> HttpResponse:
+
+    context = {'dictionaries' : Dictionary.objects.all()}
+
+    return render(request, "help-text.html", context=context)
+
+def request_new_term(request: HttpRequest) -> HttpResponse:
 
     """ Send the form data when a user wants to request a new term or 
     manage the POST data if the user submits the request.
@@ -588,7 +613,7 @@ def hantera_request_term(request: HttpRequest) -> HttpResponse:
                     uploaded_file_url = fs.url(filename)
                     file_list.append(file.name)
             
-            if Begrepp.objects.filter(term=request.POST.get('begrepp')).exists():
+            if Begrepp.objects.filter(term=request.POST.get('search_term')).exists():
                 msg = _('Begreppet ni önskade finns redan i systemet, var god och sök igen.')
                 return HttpResponse(f'''<div class="alert alert-danger text-center" id="ajax_response_message">
                             {msg}
@@ -598,7 +623,7 @@ def hantera_request_term(request: HttpRequest) -> HttpResponse:
                 existing_beställare = Bestallare.objects.filter(
                     Q(beställare_namn__icontains=form.clean_name()) |
                     Q(beställare_email__icontains=form.clean_epost)
-                )
+                                                    )
 
                 if existing_beställare and len(existing_beställare) == 1:
                     ny_beställare = existing_beställare
@@ -616,21 +641,6 @@ def hantera_request_term(request: HttpRequest) -> HttpResponse:
                 ny_term.begrepp_kontext = form.clean_kontext()
                 ny_term.beställare = ny_beställare
                 ny_term.save()
-                
-                inkommande_domän = Doman()
-
-                if form.cleaned_data.get('workstream') == "Övrigt/Annan":
-                    ny_domän = form.clean_not_previously_mentioned_in_workstream()
-                    if (ny_domän is not None) and (ny_domän != ''):
-                        inkommande_domän.domän_namn = ny_domän
-                        inkommande_domän.begrepp = ny_term
-                        inkommande_domän.save()
-                elif form.cleaned_data.get('workstream') == 'Inte relevant':
-                    pass
-                else:
-                    inkommande_domän.domän_namn = form.clean_workstream()
-                    inkommande_domän.begrepp = ny_term
-                    inkommande_domän.save()
 
                 for filename in file_list:
                     new_file = BegreppExternalFiles()
@@ -645,21 +655,23 @@ def hantera_request_term(request: HttpRequest) -> HttpResponse:
         else:
             
             return render(request, 'requestTerm.html', {'form': form,
-                                                        'whichTemplate' : 'requestTerm'}, 
-                                                        status=500)
+                                                        'whichTemplate' : 'requestTerm',
+                                                        'dictionaries' : Dictionary.objects.all()},
+                                                        )
 
-    elif is_request_ajax(request):
+    elif request.method == 'GET':
        
-        form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
+        form = TermRequestForm(initial={'concept' : request.GET.get('search_term')})
         
-        return render(request, 'requestTerm.html', {'form': form, 
+        return render(request, 'requestTerm.html', {'form': form,
+                                                    'dictionaries' : Dictionary.objects.all(),
                                                     'whichTemplate' : 'requestTerm',
                                                     'header' : 'Önskemål om nytt begrepp'})
 
     else:
-        return render(request, 'term.html', {})
+        return render(request, 'landing-page.html', {})
 
-def kommentera_term(request: HttpRequest) -> HttpResponse:
+def submit_comments_for_a_term(request: HttpRequest, term_id: int) -> HttpResponse:
 
     """ Send back either the form to allow the submission of comments or
     process the submitted form and save the data to db.
@@ -670,12 +682,13 @@ def kommentera_term(request: HttpRequest) -> HttpResponse:
     POST and saved successfully, or an empty form via GET that can be filled out.
     :rtype: {HttpResponse}
     """
-    url_parameter = request.GET.get("q")
-    
+
     if request.method == 'GET':
-        inkommande_term = Begrepp(term=url_parameter)
+        inkommande_term = Begrepp(pk=term_id)
         form = KommenteraTermForm(initial={'term' : inkommande_term})
-        return render(request, 'kommentera_term.html', {'kommentera': form})
+        return render(request, 'comment-term.html', {'form': form,
+                                                    'term' : inkommande_term,
+                                                    'dictionaries' : Dictionary.objects.all()})
 
     elif request.method == 'POST':
     
@@ -711,7 +724,7 @@ def kommentera_term(request: HttpRequest) -> HttpResponse:
             return HttpResponse(f'''<div class="alert alert-success">\
                  {msg} </div>''')
 
-def prenumera_till_epost(request: HttpRequest) -> HttpResponseRedirect:
+def subscribe_to_newsletter(request: HttpRequest) -> HttpResponseRedirect:
 
     """ A view that takes in a request containing an email address that is
     then emailed to the generic email address to be added to a subscription.

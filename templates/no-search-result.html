@@ -5,11 +5,16 @@
         <p>För att efterfråga detta begrepp tryck på "Efterfråga begrepp", så får du ett formulär som kan skickas in till oss.</p>
     </div>
     
-    <button class="btn btn-light-blue text-center" onclick="populate_request_form('{{searched_for_term}}')">Efterfråga begrepp</a>
+    <form method="post" action="{% url 'request_new_term' %}?q="+{{requested_term}},>
+        {% csrf_token %}    
+        <button type="submit" class="btn btn-light-blue text-center">Efterfråga begrepp</button>
+    </form>
+    
 
 </div>
 
 
-<script>      $("#färg_panel").toggle();
+<script>      
+    $("#colour_panel").toggle();
 </script>
 </div>

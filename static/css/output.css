@@ -1,0 +1,233 @@
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "Proxima nova", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  /* default is 1rem or 16px */
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  height: 100%;
+  }
+
+td {
+    word-wrap:break-word;
+    word-break:break-word;
+  }
+
+th {
+  position: sticky;
+  top: 0; 
+  background: white;
+  z-index: 2000;
+  }
+
+#newsletter_signup {
+    z-index: 3000; /* Adjust this value to be greater than the z-index of the sticky th elements */
+}
+
+.custom-row-style {
+  border-radius: 10px !important;
+}
+
+.hand-cursor {
+  cursor: pointer;
+}
+
+.filter-button {
+  width: 165px; /* Adjust the width as needed */
+  text-align: left;
+  line-height: 1;
+  font-size: smaller;
+  color: aliceblue;
+  background-color: #37474f;
+}
+
+.filter-button:hover {
+  width: 165px; /* Adjust the width as needed */
+  text-align: left;
+  line-height: 1;
+  font-size: smaller;
+  color: aliceblue;
+  background-color: #9575cd;
+}
+
+.filter-action {
+  width: 82px; /* Adjust the width as needed */
+  text-align: center;
+  line-height: 1;
+  font-size: smaller;
+  color: aliceblue;
+  background-color: #37474fff;
+  justify-content: center;
+}
+
+.filter-action:hover {
+  width: 82px; /* Adjust the width as needed */
+  text-align: center;
+  line-height: 1;
+  font-size: smaller;
+  color: aliceblue;
+  background-color: #9575cd;
+  justify-content: center;
+}
+
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px; /* Adjust as needed */
+}
+
+.pagination-hover a:hover {
+  background-color: #adbdc5;
+  color: black;
+}
+
+.pagination-links a {
+  color: white;
+  width: 80px;
+  height: 1;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+  margin: 0 5px; 
+  border: 1px solid #37474fff;
+  background-color: #37474fff;
+  border-radius: 4px;
+}
+
+.text-justify {
+  text-align: justify;
+}
+
+
+.fa-search {
+  position:relative;
+  }
+
+.fa-search:before {
+  content: "\f002";  
+  font-family: FontAwesome;
+  left:+5px;
+  position:absolute;
+  top: 17px;
+  }
+
+.top-buffer-10 { 
+  margin-top:10px; 
+  }
+
+.top-buffer-15 { 
+  margin-top:15px;
+  }
+
+  .border-radius-10 {
+    border-radius: 10px !important;
+  }
+
+  .colored-div {
+    background-color: #3498db; /* Replace with your desired color */
+    padding: 20px; /* Add padding for better visibility */
+  }
+  
+.table-success {
+        background-color: #d1e7dd;
+   }
+
+.table-danger {
+    background-color: #f8d7da !important;
+  }  
+
+.table-warning{
+  background-color: #fff3cd;
+  }
+
+.filter-header {
+    color: #37474fff;
+  }
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    opacity : 1;
+    font-size: 13px;
+    font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, ""Helvetica Neue"", Arial, sans-serif, ""Apple Color Emoji"", ""Segoe UI Emoji"", ""Segoe UI Symbol""
+  }
+  
+.text-12pt {
+    font-size: 12px; 
+  }
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  color: #fff;
+  font-size: 10px;
+  background-color: rgb(114, 211, 127);
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  /* Position the tooltip */
+  position: absolute;
+  opacity : 1;
+  z-index: 1000;
+}
+
+#tooltiptext span.red{
+  background-color: red !important;
+}
+  
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }
+  
+
+mark {
+  padding-left: .1em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  padding-right: 0%;
+  background-color:#fcf8e3
+}
+
+.definitiontooltip {
+  position: relative;
+  display: inline-block;
+  opacity : 1;
+  font-size: 13px;
+  /* font-weight: 700; */
+  /* font-style: oblique; */
+  text-decoration: underline;
+  font-family: -apple-system, BlinkMacSystemFont, ""Segoe UI"", Roboto, ""Helvetica Neue"", Arial, sans-serif, ""Apple Color Emoji"", ""Segoe UI Emoji"", ""Segoe UI Symbol"";
+}
+
+.definitiontooltip .definitiontooltiptext {
+  visibility: hidden;
+  width: 200px;
+  color: rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);
+  font-size: 12px;
+  font-style: normal;
+  text-align: left;
+  border-radius: 6px;
+  padding: 10px 10px;
+  /* Position the tooltip */
+  position: absolute;
+  opacity : 1!important;
+  z-index: 1;
+}
+
+.definitiontooltip:hover .definitiontooltiptext {
+  visibility: visible;
+  z-index: 2!important;
+}
+
+.statuscolours {
+  display: inline-block;
+  position: fixed;
+  width: 108px; 
+  height: 126px;
+}
+
+.buttonwidth {
+  width: 105px;
+  text-align: center;
+}

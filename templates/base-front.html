@@ -1,0 +1,188 @@
+{% block preamble %}
+<!doctype html>
+{% load static %}
+<html lang="en">
+<head>
+  <!-- Required meta tags -->
+  <title style="font-family: frutiger;">VGR Informatik och Standardisering - OLLI Begreppstjänst</title>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="43200" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+
+  <link rel="icon" type="image/png" href="{% static '/images/favicon-32x32.png' %}" sizes="32x32" />
+  <link rel="icon" type="image/png" href="{% static '/images/favicon-16x16.png' %}" sizes="16x16" />
+
+  {% block base_static %}  
+      <script src="{% static '/javascript/jquery-3.4.1.min.js' %}"></script>
+      <script src="{% static '/javascript/bootstrap.bundle.min.js' %}" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>      
+      <link rel="stylesheet" href="{% static '/css/bootstrap5.min.css' %}" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+      <!-- <link rel="stylesheet" href="{% static '/css/missing.min.css' %}"> -->
+
+      
+      <!-- <link rel="stylesheet" href="{% static '/css/all.css' %}" integrity="sha384-auPUsi7xBPi42agztVxY2mYib6liO5KcD0wN/aupjzbo895Nad/WXtxjqvuSZaxL" > -->
+      <link rel="stylesheet" href="{% static '/css/output.css' %}" media="screen">
+      
+  {% endblock base_static %}
+  {% block extra_head_static %}  
+  {% endblock extra_head_static %}  
+</head>
+<body class="bg-light">
+{% endblock preamble %}
+<div class="container">
+  {% load crispy_forms_tags %}
+  {% block header %}
+      {% block header_row1 %}
+
+      <div class="row align-items-center top-buffer-15" style="position: relative; vertical-align: middle; text-align: center;">
+        {% block header_row1_column_left %}
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+              <div class="row">
+                
+              </div>
+              <div class="row">
+                  <img style="margin-top: 1%; margin-left: 1%;  width: 100%; max-width: 400px;" src="{% static '/images/VGR-logga.SVG'%}">
+              </div>
+             
+            </div>
+        {% endblock header_row1_column_left %}
+        {% block header_row1_column_center %}
+            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+              <div class="row" id="header_row"> 
+                <div class="col-2 mt-3" id="header_left_column"></div>
+                <div class="col-9 mt-3 ml-4" id="header_center_column">
+                  <h3>OLLI Begreppstjänst (beta)</h3>
+                </div>
+                <div class="col-1" id="header_right_column"></div>
+              </div>
+            </div>
+        {% endblock header_row1_column_center %}
+        {% block header_row1_column_right %}
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 1%; vertical-align: middle;">
+              <div class="row">
+                
+              </div>
+ 
+            <div class="pb-1" style="display: flex; align-items: center;">
+
+              <!-- Trigger button with SVG icon -->
+                <div id="prenumera" data-bs-toggle="tooltip" data-bs-placement="right" title="Anmälan till utskick från OLLI" class="hand-cursor">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" stroke="black" stroke-width="6" fill="#37474fff" viewBox="0 0 512 512" data-bs-toggle="modal" data-bs-target="#newsletter_signup">
+                        <path d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"/>
+                    </svg>
+                </div>
+            <!-- Bootstrap Modal -->
+                <div class="modal fade" tabindex="1" role="dialog" id="newsletter_signup" style="display: none;">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header justify-content-center">
+                                <h5 class="modal-title">Anmälan till utskick från OLLI</h5>
+                            </div>
+                            <div class="modal-body">
+                              <form class="form-group" action="{% url 'email_subscribe' %}" method="get">
+                                  <div class="row align-items-center flex-column">
+                                      <div class="col">
+                                          <label for="prenumerera">
+                                              <input type="email" class="form-control" id="prenumerera" name="epost" placeholder="E-postadress">
+                                          </label>
+                                      </div>
+                                      <div class="col mt-2">
+                                          <input type="submit" value="Prenumera" class="btn btn-sm filter-action">
+                                      </div>
+                                  </div>
+                              </form>
+                          </div>
+                          
+                          
+                        </div>
+                    </div>
+                </div>
+            
+                <svg stroke="black" width="5" height="30" class="ms-1 me-1">
+                    <line x1="2" y1="0" x2="2" y2="30"></line>
+                </svg>
+            
+                <a href="{% url 'help_text' %}" title="Klicka för hjälp">
+                  <img src="{% static 'images/help.svg' %}" height="24" width="24" alt="Help" class="hand-cursor">
+                </a>
+
+                <svg stroke="black" width="5" height="30" class="ms-1 me-1">
+                    <line x1="2" y1="0" x2="2" y2="30"></line>
+                </svg>
+            
+                <div class="text-right hand-cursor" id="colour_meaning" data-bs-toggle="tooltip" data-bs-placement="right" title="Vad betyder färgerna?">
+                    <img src="{% static 'images/farg_panel.svg' %}" width="20px" height="20px" alt="Vad betyder färgerna?">
+                </div>
+            
+            </div>
+        
+
+          
+          </div>
+        {% endblock header_row1_column_right %}
+          </div>
+
+      
+      {% endblock header_row1 %}
+  {% block header_row2 %}
+  <div class="row">
+  </div>
+  {% endblock header_row2 %}
+  {% block header_row3 %}
+  {% endblock header_row3 %}
+
+  {% endblock header %}
+  
+  
+  {% block body %}
+  <div class="row mt-10 bg-light align-middle" id="body-row">
+      
+      {% block body_left_column %}
+          
+      {% endblock body_left_column %}      
+      
+      {% block body_middle_column %}
+      <div id="loader-container" class="col-lg-9 col-md-9 mt-4 d-flex align-items-center justify-content-center d-none" style="display: none;">
+        <!-- Bootstrap spinner -->
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    
+          
+      {% endblock body_middle_column %}
+      
+      {% block body_right_column %}
+              
+      {% endblock body_right_column %}
+      
+  </div>
+  {% endblock body %}
+  
+</div>
+
+  {% block footer %}
+  {% endblock footer %}
+
+{% block endbody %}
+
+</div>
+
+</body>
+</html>
+{% endblock endbody %}
+
+{% block extra_javascript %}
+<script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
+<script>
+  
+  document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+
+</script>
+{% endblock extra_javascript %}

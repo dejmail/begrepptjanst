@@ -5,12 +5,13 @@ from ordbok import admin as admin_views
 
 
 urlpatterns = [
-    path("", views.begrepp_view, name="begrepp"),
-    path('kommentera/', views.kommentera_term, name="kommentera_term"),
-    path('begrepp-forklaring/', views.begrepp_förklaring_view, name="begrepp_förklaring"),
-    path('requesttermform/', views.hantera_request_term, name='hantera_term_request'),
+    path("", views.concept_view, name="concept"),
+    path('kommentera/<int:term_id>', views.submit_comments_for_a_term, name="comment_form"),
+    path('begrepp-forklaring/', views.get_single_term_view, name="begrepp_förklaring"),
+    path('request-new-term/', views.request_new_term, name='request_new_term'),
     path('unread-comments/', views.return_number_of_comments, name='unread_comments'),
-    path('prenumera/', views.prenumera_till_epost, name="email_subscribe"),
+    path('prenumera/', views.subscribe_to_newsletter, name="email_subscribe"),
+    path('hjalp/', views.help_text_view, name="help_text"),
     path('no-search-result/', views.no_search_result, name='no_search_result'),
     path('autocomplete-suggestions/<str:attribute>/<search_term>/', views.autocomplete_suggestions, name='autocomplete_suggestions'),
     

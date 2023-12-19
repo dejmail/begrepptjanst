@@ -1,0 +1,91 @@
+{% extends 'base-front.html' %}
+{% load crispy_forms_tags crispy_forms_filters %}
+{% load static %}
+{% load get_item %}
+{% load extract_attribute %}
+
+{% spaceless %}
+
+
+{% block header_row2 %}
+    <div class="row">
+    </div>
+{% endblock header_row2 %}
+
+{% block body_left_column %}
+  {% include 'left-sidebar.html' %}
+{% endblock body_left_column %}
+
+{% block body_middle_column %}
+
+
+{% if form %}
+
+<div class="col-lg-8 col-md-8 mt-4" id="search-row-middle-column">
+
+  
+    <div class="container">
+      <div class="row">
+    
+    <div class="mb-2 text-center">
+        <button type="button" class="btn btn-sm filter-action p-2 justify-content-center">Vad är ett begrepp?</button>
+    </div>
+
+    <div class="card card-limited-width-400 mb-4">
+        <div class="card-body card-body-custom">
+            <p class="card-text">
+            I begreppstetraedern finns terminologilärans fyra begrepp: referent, begrepp, definition och term.
+            De fyra begreppen representerar tre världar: den verkliga, den kognitiva och den språkliga.
+            </p>
+        </div>
+    </div>
+
+    <img src="{% static 'images/landing_image.png' %}" class="mb-3">
+
+    <h5>{{header}}</h5>
+    <form id="order-term-form" action="{% url 'request_new_term' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+    {{ form |crispy }}
+
+    {% else %}
+        {% for term in concept %}
+        {{ term.term }}
+        {% endfor %}
+    <h5>Sökningen gav ingen träff!</h5>
+    There is no form variable coming in
+    {% endif %}
+
+    <div class="pt-2 mb-4">
+        <input class="btn btn-sm filter-action" type="submit" value="Skicka">
+    </div>
+
+    </form>
+      </div>
+    </div>
+</div>
+
+{% endblock body_middle_column %}
+
+
+{% endspaceless %}
+
+
+{% block extra_javascript %}
+
+<style>
+  #div_id_begrepp,
+  #div_id_kontext,
+  #div_id_namn,
+  #div_id_epost,
+  #div_id_telefon,
+  #div_id_file_field
+   {
+      margin-bottom: 10px; 
+  }
+</style>
+
+</style>
+
+
+{% endblock extra_javascript %}
+

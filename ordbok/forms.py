@@ -49,7 +49,7 @@ class KommenteraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
+    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "telefonnummer"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())
     file_field = forms.FileField(widget=forms.ClearableFileInput(), label="Bifogar en skärmklipp eller komprimerad fil som kan hjälp oss", required=False)

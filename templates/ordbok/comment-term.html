@@ -1,0 +1,59 @@
+{% extends 'base-front.html' %}
+{% load crispy_forms_tags crispy_forms_filters %}
+{% load static %}
+{% load get_item %}
+{% load extract_attribute %}
+
+{% spaceless %}
+
+
+{% block header_row2 %}
+    <div class="row">
+    </div>
+{% endblock header_row2 %}
+
+{% block body_left_column %}
+  {% include 'left-sidebar.html' %}
+{% endblock body_left_column %}
+
+{% block body_middle_column %}
+
+<div class="col-lg-8 col-md-8 mt-4" id="search-row-middle-column">
+	<div class="container">
+		<div class="row">
+			{% if form %}
+				<div class="h5 text-center">Kommentera Begrepp</div>
+				
+					<p class="text-justify mt-2">
+						Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet. Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.
+					</p>
+				
+				<form id="comment_term_form" action="{% url 'comment_form' term_id=term.id %}" method="POST">
+				{% csrf_token %}
+				{{ form|crispy }}
+				<input type="submit" value="Skicka" class="btn filter-action mt-2">
+				</form>
+		</div>
+	</div>
+</div>
+
+{% endif %}
+
+{% endblock body_middle_column %}
+
+{% endspaceless %}
+
+{% block extra_javascript %}
+
+<style>
+  #div_id_namn,
+  #div_id_epost,
+  #div_id_telefon,
+  #div_id_resonemang,
+  #div_id_file_field
+   {
+      margin-bottom: 10px; 
+  }
+</style>
+
+{% endblock extra_javascript %}

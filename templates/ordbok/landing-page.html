@@ -1,22 +1,24 @@
-{% extends 'base_front.html' %}
+{% extends 'base-front.html' %}
 {% load static %}
 
 {% block body_left_column %}
-  {% include 'left_sidebar.html' %}
+  {% include 'left-sidebar.html' %}
 {% endblock body_left_column %}
 
 {% block body_middle_column %}
 
-	<div class="col-lg-8 col-md-8 mt-4 bg-pale-yellow" id="search-row-middle-column">
+{{ block.super }}
+
+	<div class="col-lg-10 col-md-10 mt-4" id="search-row-middle-column">
 	<div class="row">
-		<div class="col-2" id="about-spacer-left">about spacer left</div>
+		<div class="col-2" id="about-spacer-left"></div>
 		<div class="col-8" id="om_olli">
 			<div class="mx-auto">
 				<h5 class="text-center">
 					Om OLLI
 				</h5>
 			</div>
-			<div class="card mt-3" style="background-color:#aed9f0;">
+			<div class="card mt-3 base-color">
 				<div class="card-body text-justify">
 					OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård i VGR. 
 					Begreppen representerar olika företeelser inom olika verksamheter som är relaterade till vården, 
@@ -26,14 +28,21 @@
 					i regionen och olika verksamheter samt personal med administrativa uppgifter eller andra stödfunktioner.
 				</div>
 			</div>
+
+			<div class="mt-4">
+				<img src="{% static 'images/landing_image.png' %}" width="100%" height="100%">
+			</div>
+
 		</div>
 		
-		<div class="col-2" id="about-spacer-right">about spacer right</div>
+
+
+		<div class="col-2" id="about-spacer-right"></div>
 	</div>
 	</div>
 
 {% endblock body_middle_column %}
 
 {% block body_right_column %}
-  {% include 'right_sidebar.html' %}
+  {% include 'right-sidebar.html' %}
 {% endblock body_right_column %}
