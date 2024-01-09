@@ -36,23 +36,29 @@
                         <td>{{term.term}}</td>
                     </tr>
                     <tr>
-                        <td>Relation</td>
-                        <td >
-                            {% for synonym in term.synonym_set.all %}
-                                {% if synonym.synonym is not None %}
-                                    {% if synonym.synonym_status == "Avråds" %}
-                                        -&nbsp;
-                                        <button type="button" class="btn-sm btn-avrådd strike">
-                                            <s class="strike">{{synonym.synonym}}</s>
-                                        </button><br>
-                                    {% else %}
-                                        -&nbsp;
-                                        {{synonym.synonym}}<br>
-                                    {% endif %}
-                                {% else %}
-                                    -
-                                {% endif %}
+                        <td>Relaterade termer</td>
+                        <td>                         
+                              {% for term_with_relation in related_terms.all %}
+                                {% if term_with_relation.base_term.id == term.id %}
+                                  {% if term_with_relation.child_term.status == "Avråds" %}
+                                    <div class="tooltip">  - <s class="text-danger">{{term_with_relation.child_term.term}}</s>
+                                        <span class="tooltiptext" style="background-color: red;">
+                                            <div>Relation : {{term_with_relation.relationship}}</div>
+                                            <div>Status : {{term_with_relation.child_term.status}}</div>
+                                        </span>
+                                    </div>
+                                    <br>
+                                  {% else %}
+                                      <div class="tooltip">- {{term_with_relation.child_term.term}}
+                                          <span class="tooltiptext">
+                                            <div>Relation : {{term_with_relation.relationship}}</div>
+                                            <div>Status : {{term_with_relation.child_term.status}}</div>
+                                      </div>
+                                      <br>
+                                  {% endif %} 
+                                {% endif %} 
                             {% endfor %}
+                         
                         </td>
                     </tr>
                     <tr class="{{färg_status.begrepp}}">
@@ -85,18 +91,19 @@
                     </tr>
                 </tbody>
             </table>
-            <div class="d-flex justify-content-center">
+            <div class="d-flex justify-content-center align-items-center">
                 <form method="get" action="{% url 'comment_form' term_id=term.id %}" id="comment_term_form">
                     <button class="btn btn-sm filter-action me-2" type="submit" id="comment_button">
-                        <img src="{% static 'images/comment.svg' %}" alt="Kommentera" width="16" height="16" class="icon-svg mr-1 mb-1 justify-content-center">
+                        <img src="{% static 'images/comment.svg' %}" alt="Kommentera" width="16" height="16" class="icon-svg mr-1 mb-1">
                         <span>Kommentera</span>
                     </button>
                 </form>
             
-                <button class="btn btn-sm filter-action" type="button" data-toggle="modal" data-target="#Comment">
-                    <img src="{% static 'images/help.svg' %}" alt="Hjälp" width="16" height="16" class="icon-svg mb-1 justify-content-center">
+                <a class="btn btn-sm filter-action" href="{% url 'help_text' %}" title="Klicka för hjälp">
+                    <img src="{% static 'images/help.svg' %}" alt="Hjälp" width="16" height="16" class="icon-svg mb-1">
                     <span>Hjälp</span>
-                </button>
+                </a>
+                
             </div>
             </div>
             </div>     

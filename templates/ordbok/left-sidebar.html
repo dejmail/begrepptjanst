@@ -83,8 +83,10 @@ function toggleActiveClass(button) {
 
 function updateHiddenField() {
     var selectedDictionaries = Array.from(document.querySelectorAll('.filter-button.active')).map(button => button.dataset.itemId);
-    document.getElementById('selectedDictionariesField').value = selectedDictionaries.join(',');
+    document.getElementById('selectedDictionariesField').value = selectedDictionaries.length > 0 ? selectedDictionaries.join(',') : '';
 }
+
+
 
 // JavaScript to clear the selected filter buttons
 document.getElementById('clear-button').addEventListener('click', function() {

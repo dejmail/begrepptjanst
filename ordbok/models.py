@@ -100,8 +100,7 @@ class TermRelationship(models.Model):
     relationship = models.ForeignKey(to="TypeOfRelationship", on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        #set_trace()
-        return f"{self.child_term} är en {self.relationship} {self.base_term}"
+        return f"är en {self.relationship} till {self.base_term}"
 
 class BegreppExternalFiles(models.Model):
 

@@ -31,6 +31,10 @@ th {
   cursor: pointer;
 }
 
+.base-color {
+  background-color: #e7e1dfff;
+}
+
 .filter-button {
   width: 165px; /* Adjust the width as needed */
   text-align: left;
@@ -42,6 +46,15 @@ th {
 
 .filter-button:hover {
   width: 165px; /* Adjust the width as needed */
+  text-align: left;
+  line-height: 1;
+  font-size: smaller;
+  color: black;
+  background-color: #e7e1df;
+}
+
+.filter-button.active {
+  width: 165px;
   text-align: left;
   line-height: 1;
   font-size: smaller;
@@ -64,8 +77,8 @@ th {
   text-align: center;
   line-height: 1;
   font-size: smaller;
-  color: aliceblue;
-  background-color: #9575cd;
+  color: black;
+  background-color: #e7e1dfff;
   justify-content: center;
 }
 
@@ -97,6 +110,11 @@ th {
 .text-justify {
   text-align: justify;
 }
+
+.w-30 {
+  width : 30%;
+}
+
 
 
 .fa-search {
@@ -230,4 +248,51 @@ mark {
 .buttonwidth {
   width: 105px;
   text-align: center;
+}
+
+.btn-base {
+  width: 80px !important;
+  height: 30px;
+  text-align: center !important;
+  font-size: 12px !important;
+  border-radius: 5px !important;
+}
+
+.btn-oklart {
+  width: inherit;
+  text-align: inherit;  
+  font-size: inherit;
+  border-color: rgb(255, 126, 41);
+  background-color: rgb(255, 126, 41);
+  color: black; 
+}
+
+.btn-white {
+  width: inherit;
+  text-align: inherit;
+  
+  font-size: inherit;
+  border-color: black;
+  background-color: white;
+  color: black;
+}
+
+.btn-grön {
+  width: inherit;
+  text-align: inherit;
+  
+  font-size: inherit;
+  border-color: rgb(105, 189, 27);
+  background-color: rgb(105, 189, 27);
+  color: rgb(0, 0, 0);
+}
+
+.btn-avrådd {
+  width: inherit;
+  text-align: inherit;
+  
+  font-size: inherit;
+  border-color: #f44336;
+  background-color: rgba(255, 0, 0, 0.8);
+  color: white;
 }

@@ -129,7 +129,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     class Media:
         css = {
         'all': (
-            f'{settings.STATIC_URL}css/main.css',
+            f'{settings.STATIC_URL}css/output.css',
             f'{settings.STATIC_URL}css/begrepp_custom.css',
            )
          }
@@ -255,7 +255,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     def relationship(self, obj):
 
-        if obj.term == "spotcheck": set_trace()
+        #if obj.term == "spotcheck": set_trace()
         relationships = TermRelationship.objects.filter(child_term__id=obj.id)#.prefetch_related('base_term__term')
         if relationships:
             return list(relationships)
@@ -274,17 +274,17 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
     def status_button(self, obj):
 
         if (obj.status == 'Avråds') or (obj.status == 'Avrådd'):
-            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-base btn-avrådd text-monospace">{obj.status}</button>'
         elif (obj.status == 'Publicera ej'):
-            display_text = f'<button class="btn-xs btn-light-blue text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-base btn-light-blue text-monospace">{obj.status}</button>'
         elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
-            display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-base btn-oklart text-monospace">{obj.status}</button>'
         elif (obj.status == 'Preliminär'):
-            display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-base btn-gul text-monospace">{obj.status}</button>'
         elif (obj.status == 'Beslutad'):
-            display_text = f'<button class="btn-xs btn-grön text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-base btn-grön text-monospace">{obj.status}</button>'
         else:
-            display_text = f'<button class="btn-xs btn-white text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<button class="btn-base btn-white text-monospace">{obj.status}</button>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'

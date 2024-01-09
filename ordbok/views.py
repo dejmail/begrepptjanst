@@ -55,7 +55,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
-def get_search_results_from_db(search_parameter: str, dictionaries: list, relationships: list) -> QuerySet:
+def get_search_results_from_db(search_parameter: str, dictionaries: list) -> QuerySet:
 
     """ Check whether the :model:`ordbok.Begrepp` contains entries in the 
     attributes specified.
@@ -66,6 +66,7 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
     :rtype: Queryset
         
     """
+
     child_terms = TermRelationship.objects.all().values_list('child_term_id')
     search_parameter_length = len(search_parameter)
     dictionary_length = len(dictionaries)
@@ -101,12 +102,12 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
         if order_by:
             queryset = queryset.order_by(*order_by)
     
-    #set_trace()
-
-    if (search_parameter_length > 2) and (dictionary_length > 0):
+    if (search_parameter_length > 2) and (
+        dictionary_length > 0) and (dictionaries != ['']):
         queryset = queryset.filter(dictionaries__title__in=dictionaries)
     
-    if (search_parameter_length == 0) and (dictionary_length > 0):
+    if (search_parameter_length == 0) and (
+        dictionary_length > 0):
 
         queryset = Begrepp.objects.all().exclude(
                          status__in=[
@@ -125,11 +126,6 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list, relati
     if (search_parameter_length == 1 ) and (dictionary_length > 0):
 
         pass
-
-    if (len(relationships) > 0) and (search_parameter_length > 0):
-        queryset = TermRelationship.objects.filter(
-                base_term__icontains=search_parameter
-                )
 
     return queryset
 
@@ -408,8 +404,7 @@ def mark_fields_as_safe_html(list_of_dict: list, fields: list) -> list:
     return list_of_dict
 
 def assemble_data_for_concept_view(search_parameter: str, 
-                                   selected_dictionaries: list,                                    
-                                   relationships: list, 
+                                   selected_dictionaries: list,
                                    page_number: int) -> str:
 
     """Main method that couples together all the submethods needed to
@@ -420,14 +415,13 @@ def assemble_data_for_concept_view(search_parameter: str,
     :return: HTML page formatted with the search results
     :rtype: str
     """
-
     if (len(search_parameter) == 1) and (search_parameter.isupper()):
         search_request = filter_terms_by_first_letter(search_parameter)
         highlight=False
     else: 
         search_request = get_search_results_from_db(search_parameter, 
-                                                    selected_dictionaries, 
-                                                    relationships)
+                                                    selected_dictionaries) 
+
         logger.debug(f'len of search result = {len(search_request)}')
         highlight=True
 
@@ -471,7 +465,7 @@ def assemble_data_for_concept_view(search_parameter: str,
     all_dictionaries = Dictionary.objects.all()
     relationship_types = TypeOfRelationship.objects.all()
     
-    term_relationships  = TermRelationship.objects.filter(
+    related_terms  = TermRelationship.objects.filter(
         base_term__in=search_request.values_list('id', flat=True)
         )
 
@@ -485,7 +479,7 @@ def assemble_data_for_concept_view(search_parameter: str,
             'dictionaries' : all_dictionaries,
             'selected_dictionaries' : selected_dictionaries,
             'relationship_types' : relationship_types,
-            'term_relationships' : term_relationships
+            'related_terms' : related_terms
             }
         )
 
@@ -508,25 +502,22 @@ def concept_view(request: HttpRequest) -> HttpResponse:
     :rtype: HttpResponse
     """
     search_term = request.GET.get("search_term")
-    dictionaries = request.GET.get('dictionaries',[])
-    if dictionaries:
-        selected_dictionaries = dictionaries.split(',')
+    dictionaries = request.GET.getlist('dictionaries')
+
+    if dictionaries == ['[]']:
+        dictionaries = []
+    elif dictionaries:
+        selected_dictionaries = dictionaries[0].split(',')
     else:
         selected_dictionaries = []
-    relationships = request.GET.get('relationships','')
-    if relationships:
-        relationships = relationships.split(',')
-
-    if (is_request_ajax(request) == True) or (request.GET.get('search_term') is not None):
+    
+    if (request.GET.get('search_term') is not None):
         
         page_number = request.GET.get('page', 1)
-        
         html, return_list_dict = assemble_data_for_concept_view(
             search_term, 
             selected_dictionaries, 
-            relationships, 
             page_number)
-
         if html is not None:
             mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
             return HttpResponse(html)
@@ -534,7 +525,7 @@ def concept_view(request: HttpRequest) -> HttpResponse:
             form = TermRequestForm()
             
             return render(request, 
-                          'requestTerm.html', 
+                          'request-term.html', 
                           context = {'form' : form,
                                      'dictionaries' : Dictionary.objects.all(),
                                      'selected_dictionaries' : selected_dictionaries,
@@ -561,15 +552,16 @@ def get_single_term_view(request: HttpRequest) -> HttpResponse:
 
     if url_parameter:
         single_term = return_single_term(url_parameter)
-
-        get_related_terms = TermRelationship.objects.filter(child_term__id=single_term.id)
+        
+        related_terms = TermRelationship.objects.filter(base_term__id=single_term.id)
+        
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
 
         status_färg_dict = {'begrepp' : färg_status_dict.get(single_term.status),
-                            'relationships' : get_related_terms}
+                            'relationships' : related_terms}
         
         template_context = {'term': single_term,
-                            'relationships' : get_related_terms,
+                            'related_terms' : related_terms,
                             'dictionaries' : Dictionary.objects.all(),
                             'färg_status' : status_färg_dict}
 
@@ -654,7 +646,7 @@ def request_new_term(request: HttpRequest) -> HttpResponse:
                                 </div>''')
         else:
             
-            return render(request, 'requestTerm.html', {'form': form,
+            return render(request, 'request-term.html', {'form': form,
                                                         'whichTemplate' : 'requestTerm',
                                                         'dictionaries' : Dictionary.objects.all()},
                                                         )
@@ -663,7 +655,7 @@ def request_new_term(request: HttpRequest) -> HttpResponse:
        
         form = TermRequestForm(initial={'concept' : request.GET.get('search_term')})
         
-        return render(request, 'requestTerm.html', {'form': form,
+        return render(request, 'request-term.html', {'form': form,
                                                     'dictionaries' : Dictionary.objects.all(),
                                                     'whichTemplate' : 'requestTerm',
                                                     'header' : 'Önskemål om nytt begrepp'})

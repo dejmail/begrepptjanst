@@ -52,7 +52,7 @@
                     {% for item in queryset %}
                     
                         {% if item.id == term.id %}
-                          {% for term_with_relation in term_relationships.all %}
+                          {% for term_with_relation in related_terms.all %}
                             {% if term_with_relation.base_term.id == term.id %}
                               {% if term_with_relation.child_term.status == "Avråds" %}
                                 <div class="tooltip">  - <s class="text-danger">{{term_with_relation.child_term.term}}</s>
@@ -101,8 +101,8 @@
 <div class="pagination">
   <span class="pagination-links">
       {% if page_obj.has_previous %}
-          <a href="?search_term={{searched_for_term|urlencode }}&dictionaries={{ selected_dictionaries|urlencode }}&page=1">&laquo; först</a>
-          <a href="?search_term={{searched_for_term|urlencode }}&dictionaries={{ selected_dictionaries|urlencode }}&page={{ page_obj.previous_page_number }}">förra</a>
+          <a href="?search_term={{searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page=1">&laquo; först</a>
+          <a href="?search_term={{searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.previous_page_number }}">förra</a>
       {% endif %}
 
       <span class="current">
@@ -110,8 +110,9 @@
       </span>
 
       {% if page_obj.has_next %}
-          <a href="?search_term={{ searched_for_term|urlencode }}&dictionaries={{ selected_dictionaries|urlencode }}&page={{ page_obj.next_page_number }}">nästa</a>
-          <a href="?search_term={{ searched_for_term|urlencode }}&dictionaries={{ selected_dictionaries|urlencode }}&page={{ page_obj.paginator.num_pages }}">sista &raquo;</a>
+      <a href="?search_term={{ searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.next_page_number }}">nästa</a>
+      <a href="?search_term={{ searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.paginator.num_pages }}">sista &raquo;</a>
+      
       {% endif %}
   </span>
 </div>
@@ -134,7 +135,7 @@
           <div class="row mt-5">
               <div class="col-1"></div>
               <div class="col-10">
-                  {% include 'requestTerm.html' %}
+                  {% include 'request-term.html' %}
               </div>
               <div class="col-1"></div>
           </div>
