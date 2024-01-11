@@ -35,7 +35,7 @@ class Dictionary(models.Model):
         verbose_name_plural = "Ordlistor"
         app_label = 'ordbok'
 
-    title = models.CharField(max_length=72, default='Main')
+    title = models.CharField(max_length=72)
     description = models.TextField(max_length=1000, null=True)
 
     def __str__(self):
@@ -43,7 +43,6 @@ class Dictionary(models.Model):
         """Return the title of the dictionary
         """
         return self.title
-
 
 class Begrepp(models.Model):
 
@@ -100,7 +99,7 @@ class TermRelationship(models.Model):
     relationship = models.ForeignKey(to="TypeOfRelationship", on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f"är en {self.relationship} till {self.base_term}"
+        return f"{self.child_term} är en {self.relationship} till {self.base_term}"
 
 class BegreppExternalFiles(models.Model):
 

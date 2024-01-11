@@ -1,39 +1,21 @@
 {% load static %}
 
-<div id="colour_panel" class="row justify-content-center border rounded shadow statuscolours mt-5 d-none">
-    <table class="status-padding">
-    <tr>
-      <td>
-        <button type="button" class="btn buttonwidth table-success btn-sm">
-          <span class="text-12pt">
-            <div class="float-none" id="colour_meaning" data-toggle="tooltip" data-placement="top" title="Beslutad av Informatik och standardisering VGR">
-              Beslutad /<br>Definieras ej
-            </div>
-          </span>
-        </button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <button type="button" class="btn buttonwidth table-warning btn-sm">
-          <span class="text-12pt">
-            <div class="float-none" id="colour_meaning" data-toggle="tooltip" data-placement="bottom" title="Efterfrågat begrepp under handläggning">
-              Pågår
-            </div>
-          </span>
-        </button>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <button type="button" class="btn buttonwidth table-danger btn-sm">
-          <span class="text-12pt">
-            <div class="float-none" id="colour_meaning" data-toggle="tooltip" data-placement="bottom" title="Termen ska inte användas">
-              Avråds /<br>Avställd
-            </div>
-          </span>
-        </button>
-      </td>
-    </tr>
-    </table>
+<div id="colour_panel" class="row justify-content-left mt-5 d-none">
+    <div class="status-padding">
+        <div>
+            <button type="button" class="btn buttonwidth table-success btn-sm" data-toggle="tooltip" data-placement="top" title="Beslutad av Informatik och standardisering VGR">
+                Beslutad /<br>Definieras ej
+            </button>
+        </div>
+        <div>
+            <button type="button" class="btn buttonwidth table-warning btn-sm" data-toggle="tooltip" data-placement="bottom" title="Efterfrågat begrepp under handläggning">
+                Pågår
+            </button>
+        </div>
+        <div>
+            <button type="button" class="btn buttonwidth table-danger btn-sm" data-toggle="tooltip" data-placement="bottom" title="Termen ska inte användas">
+                Avråds /<br>Avställd
+            </button>
+        </div>
     </div>
+</div>
