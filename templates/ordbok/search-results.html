@@ -30,17 +30,17 @@
 
         <table class="table table-bordered top-buffer-10" id="definition_table">
           <colgroup>
-            <col class="col-3">
+            <col class="col-4">
             <col class="col-2">
-            <col class="col-5">
-            <col class="col-2">
+            <col class="col-6">
+            <!-- <col class="col-2"> -->
           </colgroup>
             <thead>
               <tr>
                 <th>Rekommenderad term</th>
-                <th>Relation</th>
+                <th>Synonym</th>
                 <th>Definition</th>
-                <th>Ordbok</th>
+                <!-- <th>Ordbok</th> -->
               </tr>
             </thead>
             <tbody id="myTable">
@@ -76,7 +76,7 @@
                     {% endfor queryset %}
                 </td>
                 <td>{{term.definition}}</td>
-                <td>
+                <!-- <td>
                     {% extract_attribute target_id=term.id queryset=queryset attribute="dictionaries" as dictionaries %}
                     {% if dictionaries %}
                         {% for dictionary in dictionaries.all %}
@@ -88,7 +88,7 @@
                         
                         {% endfor %}
                     {% endif %}
-                </td>
+                </td> -->
                 </tr>
                 
               {% endfor page_obj %}
@@ -115,6 +115,10 @@
       
       {% endif %}
   </span>
+  <span class="pagination-links">
+    <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&display_all=true">alla</a>
+  </span>
+
 </div>
 
 

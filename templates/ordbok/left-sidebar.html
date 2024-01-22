@@ -20,22 +20,10 @@
                     
                     <hr class="my-3 w-100" style="color: black;">
 
-                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;">
-
-                        {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" %}
-                            <div style="text-align: center; padding: 2px; border: 1px solid #ccc;">
-                                <a href="{% url 'concept' %}?search_term={{letter}}">{{ letter }}</a>
-                            </div>
-                        {% endfor %}
-                    
-                    </div>                    
-
-                    <hr class="my-3 w-100" style="color: black;">
-
                     <div class="d-flex justify-content-center">
                         <div class="text-center">
                             <img src="{% static 'images/filter.svg' %}" alt="Filtrera" width="18" height="18" class="icon-svg mb-1">
-                            <span class="h6 filter-header">Ordbok Filter</span>
+                            <span class="h6 filter-header">Filter</span>
                         </div>
                     </div>
                     
@@ -55,6 +43,22 @@
                             <span class="align-middle">Nollställ</span>
                         </button>
                     </div>
+
+                    <hr class="my-3 w-100" style="color: black;">
+
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;">
+
+                        {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" %}
+                            <div style="text-align: center; padding: 2px; border: 1px solid #ccc;">
+                                <a href="{% url 'concept' %}?search_term={{letter}}">{{ letter }}</a>
+                            </div>
+                        {% endfor %}
+                    
+                    </div>                    
+
+                    
+
+                  
                 </div>
                     
                 
@@ -76,25 +80,18 @@
 
 <script>
 
-// JavaScript to handle button clicks for dictionary filter and update hidden form field
-function toggleActiveClass(button) {
-    button.classList.toggle('active');
-    updateHiddenField();
-}
-
 function updateHiddenField() {
     var selectedDictionaries = Array.from(document.querySelectorAll('.filter-button.active')).map(button => button.dataset.itemId);
     document.getElementById('selectedDictionariesField').value = selectedDictionaries.length > 0 ? selectedDictionaries.join(',') : '';
 }
 
-
-
-// JavaScript to clear the selected filter buttons
+// // JavaScript to clear the selected filter buttons
 document.getElementById('clear-button').addEventListener('click', function() {
     document.querySelectorAll('.filter-button').forEach(button => {
-        button.classList.remove('active');
+        this.classList.toggle('active');
+        updateHiddenField();
+
     });
-    updateHiddenField();
 });
 
 // JavaScript to toggle the 'active' class on filter buttons
@@ -105,15 +102,18 @@ document.querySelectorAll('.filter-button').forEach(button => {
     });
 });
 
-// function showLoader() {
-//         // Make the loader container visible
-//         console.log('showLoader function called');
-//         // $('#om_olli').hide();
-//         $('.search-row-middle-column').hide();
-//         $('#loader-container').removeClass('d-none');
-//         return false;
-//     }
+// Javascript to submit the filter search when the filter is clicked
+// without having to press submit again
 
+document.querySelectorAll('.filter-button').forEach(function(button) {
+    button.addEventListener('click', function(event) {
+        // Prevent the default form submission behavior
+        event.preventDefault();
+
+        // Submit the form
+        document.getElementById('filter-form').submit();
+    });
+});
 
 $(document).ready(function() {
     // Get the value of the 'search_term' parameter from the URL

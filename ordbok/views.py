@@ -405,7 +405,8 @@ def mark_fields_as_safe_html(list_of_dict: list, fields: list) -> list:
 
 def assemble_data_for_concept_view(search_parameter: str, 
                                    selected_dictionaries: list,
-                                   page_number: int) -> str:
+                                   page_number: int,
+                                   display_all: bool) -> str:
 
     """Main method that couples together all the submethods needed to
     produce the HTML needed for the initial search view.
@@ -451,8 +452,11 @@ def assemble_data_for_concept_view(search_parameter: str,
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
     
-    paginator = Paginator(return_list_dict, 10)
-
+    if display_all==True:
+        paginator = Paginator(return_list_dict, 1000000)
+    else:
+        paginator = Paginator(return_list_dict, 10)
+    
     try:
         page_obj = paginator.page(page_number)
     except PageNotAnInteger:
@@ -503,6 +507,7 @@ def concept_view(request: HttpRequest) -> HttpResponse:
     """
     search_term = request.GET.get("search_term")
     dictionaries = request.GET.getlist('dictionaries')
+    display_all = request.GET.get('display_all')
 
     if dictionaries == ['[]']:
         dictionaries = []
@@ -517,7 +522,8 @@ def concept_view(request: HttpRequest) -> HttpResponse:
         html, return_list_dict = assemble_data_for_concept_view(
             search_term, 
             selected_dictionaries, 
-            page_number)
+            page_number,
+            display_all)
         if html is not None:
             mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
             return HttpResponse(html)
