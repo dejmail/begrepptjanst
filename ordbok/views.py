@@ -70,7 +70,7 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
     child_terms = TermRelationship.objects.all().values_list('child_term_id')
     search_parameter_length = len(search_parameter)
     dictionary_length = len(dictionaries)
-    
+
     if search_parameter_length > 2:
         queryset = Begrepp.objects.all().exclude(
                          status__in=['Publicera ej','Ej Påbörjad'],
@@ -451,9 +451,9 @@ def assemble_data_for_concept_view(search_parameter: str,
         )
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
-    
+
     if display_all==True:
-        paginator = Paginator(return_list_dict, 1000000)
+        paginator = Paginator(return_list_dict, 10000)
     else:
         paginator = Paginator(return_list_dict, 10)
     
@@ -507,7 +507,7 @@ def concept_view(request: HttpRequest) -> HttpResponse:
     """
     search_term = request.GET.get("search_term")
     dictionaries = request.GET.getlist('dictionaries')
-    display_all = request.GET.get('display_all')
+    display_all = bool(request.GET.get('display_all'))
 
     if dictionaries == ['[]']:
         dictionaries = []

@@ -98,40 +98,44 @@
     </div>
   </div>
 
-<div class="pagination">
-  <span class="pagination-links">
-      {% if page_obj.has_previous %}
-          <a href="?search_term={{searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page=1">&laquo; först</a>
-          <a href="?search_term={{searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.previous_page_number }}">förra</a>
-      {% endif %}
-
-      <span class="current">
-          Sida {{ page_obj.number }} av {{ page_obj.paginator.num_pages }}.
-      </span>
-
-      {% if page_obj.has_next %}
-      <a href="?search_term={{ searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.next_page_number }}">nästa</a>
-      <a href="?search_term={{ searched_for_term|urlencode }}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.paginator.num_pages }}">sista &raquo;</a>
-      
-      {% endif %}
-  </span>
-  <span class="pagination-links">
-    <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&display_all=true">alla</a>
-  </span>
-
+  <div class="row">
+    <div class="col-12 pagination">
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="pagination-links">
+                    <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&display_all=true" title="Visa alla resultat">alla</a>
+                </div>
+            </div>
+        </div><br>
+        <div class="row">
+            <div class="col-12 text-center my-3">
+              <svg stroke="black" width="5" height="30" class="ms-1 me-1">
+                <line x1="2" y1="0" x2="2" y2="30"></line>
+            </svg>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 text-center">
+                <div class="pagination-links">
+                    {% if page_obj.has_previous %}
+                        <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&page=1" title="Första sida av resultater">&laquo; först</a>
+                        <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.previous_page_number }}" title="Föregående 10 resultater">förra</a>
+                    {% endif %}
+                    <span class="current">
+                        Sida {{ page_obj.number }} av {{ page_obj.paginator.num_pages }}.
+                    </span>
+                    {% if page_obj.has_next %}
+                        <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.next_page_number }}" title="Nästa 10 resultater">nästa</a>
+                        <a href="?search_term={{searched_for_term|urlencode}}&dictionaries={{selected_dictionaries|join:''}}&page={{ page_obj.paginator.num_pages }}" title="Sista sida av resultater">sista &raquo;</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
-
-</div>            
-  <style>
-    /* Ensure we see intended spacing in the Definitions column */
-  tbody > tr > td:nth-child(3) {
-    white-space: pre-line;
-    }
-  </style>
-
-
+</div>
 {% else %}  
 
       <div class="col-lg-9 col-md-9" id="search-row-middle-column">
@@ -145,7 +149,7 @@
           </div>
           </div>
       </div>
-
+</div>
 {% endif %}
 {% endblock body_middle_column %}
 
@@ -155,6 +159,15 @@
 
 {% endspaceless %}
 {% block extra_javascript %}
+
+  <style>
+    /* Ensure we see intended spacing in the Definitions column */
+  tbody > tr > td:nth-child(3) {
+    white-space: pre-line;
+    }
+
+
+  </style>
 
 
 <script>
