@@ -1,4 +1,5 @@
 {% load static %}
+{% load config_filter %}
 
 <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-lite" id="search-row-left-column">
     <div class="d-flex flex-column align-items-center px-2 pt-4 text-white min-vh-100">
@@ -19,6 +20,9 @@
                     </div>      
                     
                     <hr class="my-3 w-100" style="color: black;">
+                    {% config_filter queryset=config attribute="title" attribute_value="search_filter" as search_filter %}
+                    
+                    {% if search_filter.is_active %}
 
                     <div class="d-flex justify-content-center">
                         <div class="text-center">
@@ -27,15 +31,15 @@
                         </div>
                     </div>
                     
-                    <div class="nav flex-column" id="itemList">
-                        {% for dictionary in dictionaries %}
-                        <div class="d-flex justify-content-center w-110 mt-1" data-item-id="{{dictionary.title}}">
-                            <button type="button" name="dictionaries[]" class="btn btn-sm filter-button {% if dictionary.title in selected_dictionaries %}active{% endif %}" data-item-id="{{dictionary.title}}">
-                                <span>{{dictionary.title}}</span>
-                            </button>
+                        <div class="nav flex-column" id="itemList">
+                            {% for dictionary in dictionaries %}
+                            <div class="d-flex justify-content-center w-110 mt-1" data-item-id="{{dictionary.title}}">
+                                <button type="button" name="dictionaries[]" class="btn btn-sm filter-button {% if dictionary.title in selected_dictionaries %}active{% endif %}" data-item-id="{{dictionary.title}}">
+                                    <span>{{dictionary.title}}</span>
+                                </button>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
 
                     <div class="d-flex justify-content-center mt-3"> <!-- Adjust the margin-top as needed -->
                         <button type="button" class="btn btn-sm filter-action d-flex justify-content-center align-items-center" id="clear-button">
@@ -45,7 +49,9 @@
                     </div>
 
                     <hr class="my-3 w-100" style="color: black;">
+                    {% endif %}
 
+                    
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;">
 
                         {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" %}

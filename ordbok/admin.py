@@ -462,15 +462,15 @@ class BegreppExternalFilesAdmin(admin.ModelAdmin):
 class ConfigurationAdmin(admin.ModelAdmin):
 
     class Media:
-        js = ('image-preview.js',)
+        js = (f'{settings.STATIC_URL}/javascript/image-preview.js',)
 
-    list_display = ('title', 'screenshot_preview')
+    list_display = ('title', 'screenshot_preview','is_active')
 
     def screenshot_preview(self, obj):
-        if obj.screenshot:
-            return format_html(f'<img class="image-thumbnail" src="{obj.screenshot.url}" style="max-width:100px; max-height:100px; cursor:pointer" />')
+        if obj.image:
+            return format_html(f'<img class="image-thumbnail" src="{obj.image.url}" style="max-width:100px; max-height:100px; cursor:pointer" />')
         else:
-            return 'No image'
+            return 'Ingen bild'
 
     screenshot_preview.short_description = 'Skärmbild'
 

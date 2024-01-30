@@ -38,7 +38,8 @@ from ordbok.models import (
     BegreppExternalFiles, 
     Bestallare,
     KommenteraBegrepp, 
-    TermRelationship)
+    TermRelationship,
+    ConfigurationOptions)
 
 logger = logging.getLogger(__name__)
 
@@ -466,9 +467,6 @@ def assemble_data_for_concept_view(search_parameter: str,
         # if the page is out of range, deliver the last page
         page_obj = paginator.page(paginator.num_pages)
     
-    all_dictionaries = Dictionary.objects.all()
-    relationship_types = TypeOfRelationship.objects.all()
-    
     related_terms  = TermRelationship.objects.filter(
         base_term__in=search_request.values_list('id', flat=True)
         )
@@ -480,10 +478,11 @@ def assemble_data_for_concept_view(search_parameter: str,
             'färg_status' : färg_status_dict,
             'queryset' : search_request,
             'searched_for_term' : search_parameter,
-            'dictionaries' : all_dictionaries,
+            'dictionaries' : Dictionary.objects.all(),
             'selected_dictionaries' : selected_dictionaries,
-            'relationship_types' : relationship_types,
-            'related_terms' : related_terms
+            'relationship_types' : TypeOfRelationship.objects.all(),
+            'related_terms' : related_terms,
+            'config' : ConfigurationOptions.objects.all(),
             }
         )
 
@@ -536,11 +535,13 @@ def concept_view(request: HttpRequest) -> HttpResponse:
                                      'dictionaries' : Dictionary.objects.all(),
                                      'selected_dictionaries' : selected_dictionaries,
                                      'searched_for_term' : search_term,
+                                     'config' : ConfigurationOptions.objects.all(),
                                      }
                         )
     else:
         return render(request, "landing-page.html", context={
             'dictionaries' : Dictionary.objects.all(),
+            'config' : ConfigurationOptions.objects.all(),
             }
         )
 
