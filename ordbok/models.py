@@ -187,6 +187,7 @@ class SökFörklaring(models.Model):
 
     class Meta:
         verbose_name = ('Sök Förklaring')
+        verbose_name_plural = ('Sök Förklaringar')
         app_label = 'ordbok'
 
     sök_term = models.CharField(max_length=255)
@@ -195,3 +196,20 @@ class SökFörklaring(models.Model):
 
     def __str__(self):
         return self.sök_term
+
+class ConfigurationOptions(models.Model):
+
+    class Meta:
+        verbose_name = ('Inställning')
+        verbose_name_plural = ('Inställningar')
+        app_label = 'ordbok'
+    
+    title = models.CharField(max_length=255, null=True, blank=True)
+    model = models.CharField(max_length=255, blank=True, null=True)
+    content = models.TextField(null=True, blank=True)
+    screenshot = models.ImageField(null=True, blank=True)
+    configuration = models.JSONField(null=True, blank=True)
+    active = models.BooleanField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title

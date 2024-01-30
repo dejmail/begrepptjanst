@@ -73,7 +73,13 @@ class BegreppForm(forms.ModelForm):
         help_texts = {'term': 'Rullistan visar termer redan i DB',
                       'definition': 'Visas som HTML på framsidan',
                       'källa': 'Rullistan visar termer redan i DB'}
-        
+
+    def __init__(self, *args, config_option=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if config_option == False:  # Adjust this condition based on your requirement
+            # Remove the 'dictionaries' field from the form
+            self.fields.pop('dictionaries')
+    
     
     def clean(self):
         
@@ -83,7 +89,8 @@ class BegreppForm(forms.ModelForm):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
         
         return self.cleaned_data
-
+    
+    
 
 class BegreppExternalFilesForm(forms.ModelForm):
 

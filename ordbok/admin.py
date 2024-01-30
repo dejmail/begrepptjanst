@@ -12,6 +12,9 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.http import JsonResponse
+from django.utils.translation import gettext as _
+
 from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
@@ -47,16 +50,17 @@ def add_non_breaking_space_to_status(status_item):
             status_item = '&nbsp;' + status_item
     return mark_safe(status_item)
 
-# class SynonymInlineForm(forms.ModelForm):
+def get_config_options(request):
+    config_options = ConfigurationOptions.objects.first()  # Example query to retrieve the first ConfigOptions object
+    data = {
+        'option_value': config_options.option_value,  # Adjust this based on your model fields
+        # Add more fields as needed
+    }
+    return JsonResponse(data)
 
-#     class Meta:
-#         model = TermRelationships
-#         fields = "__all__"
+class TermRelationshipAdmin(admin.ModelAdmin):
 
-#     def clean(self):
-#         super(SynonymInlineForm, self).clean()
-#         if self.cleaned_data.get('synonym') == None:
-#             self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
+        search_fields = ('base_term__term', 'child_term__term')
 
 class TermRelationshipInline(admin.StackedInline):
 
@@ -133,14 +137,28 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
             f'{settings.STATIC_URL}css/begrepp_custom.css',
            )
          }
+        js = ('admin_hide_dictionary_form_field.js',)
     
     inlines = [BegreppExternalFilesInline, TermRelationshipInline]#, ValideradAvDomänerInline]
+
+    def get_form(self, request, obj=None, **kwargs):
+        # Get the parameter value from another model (ConfigOptions in this case)
+        config_option_value = ConfigurationOptions.objects.get(title='dictionaries-present').active
+        # Pass the parameter value to the form
+        kwargs['config_option'] = config_option_value
+        return super().get_form(request, obj, **kwargs)
 
     def formfield_for_many_to_many(self, db_field, *args, **kwargs):
         formfield = super(BegreppAdmin, self).formfield_for_many_to_many(db_field, *args, **kwargs)
         if db_field.name == 'begrepp':
             formfield.queryset = formfield.queryset.select_related('foo')
         return formfield
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # Add a CSS class to hide the field initially
+        form.base_fields['dictionaries'].widget.attrs['class'] = 'admin-hidden-field'  
+        return form
 
     form = BegreppForm
 
@@ -441,6 +459,21 @@ class BegreppExternalFilesAdmin(admin.ModelAdmin):
 
     list_display = ('begrepp', 'kommentar', 'support_file')
 
+class ConfigurationAdmin(admin.ModelAdmin):
+
+    class Media:
+        js = ('image-preview.js',)
+
+    list_display = ('title', 'screenshot_preview')
+
+    def screenshot_preview(self, obj):
+        if obj.screenshot:
+            return format_html(f'<img class="image-thumbnail" src="{obj.screenshot.url}" style="max-width:100px; max-height:100px; cursor:pointer" />')
+        else:
+            return 'No image'
+
+    screenshot_preview.short_description = 'Skärmbild'
+
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 #admin.site.register(Doman, DomanAdmin)
@@ -449,5 +482,6 @@ admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
 admin.site.register(Dictionary, DictionaryAdmin)
-admin.site.register(TermRelationship)
+admin.site.register(TermRelationship, TermRelationshipAdmin)
 admin.site.register(TypeOfRelationship)
+admin.site.register(ConfigurationOptions, ConfigurationAdmin)
