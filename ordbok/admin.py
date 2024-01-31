@@ -141,7 +141,7 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
             f'{settings.STATIC_URL}css/begrepp_custom.css',
            )
          }
-        js = (f'{settings.STATIC_URL}javascript/admin_hide_dictionary_form_field.js',)
+        js = (f'{settings.STATIC_URL}javascript/admin_toggle_dictionary_form_field.js',)
     
     inlines = [BegreppExternalFilesInline, TermRelationshipInline]#, ValideradAvDomänerInline]
 
