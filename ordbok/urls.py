@@ -6,6 +6,7 @@ from ordbok import admin as admin_views
 
 urlpatterns = [
     path("", views.concept_view, name="concept"),
+    path('get_config_options/', admin_views.get_config_options, name='get_config_options'),
     path('kommentera/<int:term_id>', views.submit_comments_for_a_term, name="comment_form"),
     path('begrepp-forklaring/', views.get_single_term_view, name="begrepp_förklaring"),
     path('request-new-term/', views.request_new_term, name='request_new_term'),
