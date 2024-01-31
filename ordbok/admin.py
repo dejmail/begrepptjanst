@@ -51,11 +51,15 @@ def add_non_breaking_space_to_status(status_item):
     return mark_safe(status_item)
 
 def get_config_options(request):
-    config_options = ConfigurationOptions.objects.first()  # Example query to retrieve the first ConfigOptions object
+    
+    option = request.GET.get("option")
+    config_options = ConfigurationOptions.objects.get(title=option)
+
     data = {
-        'option_value': config_options.option_value,  # Adjust this based on your model fields
-        # Add more fields as needed
+        'title' : option,
+        'is_active': config_options.is_active,
     }
+
     return JsonResponse(data)
 
 class TermRelationshipAdmin(admin.ModelAdmin):
