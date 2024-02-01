@@ -1,6 +1,6 @@
 window.onload = function() {
-    const endpoint = endpoint_check();
-    const url = endpoint + 'get_config_options/?option=dictionaries_inline';
+    baseUrl = currentUrl.split('/').slice(0,4).join('/')+'/';
+    const url = baseUrl + 'get_config_options/?option=dictionaries_inline';
     console.log('Getting ' + url);
     django.jQuery(document).ready(function() {
         django.jQuery.get(url, function(data) {
