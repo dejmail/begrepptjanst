@@ -1,6 +1,9 @@
 window.onload = function() {
+    const endpoint = endpoint_check();
+    const url = endpoint + 'get_config_options/?option=dictionaries_inline';
+    console.log('Getting ' + url);
     django.jQuery(document).ready(function() {
-        django.jQuery.get('/get_config_options/?option=dictionaries_inline', function(data) {
+        django.jQuery.get(url, function(data) {
             var configOptionValue = data.is_active;  // Adjust this based on your JSON response structure
             debugger;
             if (configOptionValue === false) {

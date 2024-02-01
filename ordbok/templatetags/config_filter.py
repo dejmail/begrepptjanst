@@ -1,6 +1,6 @@
 from django import template
 from django.template.defaulttags import register
-from pdb import set_trace
+from django.db.models.query import QuerySet
 
 register = template.Library()
 
@@ -9,6 +9,10 @@ def config_filter(**kwargs):
 
     attribute = kwargs.get('attribute')
     attribute_value = kwargs.get('attribute_value')
-    queryset = kwargs.get('queryset').filter(**{attribute: attribute_value})
+    queryset = kwargs.get('queryset')
     
-    return queryset.first()
+    if type(queryset) == QuerySet:
+        queryset.filter(**{attribute: attribute_value})
+        return queryset.first()
+    else:
+        return queryset

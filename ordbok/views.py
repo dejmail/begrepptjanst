@@ -103,14 +103,14 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
         if order_by:
             queryset = queryset.order_by(*order_by)
     
-    if (search_parameter_length > 2) and (
+    elif (search_parameter_length > 2) and (
         dictionary_length > 0) and (dictionaries != ['']):
         queryset = queryset.filter(dictionaries__title__in=dictionaries)
     
-    if (search_parameter_length == 0) and (
+    elif (search_parameter_length == 0) and (
         dictionary_length > 0):
 
-        queryset = Begrepp.objects.all().exclude(
+        return Begrepp.objects.all().exclude(
                          status__in=[
                              'Publicera ej',
                              'Ej Påbörjad'
@@ -120,13 +120,28 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
                          dictionaries__title__in=dictionaries
                          )
     
-    if (search_parameter_length == 0) and (dictionary_length == 0):
+    elif (search_parameter_length == 0) and (dictionary_length == 0):
 
-        queryset = Begrepp.objects.none()
+        return Begrepp.objects.all().exclude(
+                         status__in=[
+                             'Publicera ej',
+                             'Ej Påbörjad'
+                             ],
+                     ).order_by('term')
 
-    if (search_parameter_length == 1 ) and (dictionary_length > 0):
+    elif (search_parameter_length == 1 ) and (dictionary_length > 0):
 
-        pass
+        return Begrepp.objects.all().exclude(
+                    status__in=[
+                        'Publicera ej',
+                        'Ej Påbörjad'
+                        ],
+                    id__in=child_terms
+                ).filter(
+                    Q(dictionaries__title__in=dictionaries) &
+                    Q(title__istartswith=search_parameter)
+                    )
+    
 
     return queryset
 
@@ -417,6 +432,7 @@ def assemble_data_for_concept_view(search_parameter: str,
     :return: HTML page formatted with the search results
     :rtype: str
     """
+
     if (len(search_parameter) == 1) and (search_parameter.isupper()):
         search_request = filter_terms_by_first_letter(search_parameter)
         highlight=False
@@ -508,13 +524,13 @@ def concept_view(request: HttpRequest) -> HttpResponse:
     dictionaries = request.GET.getlist('dictionaries')
     display_all = bool(request.GET.get('display_all'))
 
-    if dictionaries == ['[]']:
-        dictionaries = []
+    if (dictionaries == ['[]']) or (dictionaries == ['']):
+        selected_dictionaries = []
     elif dictionaries:
         selected_dictionaries = dictionaries[0].split(',')
     else:
         selected_dictionaries = []
-    
+
     if (request.GET.get('search_term') is not None):
         
         page_number = request.GET.get('page', 1)
@@ -527,7 +543,7 @@ def concept_view(request: HttpRequest) -> HttpResponse:
             mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
             return HttpResponse(html)
         else:
-            form = TermRequestForm()
+            form = TermRequestForm(initial={'begrepp': search_term})
             
             return render(request, 
                           'request-term.html', 
@@ -624,8 +640,8 @@ def request_new_term(request: HttpRequest) -> HttpResponse:
                     Q(beställare_email__icontains=form.clean_epost)
                                                     )
 
-                if existing_beställare and len(existing_beställare) == 1:
-                    ny_beställare = existing_beställare
+                if existing_beställare:
+                    ny_beställare = existing_beställare.first()
                 else:
                     ny_beställare = Bestallare()
                     ny_beställare.beställare_namn = form.clean_name()
