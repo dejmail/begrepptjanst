@@ -37,7 +37,7 @@ th {
 }
 
 .filter-button {
-  width: 165px; /* Adjust the width as needed */
+  width: 165px; 
   text-align: left;
   line-height: 1;
   font-size: smaller;
@@ -46,7 +46,7 @@ th {
 }
 
 .filter-button:hover {
-  width: 165px; /* Adjust the width as needed */
+  width: 165px; 
   text-align: left;
   line-height: 1;
   font-size: smaller;
@@ -64,7 +64,7 @@ th {
 }
 
 .filter-action {
-  width: 82px; /* Adjust the width as needed */
+  width: 82px; 
   text-align: center;
   line-height: 1;
   font-size: smaller;
@@ -74,13 +74,17 @@ th {
 }
 
 .filter-action:hover {
-  width: 82px; /* Adjust the width as needed */
+  width: 82px; 
   text-align: center;
   line-height: 1;
   font-size: smaller;
   color: black;
   background-color: #e7e1dfff;
   justify-content: center;
+}
+
+.wide-button {
+  width: 165px;
 }
 
 
@@ -287,8 +291,8 @@ mark {
   width: inherit;
   text-align: inherit;  
   font-size: inherit;
-  border-color: rgb(255, 126, 41);
-  background-color: rgb(255, 126, 41);
+  border-color: rgb(253, 138, 61);
+  background-color: rgb(253, 138, 61);
   color: black; 
 }
 
@@ -317,7 +321,7 @@ mark {
   text-align: inherit;
   
   font-size: inherit;
-  border-color: #f44336;
-  background-color: rgba(255, 0, 0, 0.8);
+  border-color: rgba(206, 10, 10, 0.8);
+  background-color: rgba(206, 10, 10, 0.8);
   color: white;
 }

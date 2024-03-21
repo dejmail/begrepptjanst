@@ -20,6 +20,9 @@
 
 {% load get_item %}
 {% load extract_attribute %}
+{% load config_filter %}
+
+{% config_filter queryset=config attribute="title" attribute_value="tag_view" as tag_view %}                    
 
 <div class="col-lg-8 col-md-8 mt-4" id="search-row-middle-column">
 
@@ -30,17 +33,26 @@
 
         <table class="table table-bordered top-buffer-10" id="definition_table">
           <colgroup>
+            {% if tag_view.is_active %}
+            <col class="col-3">
+            <col class="col-2">
+            <col class="col-5">
+            <col class="col-2">
+              
+            {% else %}
             <col class="col-4">
             <col class="col-2">
-            <col class="col-6">
-            <!-- <col class="col-2"> -->
+            <col class="col-6">              
+            {% endif %}
           </colgroup>
             <thead>
               <tr>
                 <th>Rekommenderad term</th>
                 <th>Synonym</th>
                 <th>Definition</th>
-                <!-- <th>Ordbok</th> -->
+                {% if tag_view.is_active %}
+                  <th>Tag</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody id="myTable">
@@ -76,7 +88,10 @@
                     {% endfor queryset %}
                 </td>
                 <td>{{term.definition}}</td>
-                <!-- <td>
+
+
+                {% if tag_view.is_active %}
+                  <td>
                     {% extract_attribute target_id=term.id queryset=queryset attribute="dictionaries" as dictionaries %}
                     {% if dictionaries %}
                         {% for dictionary in dictionaries.all %}
@@ -88,7 +103,11 @@
                         
                         {% endfor %}
                     {% endif %}
-                </td> -->
+                </td>
+
+                {% else %}
+
+                {% endif %}
                 </tr>
                 
               {% endfor page_obj %}

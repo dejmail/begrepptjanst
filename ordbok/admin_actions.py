@@ -3,7 +3,7 @@ from django.template import RequestContext, loader
 from django.urls import reverse
 from django.shortcuts import render
 from django.contrib.contenttypes.models import ContentType
-from .models import Bestallare
+from .models import ConfigurationOptions
 
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, message, send_mail
@@ -40,6 +40,13 @@ predetermined_column_order =  ['official_id',
                                'term_i_system',
                                'tidigare_definition_och_källa',
                                'id']
+
+def toggle_is_active(modeladmin, request, queryset):
+    for config_option in queryset:
+        config_option.is_active = not config_option.is_active
+        config_option.save()
+
+toggle_is_active.short_description = "Toggle is_active attribute"
 
 def get_synonym_set(obj):
     

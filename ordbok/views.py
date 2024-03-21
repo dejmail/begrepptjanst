@@ -58,8 +58,11 @@ färg_status_dict = {'Avråds' : 'table-danger',
 
 def get_search_results_from_db(search_parameter: str, dictionaries: list) -> QuerySet:
 
-    """ Check whether the :model:`ordbok.Begrepp` contains entries in the 
-    attributes specified.
+    """ Check whether the :model:`ordbok.Begrepp` contains entries related
+    to the search terms. Order by certain parameters.
+
+    Search terms are ordered by relevance
+    Terms with status Publicera Ej, Ej Påbörjad are excluded
     
     Arguments: 
     url_parameter {str} -- Search string sent by the user
@@ -71,7 +74,6 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
     child_terms = TermRelationship.objects.all().values_list('child_term_id')
     search_parameter_length = len(search_parameter)
     dictionary_length = len(dictionaries)
-
     if search_parameter_length > 2:
         queryset = Begrepp.objects.all().exclude(
                          status__in=['Publicera ej','Ej Påbörjad'],
@@ -81,9 +83,10 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
                      Q(term__icontains=search_parameter) |
                      Q(anmärkningar__icontains=search_parameter) |
                      Q(definition__icontains=search_parameter) |
-                     Q(utländsk_term__icontains=search_parameter)
+                     Q(utländsk_term__icontains=search_parameter) |
+                     Q(base_term__child_term__term__icontains=search_parameter)
                      ).distinct().prefetch_related()
-        
+
         queryset = queryset.annotate(
             position=Case(
                 When(Q(term__iexact=search_parameter), then=Value(1)),
@@ -94,7 +97,6 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
                 default=Value(6), output_field=IntegerField()
             )
         )
-
         
         order_by = []
         if queryset.filter(position=1).exists():
@@ -131,7 +133,7 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
 
     elif (search_parameter_length == 1 ) and (dictionary_length > 0):
 
-        return Begrepp.objects.all().exclude(
+        queryset = Begrepp.objects.all().exclude(
                     status__in=[
                         'Publicera ej',
                         'Ej Påbörjad'
@@ -141,11 +143,10 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
                     Q(dictionaries__title__in=dictionaries) &
                     Q(title__istartswith=search_parameter)
                     )
-    
 
     return queryset
 
-def filter_terms_by_first_letter(letter: str) -> QuerySet:
+def filter_terms_by_first_letter(letter: str, dictionaries: list) -> QuerySet:
 
     """ A filter of :model:`ordbok.Begrepp` which returns a queryset 
     where the terms start with a certain letter.
@@ -156,12 +157,19 @@ def filter_terms_by_first_letter(letter: str) -> QuerySet:
     :rtype: Queryset
         
     """ 
+    if len(dictionaries) > 0:
+        queryset = Begrepp.objects.filter(
+            ~Q(status="Publicera ej")
+            ).filter(
+                Q(term__istartswith=letter) &
+                Q(dictionaries__title__in=dictionaries)
+                ).distinct()
+    else:
+        queryset = Begrepp.objects.filter(
+            ~Q(status="Publicera ej") &
+            Q(term__istartswith=letter)
+            )
 
-    queryset = Begrepp.objects.filter(
-        ~Q(status="Publicera ej")
-        ).filter(
-        term__istartswith=letter
-        ).distinct()
 
     return queryset
 
@@ -434,7 +442,7 @@ def assemble_data_for_concept_view(search_parameter: str,
     """
 
     if (len(search_parameter) == 1) and (search_parameter.isupper()):
-        search_request = filter_terms_by_first_letter(search_parameter)
+        search_request = filter_terms_by_first_letter(search_parameter, selected_dictionaries)
         highlight=False
     else: 
         search_request = get_search_results_from_db(search_parameter, 
@@ -539,6 +547,7 @@ def concept_view(request: HttpRequest) -> HttpResponse:
             selected_dictionaries, 
             page_number,
             display_all)
+        
         if html is not None:
             mäta_sök_träff(sök_term=search_term,sök_data=return_list_dict, request=request)
             return HttpResponse(html)

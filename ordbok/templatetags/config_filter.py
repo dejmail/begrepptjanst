@@ -1,6 +1,7 @@
 from django import template
 from django.template.defaulttags import register
 from django.db.models.query import QuerySet
+from pdb import set_trace
 
 register = template.Library()
 
@@ -12,7 +13,8 @@ def config_filter(**kwargs):
     queryset = kwargs.get('queryset')
     
     if type(queryset) == QuerySet:
-        queryset.filter(**{attribute: attribute_value})
-        return queryset.first()
+        # Need to return a first otherwise it's a list of items and we only want one anyway
+        return queryset.filter(**{attribute: attribute_value}).first()
     else:
         return queryset
+    

@@ -71,7 +71,7 @@ class BegreppForm(forms.ModelForm):
         model = Begrepp
         exclude = ()
         help_texts = {'term': 'Rullistan visar termer redan i DB',
-                      'definition': 'Visas som HTML på framsidan',
+                      'definition': 'Kan visa HTML på framsidan',
                       'källa': 'Rullistan visar termer redan i DB'}
 
     def __init__(self, *args, config_option=None, **kwargs):

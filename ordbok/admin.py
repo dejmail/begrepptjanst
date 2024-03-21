@@ -73,20 +73,17 @@ class TermRelationshipInline(admin.StackedInline):
     fk_name = "base_term"
     extra = 1
 
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.form.base_fields['child_term'].queryset = Begrepp.objects.order_by('term')
+        return formset
+
 class BegreppExternalFilesInline(admin.StackedInline):
 
     model = BegreppExternalFiles
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
-
-# class ValideradAvDomänerInline(admin.StackedInline):
-    
-#     model = Doman
-#     extra = 1
-#     verbose_name = "Validerad av"
-#     verbose_name_plural = "Validerad av"
-#     exclude = ['domän_kontext']
 
 class BegreppSearchResultsAdminMixin(object):
 
@@ -108,7 +105,7 @@ class BegreppSearchResultsAdminMixin(object):
                 When(Q(term__iexact=search_term), then=Value(1)),
                 When(Q(term__istartswith=search_term), then=Value(2)),
                 When(Q(term__icontains=search_term), then=Value(3)), 
-                #When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
+                When(Q(base_term__child_term__term__icontains=search_term), then=Value(4)),                
                 When(Q(utländsk_term__icontains=search_term), then=Value(5)),
                 When(Q(definition__icontains=search_term), then=Value(6)), 
                 default=Value(6), output_field=IntegerField()
@@ -191,6 +188,8 @@ class BegreppAdmin(BegreppSearchResultsAdminMixin, SimpleHistoryAdmin):
 
     readonly_fields = ['senaste_ändring','datum_skapat','beställare__beställare_epost']
     history_list_display = ['changed_fields']
+
+    #ordering = ['term']
 
     def beställare__beställare_epost(self, obj):
         return obj.beställare.beställare_email
@@ -349,25 +348,6 @@ class DomanAdmin(admin.ModelAdmin):
     list_filter = ("domän_namn",)
     search_fields = ('begrepp__term',)
 
-# class SynonymAdmin(admin.ModelAdmin):
-
-#     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-#         if db_field.name == "begrepp":
-#             kwargs["queryset"] = Begrepp.objects.filter().order_by(Lower('term'))
-#         return super(SynonymAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
-
-#     ordering = ['begrepp__term']
-#     list_display = ('begrepp',
-#                     'synonym',
-#                     'synonym_status')
-
-#     list_select_related = (
-#         'begrepp',
-#     )
-#     list_filter = ("synonym_status",)
-#     search_fields = ("begrepp__term", "synonym")
-
-
 class ContextFilesInline(admin.StackedInline):
 
     model = BegreppExternalFiles
@@ -470,6 +450,7 @@ class ConfigurationAdmin(admin.ModelAdmin):
         js = (f'{settings.STATIC_URL}/javascript/image-preview.js',)
 
     list_display = ('title', 'screenshot_preview','is_active')
+    actions = [admin_actions.toggle_is_active]
 
     def screenshot_preview(self, obj):
         if obj.image:

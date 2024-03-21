@@ -56,10 +56,10 @@
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;">
 
                         {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" %}
-                            <div style="text-align: center; padding: 2px; border: 1px solid #ccc;">
-                                <a href="{% url 'concept' %}?search_term={{letter}}">{{ letter }}</a>
-                            </div>
-                        {% endfor %}
+                        <div style="text-align: center; padding: 2px; border: 1px solid #ccc;">
+                            <a href="{% url 'concept' %}?search_term={{ letter }}{% for dictionary in selected_dictionaries %}&dictionaries={{ dictionary }}{% endfor %}">{{ letter }}</a>
+                        </div>
+                    {% endfor %}
                     
                     </div>                    
 
@@ -79,7 +79,7 @@
 
         <div class="d-flex justify-content-center justify-content-sm-start">
             <form method="GET" action="{% url 'request_new_term' %}?q="+{{requested_term}},>
-                <button type="submit" class="btn text-center filter-button">Efterfråga begrepp</button>
+                <button type="submit" class="btn text-center filter-action wide-button">Efterfråga begrepp</button>
             </form>            
           </div>
     </div>
@@ -92,35 +92,37 @@ function updateHiddenField() {
     document.getElementById('selectedDictionariesField').value = selectedDictionaries.length > 0 ? selectedDictionaries.join(',') : '';
 }
 
-// // JavaScript to clear the selected filter buttons
-document.getElementById('clear-button').addEventListener('click', function() {
-    document.querySelectorAll('.filter-button').forEach(button => {
-        this.classList.toggle('active');
-        updateHiddenField();
+var filterButtonsExist = document.querySelectorAll('.filter-button').length > 0;
 
-    });
-});
+    // JavaScript to clear the selected filter buttons
+    if (filterButtonsExist) {
+        document.getElementById('clear-button').addEventListener('click', function() {
+            document.querySelectorAll('.filter-button').forEach(button => {
+                this.classList.toggle('active');
+                updateHiddenField();
+            });
+        });
 
-// JavaScript to toggle the 'active' class on filter buttons
-document.querySelectorAll('.filter-button').forEach(button => {
-    button.addEventListener('click', function() {
-        this.classList.toggle('active');
-        updateHiddenField();
-    });
-});
+        // JavaScript to toggle the 'active' class on filter buttons
+        document.querySelectorAll('.filter-button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                updateHiddenField();
+            });
+        });
 
-// Javascript to submit the filter search when the filter is clicked
-// without having to press submit again
+        // Javascript to submit the filter search when the filter is clicked
+        // without having to press submit again
+        document.querySelectorAll('.filter-button').forEach(function(button) {
+            button.addEventListener('click', function(event) {
+                // Prevent the default form submission behavior
+                event.preventDefault();
 
-document.querySelectorAll('.filter-button').forEach(function(button) {
-    button.addEventListener('click', function(event) {
-        // Prevent the default form submission behavior
-        event.preventDefault();
-
-        // Submit the form
-        document.getElementById('filter-form').submit();
-    });
-});
+                // Submit the form
+                document.getElementById('filter-form').submit();
+            });
+        });
+    }
 
 $(document).ready(function() {
     // Get the value of the 'search_term' parameter from the URL
