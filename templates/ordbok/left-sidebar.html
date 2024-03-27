@@ -6,17 +6,26 @@
         <form id="filter-form" action="{% url 'concept' %}" method="get" >
 
                 <div id="menu">
-                    <div class="d-flex align-items-center">
-                        <i id="search-icon" class="fas fa-search" aria-hidden="true"></i>
-                        <input id="user-input" class="form-control form-control-md mb-2" style="flex:3" type="text"
+                    <div class="position-relative">
+                        <i id="search-icon" class="fas fa-search position-absolute start-0" aria-hidden="true"></i>
+                        <input id="user-input" class="form-control form-control-md mb-2 ps-5" style="flex:3" type="text"
                             placeholder="{{ searched_for_term|default:'Sök' }}" name="search_term" aria-label="{{searched_for_term}}">
+                        <div id="loading-indicator" style="display: none; position: absolute; top: 50%; right: 10px; transform: translateY(-50%);">
+                            <!-- Add your loading spinner or progress meter here -->
+                            <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="d-flex justify-content-center">                
                         <button type="submit" class="btn btn-sm filter-action me-1 d-flex justify-content-center align-items-center">
                             <img src="{% static 'images/search.svg' %}" alt="Sök" width="16" height="16" class="icon-svg pr-1 align-middle me-1">
                             <span class="align-middle">Sök</span>
-                        </button>                
+                        </button>
+
+
+
                     </div>      
                     
                     <hr class="my-3 w-100" style="color: black;">
@@ -51,29 +60,22 @@
 
                     <hr class="my-3 w-100" style="color: black;">
                     {% endif %}
-
                     
                     <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;">
 
                         {% for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ" %}
                         <div style="text-align: center; padding: 2px; border: 1px solid #ccc;">
-                            <a href="{% url 'concept' %}?search_term={{ letter }}{% for dictionary in selected_dictionaries %}&dictionaries={{ dictionary }}{% endfor %}">{{ letter }}</a>
+                            <a href="{% url 'concept' %}?search_term={{ letter }}&dictionaries={{ selected_dictionaries|join:','}}">{{ letter }}</a>
+                            
+
                         </div>
                     {% endfor %}
                     
-                    </div>                    
-
-                    
-
-                  
-                </div>
-                    
-                
+                    </div>                  
+                </div>                
 
             <hr class="my-4 w-100" style="color: black;">
-            <input type="hidden" name="dictionaries" id="selectedDictionariesField" value="">
-
-     
+            <input type="hidden" name="dictionaries" id="selectedDictionariesField" value="">     
             
         </form>
 
@@ -87,49 +89,63 @@
 
 <script>
 
-function updateHiddenField() {
-    var selectedDictionaries = Array.from(document.querySelectorAll('.filter-button.active')).map(button => button.dataset.itemId);
-    document.getElementById('selectedDictionariesField').value = selectedDictionaries.length > 0 ? selectedDictionaries.join(',') : '';
-}
-
-var filterButtonsExist = document.querySelectorAll('.filter-button').length > 0;
-
-    // JavaScript to clear the selected filter buttons
-    if (filterButtonsExist) {
-        document.getElementById('clear-button').addEventListener('click', function() {
-            document.querySelectorAll('.filter-button').forEach(button => {
-                this.classList.toggle('active');
-                updateHiddenField();
-            });
-        });
-
-        // JavaScript to toggle the 'active' class on filter buttons
-        document.querySelectorAll('.filter-button').forEach(button => {
-            button.addEventListener('click', function() {
-                this.classList.toggle('active');
-                updateHiddenField();
-            });
-        });
-
-        // Javascript to submit the filter search when the filter is clicked
-        // without having to press submit again
-        document.querySelectorAll('.filter-button').forEach(function(button) {
-            button.addEventListener('click', function(event) {
-                // Prevent the default form submission behavior
-                event.preventDefault();
-
-                // Submit the form
-                document.getElementById('filter-form').submit();
-            });
-        });
+    // Function to update the hidden field with selected dictionaries
+    function updateHiddenField() {
+        var selectedDictionaries = Array.from(document.querySelectorAll('.filter-button.active')).map(button => button.dataset.itemId);
+        document.getElementById('selectedDictionariesField').value = selectedDictionaries.join(',');
     }
 
-$(document).ready(function() {
-    // Get the value of the 'search_term' parameter from the URL
-    const searchParam = new URLSearchParams(window.location.search).get('search_term');
+    // Function to toggle the 'active' class on filter buttons and submit the form
+    function toggleAndSubmit(event) {
+        event.preventDefault(); // Prevent default form submission behavior
+        this.classList.toggle('active'); // Toggle 'active' class
+        updateHiddenField(); // Update hidden field with selected dictionaries
+        showLoadingIndicator(); // Show loading indicator
+        document.getElementById('filter-form').submit(); // Submit the form
+    }
 
-    // Set the value of the search input field
-    $('#user-input').val(searchParam);
+    // Function to show the loading indicator
+    function showLoadingIndicator() {
+        document.getElementById('loading-indicator').style.display = 'block';
+    }
+
+    // Function to hide the loading indicator
+    function hideLoadingIndicator() {
+        document.getElementById('loading-indicator').style.display = 'none';
+    }
+
+// Function to clear selected filter buttons, search input field, and submit the form
+document.getElementById('clear-button').addEventListener('click', function() {
+    document.querySelectorAll('.filter-button.active').forEach(button => {
+        button.classList.remove('active');
+    });
+    updateHiddenField();
+    const userInput = document.getElementById('user-input').value; // Get search input field value
+    showLoadingIndicator(); // Show loading indicator
+    document.getElementById('filter-form').submit(); // Submit the form to show original search results
 });
+
+
+    // Attach event listeners to filter buttons
+    document.querySelectorAll('.filter-button').forEach(button => {
+        button.addEventListener('click', toggleAndSubmit);
+    });
+
+    // Function to set search input value from URL parameter
+    $(document).ready(function() {
+        const searchParam = new URLSearchParams(window.location.search).get('search_term');
+        $('#user-input').val(searchParam);
+        hideLoadingIndicator(); // Hide loading indicator when the page is ready
+    });
+
+    // Function to hide the loading indicator when the form submission is complete
+    document.getElementById('filter-form').addEventListener('submit', function() {
+        hideLoadingIndicator();
+    });
+
+    // Attach event listener to the submit button
+    document.getElementById('filter-form').addEventListener('submit', function() {
+        showLoadingIndicator(); // Show loading indicator when the form is submitted
+    });
 
 </script>

@@ -97,15 +97,15 @@ def get_search_results_from_db(search_parameter: str, dictionaries: list) -> Que
                 default=Value(6), output_field=IntegerField()
             )
         )
-        
-        order_by = []
-        if queryset.filter(position=1).exists():
-            order_by.append('position')
-
-        if order_by:
-            queryset = queryset.order_by(*order_by)
     
-    elif (search_parameter_length > 2) and (
+    order_by = []
+    if queryset.filter(position=1).exists():
+        order_by.append('position')
+
+    if order_by:
+        queryset = queryset.order_by(*order_by)
+    
+    if (search_parameter_length > 2) and (
         dictionary_length > 0) and (dictionaries != ['']):
         queryset = queryset.filter(dictionaries__title__in=dictionaries)
     
@@ -440,7 +440,6 @@ def assemble_data_for_concept_view(search_parameter: str,
     :return: HTML page formatted with the search results
     :rtype: str
     """
-
     if (len(search_parameter) == 1) and (search_parameter.isupper()):
         search_request = filter_terms_by_first_letter(search_parameter, selected_dictionaries)
         highlight=False
@@ -542,6 +541,7 @@ def concept_view(request: HttpRequest) -> HttpResponse:
     if (request.GET.get('search_term') is not None):
         
         page_number = request.GET.get('page', 1)
+        
         html, return_list_dict = assemble_data_for_concept_view(
             search_term, 
             selected_dictionaries, 
@@ -553,7 +553,6 @@ def concept_view(request: HttpRequest) -> HttpResponse:
             return HttpResponse(html)
         else:
             form = TermRequestForm(initial={'begrepp': search_term})
-            
             return render(request, 
                           'request-term.html', 
                           context = {'form' : form,
@@ -874,7 +873,6 @@ def merge_term_and_synonym(qs, syn_qs):
             qs[synonym.get('begrepp_id')]['synonyms'] = synonyms
         except (IndexError, TypeError) as e:
             print(e)
-            set_trace()
     return qs
 
 def all_accepted_terms(request: HttpRequest) -> JsonResponse:
