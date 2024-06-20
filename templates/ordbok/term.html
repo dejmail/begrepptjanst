@@ -4,47 +4,61 @@
 {% block header %}
 	{% block header_row1 %}
 		{{ block.super }}
-
 	{% endblock header_row1 %}
-
 {% endblock header %}
-{# start of the row containing the search bar #}
+
 {% block search_bar %}
 <div class="row mt-5" id="search_bar_row">
 	{% block search-left-column %}
 	<div class="col-3" id="search-left-column"></div>
 	{% endblock search-left-column %}
 	{% block search-middle-column %}
-		<div class="col-6" id="search-middle-column">
-			<div class="flex-row">
-				<form class="form-inline" onsubmit="return false;">
-				<i id="search-icon" class="fas fa-search" style="position:relative; left:-0.5%;" aria-hidden="true"></i>
-				<input id="user-input" class="form-control form-control-md" style="flex:2" type="text" placeholder="Sök" aria-label="Sök" onfocus="clear_mittenspanrow()">
-				</form>
-				<div class="row justify-content-between mt-2">
-					&nbsp;&nbsp;&nbsp;&nbsp;
-					{% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
-						<a href="{% url 'begrepp'  %}?q={{letter}}">{{letter}}</a>&nbsp;
-					{% endfor %}
-				</div>
-			</div>
-		</div>
-	{% endblock search-middle-column %}
+<div class="col-6" id="search-middle-column">
+    <div class="d-flex">
+        <form class="d-flex w-100" method="GET" action="{% url 'begrepp' %}" onsubmit="return false;">
+            <!-- Dropdown list first -->
+			<label for="category-select" class="sr-only">Category</label>
+            <select name="category" class="form-control form-control-md mr-4 custom-select" style="width: 150px;">
+                {% for category_value, category_label in categories %}
+                    <option value="{{ category_value }}" {% if forloop.first %}selected{% endif %}>
+                        {{ category_label }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <!-- Text input second -->
+            <div class="input-group w-100">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="search-icon"><i class="fas fa-search" aria-hidden="true"></i></span>
+                </div>
+                <input id="user-input" name="q" class="form-control form-control-md" type="text" placeholder="Sök" aria-label="Sök">
+            </div>
+        </form>
+    </div>
+    <div class="row justify-content-between mt-2">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
+            <a href="{% url 'begrepp' %}?q={{letter}}">{{letter}}</a>&nbsp;
+        {% endfor %}
+    </div>
+</div>
+{% endblock search-middle-column %}
+
+	
 	{% block search-right-column %}
 		<div class="col-3" id="search-right-column"></div>
 	{% endblock search-right-column %}
-	</div>
-
-
-	
+</div>
 {% endblock search_bar %}
+
+
 
 {% block replaceable-content %}
 
 <div id="om_olli">
 <div class="row mt-4" id="replaceable-content-row">
     <div class="col-4" id="replaceable-content-left-column"></div>
-    <div class="col-4" text-left" id="replaceable-content-middle-column">
+    <div class="col-4 text-left" id="replaceable-content-middle-column">
 
 	<div class="row" style="text-align: center;"> 
 		<h5 class="mx-auto" style="width: 100px;">Om OLLI</h5>

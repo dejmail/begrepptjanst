@@ -50,7 +50,7 @@ färg_status_dict = {'Avråds' : 'table-danger',
                     'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
-def retur_general_sök(url_parameter):
+def retur_general_sök(url_parameter, domain):
 
     """ Check whether the  :model:`ordbok.Begrepp` contains entries in the 
     attributes specified.
@@ -62,20 +62,21 @@ def retur_general_sök(url_parameter):
         
     """
 
-    queryset = Begrepp.objects.all().exclude(
-                         status='Publicera ej'
-                     ).filter(
-                     Q(id__contains=url_parameter) |
-                     Q(term__icontains=url_parameter) |
-                     Q(anmärkningar__icontains=url_parameter) |
-                     Q(definition__icontains=url_parameter) |
-                     Q(utländsk_term__icontains=url_parameter) |
-                     Q(synonym__synonym__icontains=url_parameter)
-                     ).distinct()
+    queryset = Begrepp.objects.exclude(status='Publicera ej').filter(
+        Q(id__contains=url_parameter) |
+        Q(term__icontains=url_parameter) |
+        Q(anmärkningar__icontains=url_parameter) |
+        Q(definition__icontains=url_parameter) |
+        Q(utländsk_term__icontains=url_parameter) |
+        Q(synonym__synonym__icontains=url_parameter)
+    ).distinct()
+    
+    if domain=='SjukhusApotek':
+        return queryset.filter(begrepp_fk__domän_namn='SjukhusApotek')
+    else: 
+        return queryset.exclude(begrepp_fk__domän_namn='SjukhusApotek')
 
-    return queryset
-
-def filter_by_first_letter(letter):
+def filter_by_first_letter(letter, domain):
 
     """ A filter of :model:`ordbok.Begrepp` which returns a queryset 
     where the terms start with a certain letter.
@@ -92,8 +93,11 @@ def filter_by_first_letter(letter):
         ).filter(
         term__istartswith=letter
         ).distinct()
-
-    return queryset
+    
+    if domain=='SjukhusApotek':
+        return queryset.filter(domain__name='SjukhusApotek')
+    else: 
+        return queryset.exclude(domain__name='SjukhusApotek')
 
 def return_single_term(id):
 
@@ -339,24 +343,26 @@ def mark_fields_as_safe_html(list_of_dict, fields):
     return list_of_dict
 
 def is_ajax(request: HttpRequest) -> HttpResponse:
-    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+    
+    return request.headers.get('X-Custom-Requested-With') == 'XMLHttpRequest'
 
-def hämta_data_till_begrepp_view(url_parameter):
+def hämta_data_till_begrepp_view(url_parameter, domain):
 
     """Main method that couples together all the submethods needed to
     produce the HTML needed for the initial search view.
 
     Arguments:
     url_parameter {str} -- The search string sent by the user search
+    domain {str} -- Subset of terms to filter the query with
     :return: HTML page formatted with the search results
     :rtype: str
     """
 
     if (len(url_parameter) == 1) and (url_parameter.isupper()):
-        search_request = filter_by_first_letter(letter=url_parameter)
+        search_request = filter_by_first_letter(letter=url_parameter, domain=domain)
         highlight=False
     else: 
-        search_request = retur_general_sök(url_parameter)
+        search_request = retur_general_sök(url_parameter, domain=domain)
         logger.info(f'len of search result = {len(search_request)}')
         highlight=True
 
@@ -381,14 +387,13 @@ def hämta_data_till_begrepp_view(url_parameter):
 
     return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
 
-    #set_trace()
-
     html = render_to_string(
         template_name="term-results-partial.html", 
         context={'begrepp': return_list_dict,
         'färg_status' : färg_status_dict,
         'queryset' : search_request,
-        'searched_for_term' : url_parameter
+        'searched_for_term' : url_parameter,
+        'chosen_domain' : domain
         }
         )    
     
@@ -404,17 +409,26 @@ def begrepp_view(request):
     :rtype: HttpResponse
     """
     url_parameter = request.GET.get("q")
+    domain = request.GET.get("category")
     
-    if is_ajax(request):
-        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter)
+    print(f"checking ajax status = {is_ajax(request)}")
 
+    if is_ajax(request):
+        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter, domain)
+    
         mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
         return JsonResponse(data=data_dict, safe=False)
 
     else:
+        print("Got nothing in the search results")
         begrepp = Begrepp.objects.none()
     
-    return render(request, "term.html", context={'begrepp' : begrepp})
+    return render(request, "term.html", context={'begrepp' : begrepp,
+                                                 'categories' : [('informatik', 'Informatik och Standardisering'), 
+                                                                 ('SjukhusApotek', 'Sjukhus apotek')
+                                                                ]
+                                                }
+                )
 
 def begrepp_förklaring_view(request):
 
