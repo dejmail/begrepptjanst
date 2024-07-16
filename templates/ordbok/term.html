@@ -38,10 +38,34 @@
     <div class="row justify-content-between mt-2">
         &nbsp;&nbsp;&nbsp;&nbsp;
         {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
-            <a href="{% url 'begrepp' %}?q={{letter}}">{{letter}}</a>&nbsp;
+            <a href="{% url 'begrepp' %}?category={{ categories.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>&nbsp;
         {% endfor %}
     </div>
 </div>
+
+<script>
+const baseUrl = '{% url "begrepp" %}';
+console.log(`baseUrl: ${baseUrl}`);
+
+const categorySelect = document.querySelector('select[name="category"]');
+console.log(`categorySelect: ${categorySelect}`);
+
+const links = document.querySelectorAll('a[data-letter]');
+console.log(`links: ${links}`);
+
+categorySelect.addEventListener('change', function() {
+    const category = this.value;
+    console.log(`category: ${category}`);
+    links.forEach(function(link) {
+        const letter = link.getAttribute('data-letter');
+        console.log(`letter: ${letter}`);
+        link.href = `${baseUrl}?category=${category}&q=${letter}`;
+        console.log(`link.href: ${link.href}`);
+    });
+
+});
+
+</script>
 {% endblock search-middle-column %}
 
 	
@@ -83,3 +107,4 @@
 {% endblock replaceable-content %}
 
 {# end of the row containing the search bar #}
+

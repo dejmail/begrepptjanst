@@ -95,9 +95,9 @@ def filter_by_first_letter(letter, domain):
         ).distinct()
     
     if domain=='SjukhusApotek':
-        return queryset.filter(domain__name='SjukhusApotek')
+        return queryset.filter(begrepp_fk__domän_namn='SjukhusApotek')
     else: 
-        return queryset.exclude(domain__name='SjukhusApotek')
+        return queryset.exclude(begrepp_fk__domän_namn='SjukhusApotek')
 
 def return_single_term(id):
 
@@ -410,9 +410,7 @@ def begrepp_view(request):
     """
     url_parameter = request.GET.get("q")
     domain = request.GET.get("category")
-    
-    print(f"checking ajax status = {is_ajax(request)}")
-
+  
     if is_ajax(request):
         data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter, domain)
     
@@ -424,7 +422,7 @@ def begrepp_view(request):
         begrepp = Begrepp.objects.none()
     
     return render(request, "term.html", context={'begrepp' : begrepp,
-                                                 'categories' : [('informatik', 'Informatik och Standardisering'), 
+                                                 'categories' : [('IoS', 'Informatik och Standardisering'), 
                                                                  ('SjukhusApotek', 'Sjukhus apotek')
                                                                 ]
                                                 }
@@ -454,14 +452,16 @@ def begrepp_förklaring_view(request):
                             'färg_status' : status_färg_dict}
         html = render_to_string(template_name="term_forklaring_ajax.html", context=template_context)
 
-    if is_ajax(request):        
-        return HttpResponse(html, content_type="html")
+        if is_ajax(request):        
+            return JsonResponse(
+                html, safe=False
+                )
 
-    elif request.method == 'GET':
-        if url_parameter is None:
-            return render(request, "term.html", context={})
-        else:
-            return render(request, "term_forklaring.html", context=template_context)
+        elif request.method == 'GET':
+            if url_parameter is None:
+                return render(request, "term.html", context={})
+            else:
+                return render(request, "term_forklaring.html", context=template_context)
 
     return render(request, "base.html", context={})
 

@@ -129,7 +129,8 @@ class BegreppAdmin(SimpleHistoryAdmin):
                     'synonym',
                     'definition',
                     'status_button',
-                    'senaste_ändring',)
+                    'senaste_ändring',
+                    'domäner')
 
     list_filter = (StatusListFilter,
                    ('senaste_ändring', DateRangeFilter),
@@ -241,11 +242,11 @@ class BegreppAdmin(SimpleHistoryAdmin):
 
     synonym.admin_order_field = 'synonym'
 
-    def get_domäner(self, obj):
+    def domäner(self, obj):
         domäner = Doman.objects.filter(begrepp_id=obj.pk)
         return list(domäner)
 
-    get_domäner.short_description = 'Validerad av'
+    domäner.short_description = 'Domän'
     
     def status_button(self, obj):
 

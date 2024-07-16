@@ -20,7 +20,14 @@ body {
   width : auto;
 }
 
+.custom-select {
+  font-size: 0.875rem; /* Smaller font size */
+  /* Padding around the text in the select box */
+}
 
+.custom-select option {
+  padding: 5px; /* Padding around the text in the options (browser support may vary) */
+}
 
 
 @font-face {

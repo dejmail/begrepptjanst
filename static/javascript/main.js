@@ -5,8 +5,8 @@ const begrepp_div = $('#mitten-span-middle-column');
 
 console.log('loading the main.js');
 function endpoint_check() {
-
-    if (document.domain == "127.0.0.1") { 
+    
+    if (location.hostname == "127.0.0.1") { 
 		const endpoint = '/';
 		return endpoint
     } else {
@@ -18,7 +18,7 @@ function endpoint_check() {
 
 const endpoint = endpoint_check();
 
-const delay_by_in_ms = 2000
+const delay_by_in_ms = 1000
 let scheduled_function = false
 
 function toggle_element(element_id) {
@@ -28,20 +28,21 @@ function toggle_element(element_id) {
 	}
 }
 
-const ajax_call = function (endpoint, request_parameters) {
+/**
+ * @param {URL} endpoint - The URL to make the AJAX call to
+ * @param {object} requestParameters - URL parameters to be included
+ */
+
+const ajax_call = function (endpoint, requestParameters) {
+
     console.log('inside ajax_call function');
-    console.log('request_parameters:', request_parameters);
-    const url = new URL(document.location.protocol +"//"+ document.location.host + endpoint);
-    console.log('after new URL');
-    url.search = new URLSearchParams(request_parameters).toString();
-    
-    const complete_url = url + url.search;
-    console.log('after URLSearchParams');
+    console.log('requestParameters:', requestParameters);   
+    console.log('endpoint.href', endpoint.href);
     
     let customHeaders = new Headers({
         "X-CUSTOM-REQUESTED-WITH": "XMLHttpRequest",
     });
-    fetch(url, {
+    fetch(endpoint, {
         method: 'GET',
         credentials: 'same-origin',
         headers: customHeaders
@@ -56,8 +57,9 @@ const ajax_call = function (endpoint, request_parameters) {
     .then(responseData => {
         console.log("document.URL", document.URL);
         console.log("endpoint", endpoint);
-        changeBrowserURL(responseData, complete_url);
-
+        changeBrowserURL(responseData, endpoint);
+        toggle_element("replaceable-content-middle-column");
+        toggle_element("mitten-span-middle-column");
         // fade out the begrepp_div, then:
         begrepp_div.fadeTo('fast', 0).promise().then(() => {
             // replace the HTML contents
@@ -85,12 +87,17 @@ $("#user-input").keyup(function (event) {
     $("#mitten-span-middle-column").empty();
     toggle_element("replaceable-content-middle-column");
 
-    const request_parameters = {
-        category: $('[name="category"]').val(), // Get the selected value from dropdown
-        q: $(this).val() // value of user_input: the HTML element with ID user-input
+    const baseUrl = window.location.origin;
+    const requestParameters = {
+        category: $('[name="category"]').val(),
+        q: $(this).val() 
     }
     
-    if (request_parameters.q.length > 1) {
+    const url = new URL(baseUrl);
+    const params = new URLSearchParams(requestParameters);
+    url.search = params.toString();
+        
+    if (requestParameters.q.length > 1) {
         // Start animating the search icon with the CSS class
         search_icon.addClass('blink');
 
@@ -105,13 +112,11 @@ $("#user-input").keyup(function (event) {
         // setTimeout returns the ID of the function to be executed
         scheduled_function = setTimeout(() => {
             console.log('executing ajax_call');
-            ajax_call(endpoint, request_parameters);
+            ajax_call(url, requestParameters);
         }, delay_by_in_ms);
     }
     
 });
-
-
 
 document.body.addEventListener("click", function(e) {
 	// e.target was the clicked element
@@ -121,29 +126,18 @@ document.body.addEventListener("click", function(e) {
     console.log("sending", e.target.id, "ID to URL", e.target.href);
     // Attach event listeners for browser history and hash changes.
     
+    const url = new URL(e.target.href);
+    const requestParameters = {
+        category: url.searchParams.get('category'), 
+        q: url.searchParams.get('q') 
+    }
     //changeBrowserURL(null, e.target.href);            
 	// Get page and replace current content.
-	getPage(e.target.href);
+	ajax_call(url, requestParameters);
 	popStateHandler();
 	}
 });
 
-function getPage(link_url) {
-	
-	console.log('entering ajax getPage function');
-	$.ajax({
-		type: "GET",
-		url: link_url,
-	}).done(function(data, textStatus, jqXHR) {
-		$('#replaceable-content-middle-column').empty();
-		$("#mitten-span-middle-column").empty();
-		begrepp_div.html(data);
-		
-		changeBrowserURL(data, this.url);
-	}).fail(function(data,textStatus,jqXHR) {
-		  $('#mitten-span-middle-column').html("Fel - Hoppsan! Jag får ingen definition från servern...finns ett problem..prova trycka Ctrl-Shift-R");
-		});
-	  };
 
 /*
 * Function to modify URL within browser address bar.
