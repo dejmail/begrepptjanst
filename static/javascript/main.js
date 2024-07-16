@@ -87,7 +87,7 @@ $("#user-input").keyup(function (event) {
     $("#mitten-span-middle-column").empty();
     toggle_element("replaceable-content-middle-column");
 
-    const baseUrl = window.location.origin;
+    const baseUrl = window.location.href;
     const requestParameters = {
         category: $('[name="category"]').val(),
         q: $(this).val() 
