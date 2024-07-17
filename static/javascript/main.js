@@ -1,6 +1,7 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
 const begrepp_div = $('#mitten-span-middle-column');
+const rootUrl =  window.location.href;
 
 
 console.log('loading the main.js');
@@ -15,6 +16,7 @@ function endpoint_check() {
 	} 
 
 }
+
 
 const endpoint = endpoint_check();
 
@@ -87,13 +89,12 @@ $("#user-input").keyup(function (event) {
     $("#mitten-span-middle-column").empty();
     toggle_element("replaceable-content-middle-column");
 
-    const baseUrl = window.location.href;
     const requestParameters = {
         category: $('[name="category"]').val(),
         q: $(this).val() 
     }
     
-    const url = new URL(baseUrl);
+    const url = new URL(rootUrl);
     const params = new URLSearchParams(requestParameters);
     url.search = params.toString();
         
