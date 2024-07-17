@@ -16,6 +16,8 @@ if socket.gethostname() == 'suijin.oderland.com':
     dir_path = os.path.dirname(os.path.realpath(__file__))
     if 'dev' in dir_path:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.dev')
+    if 'test' in dir_path:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.test')
     else:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
 else:
