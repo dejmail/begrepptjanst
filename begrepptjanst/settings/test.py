@@ -16,7 +16,7 @@ logger.debug(f'DB login credentials - {DB_NAME}, {DB_USER}, {DB_PASSWORD}')
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
+        'ENGINE': 'mysql.connector.django', 
         'NAME': DB_NAME,
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,
@@ -43,7 +43,7 @@ STATICFILES_DIRS = ['/home/vgrinfor/begreppstjanst-test/static',]
 STATIC_URL = '/begreppstjanst-test/static/'
 
 # media files 
-MEDIA_URL = '/begreppstjanst-dev/media/'
+MEDIA_URL = '/begreppstjanst-test/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst-test/media'
 EMAIL_HOST = 'mail.vgrinformatik.se'
 EMAIL_PORT = 587

@@ -16,7 +16,7 @@ logger.debug(f'DB login credentials - {DB_NAME}, {DB_USER}, {DB_PASSWORD}')
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
+        'ENGINE': 'mysql.connector.django', 
         'NAME': DB_NAME,
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,
