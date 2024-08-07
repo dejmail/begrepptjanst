@@ -1,7 +1,7 @@
 {% block preamble %}
 <!doctype html>
 {% load static %}
-<html lang="en">
+<html lang="sv">
 <head>
   <!-- Required meta tags -->
   <title style="font-family: frutiger;">VGR Informatik och Standardisering - OLLI Begreppstjänst</title>
@@ -38,7 +38,7 @@
       <div class="row align-items-center top-buffer-15" style="position: relative; vertical-align: middle; text-align: center;">
         {% block header_row1_column_left %}
             <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-              <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.SVG'%}">
+              <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.SVG'%}" alt="Västra Götalands Region logo">
             </div>
         {% endblock header_row1_column_left %}
         {% block header_row1_column_center %}
@@ -46,14 +46,14 @@
               
               <div class="row" id="header_row"> 
                 <div class="col-2 mt-3" id="header_left_column"></div>
-                <div class="col-8 text-center mt-3" id="header_center_column">
+                <header class="col-8 text-center mt-3" id="header_center_column">
                   <h3>OLLI Begreppstjänst (beta)</h3>
-                </div>
+                </header>
                 <div class="col-2" id="header_left_column"></div>
               </div>
               <div class="row" id="thermos_flask_icon_row">
                 <div class="text-center col-12 top-buffer-10">
-                  <img src="{% static '/images/termos.png' %}">
+                  <img src="{% static '/images/termos.png' %}" alt="OLLI logo av en termos dvs term + mos">
                 </div>
               </div>
             </div>
@@ -126,9 +126,9 @@
   {% endblock replaceable-content %}  
   {% block mitten-span %}
   <div class="row mt-1" id="mitten-span-row">
-    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="mitten-span-left-column"></div>
-    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="mitten-span-middle-column"></div>
-    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="mitten-span-right-column">
+    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-left-column"></div>
+    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column"></div>
+    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-right-column">
       {% include 'farg-panel.html' %}
     </div>
   </div>
@@ -156,7 +156,7 @@ function no_search_result(requested_term)
     url: "{% url 'no_search_result' %}?q="+requested_term,
     success: function(data) {
       var display_html = data.html_from_view;
-      $('#mitten-span-middle-column').html(data);
+      $('#display-middle-column').html(data);
       changeBrowserURL(data, this.url);
     popStateHandler();
     
@@ -172,12 +172,12 @@ function populate_request_form(requested_term)
         url: "{% url 'hantera_term_request' %}?q="+requested_term,
         success: function(data) {
             var display_html = data.html_from_view;
-            $('#mitten-span-middle-column').html(data);
+            $('#display-middle-column').html(data);
             changeBrowserURL(data, this.url);
             popStateHandler();
         },
         error: function() {
-        $('#mitten-span-middle-column').html("There has been an error loading this form");
+        $('#display-middle-column').html("There has been an error loading this form");
         },
         });
     };
@@ -185,7 +185,7 @@ function populate_request_form(requested_term)
 function scrollToHelp()
 {
   toggle_element("replaceable-content-middle-column");
-  $('#mitten-span-middle-column').empty(); 
+  $('#display-middle-column').empty(); 
   var x = document.getElementById("helpInfo");
   if (x.style.display === "none") {
     x.style.display = "block";
