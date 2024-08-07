@@ -173,11 +173,11 @@ class BegreppAdmin(SimpleHistoryAdmin):
     def has_link(self, obj):
         if (obj.link != None) and (obj.link != ''):
             return format_html(
-            f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-yes.svg" alt="True">'
+            f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-yes.svg" alt="Har länk ikon">'
             )
         else:
             return format_html(
-                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="False">'
+                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="Har ingen länk ikon">'
                 )
 
     has_link.short_description = "URL Länk"

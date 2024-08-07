@@ -15,57 +15,38 @@
 	{% block search-middle-column %}
 <div class="col-6" id="search-middle-column">
     <div class="d-flex">
-        <form class="d-flex w-100" method="GET" action="{% url 'begrepp' %}" onsubmit="return false;">
-            <!-- Dropdown list first -->
-			<label for="category-select" class="sr-only">Category</label>
-            <select name="category" class="form-control form-control-md mr-4 custom-select" style="width: 150px;">
-                {% for category_value, category_label in categories %}
-                    <option value="{{ category_value }}" {% if forloop.first %}selected{% endif %}>
-                        {{ category_label }}
-                    </option>
-                {% endfor %}
+        <form class="d-flex w-100" method="GET" action="{% url 'begrepp' %}" onsubmit="return false;" role="search">
+            <label for="category-select" class="sr-only">Välj domän att söka i</label>
+            <select id="category-select" name="category" class="form-control form-control-md mr-4 custom-select" style="width: 150px;">
+              {% for category_value, category_label in categories %}
+                <option value="{{ category_value }}" {% if forloop.first %}selected{% endif %}>
+                  {{ category_label }}
+                </option>
+              {% endfor %}
             </select>
-
-            <!-- Text input second -->
+          
             <div class="input-group w-100">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="search-icon"><i class="fas fa-search" aria-hidden="true"></i></span>
-                </div>
-                <input id="user-input" name="q" class="form-control form-control-md" type="text" placeholder="Sök" aria-label="Sök">
+              <label for="user-input" class="sr-only">Sök</label>
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="search-icon"><i class="fas fa-search" aria-label="Sökikon"></i></span>
+              </div>
+              <input id="user-input" name="q" class="form-control form-control-md" type="text" placeholder="Sök" aria-label="Sök fält för önskad term">
             </div>
-        </form>
+          </form>
     </div>
-    <div class="row justify-content-between mt-2">
-        &nbsp;&nbsp;&nbsp;&nbsp;
-        {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
-            <a href="{% url 'begrepp' %}?category={{ categories.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>&nbsp;
-        {% endfor %}
-    </div>
+    <nav aria-label="Alfabetisk navigation som väljer alla ord som börjar med en bokstav">
+        <ul class="list-inline d-flex justify-content-between flex-wrap mt-2">
+          {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
+            <li class="list-inline-item">
+              <a href="{% url 'begrepp' %}?category={{ categories.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
 </div>
 
-<script>
-const baseUrl = '{% url "begrepp" %}';
-console.log(`baseUrl: ${baseUrl}`);
+<script src="{% static 'javascript/captureInput.js' %}"></script>
 
-const categorySelect = document.querySelector('select[name="category"]');
-console.log(`categorySelect: ${categorySelect}`);
-
-const links = document.querySelectorAll('a[data-letter]');
-console.log(`links: ${links}`);
-
-categorySelect.addEventListener('change', function() {
-    const category = this.value;
-    console.log(`category: ${category}`);
-    links.forEach(function(link) {
-        const letter = link.getAttribute('data-letter');
-        console.log(`letter: ${letter}`);
-        link.href = `${baseUrl}?category=${category}&q=${letter}`;
-        console.log(`link.href: ${link.href}`);
-    });
-
-});
-
-</script>
 {% endblock search-middle-column %}
 
 	
@@ -79,22 +60,22 @@ categorySelect.addEventListener('change', function() {
 
 {% block replaceable-content %}
 
-<div id="om_olli">
-<div class="row mt-4" id="replaceable-content-row">
+<section id="om_olli">
+<div class="row mt-2" id="replaceable-content-row">
     <div class="col-4" id="replaceable-content-left-column"></div>
     <div class="col-4 text-left" id="replaceable-content-middle-column">
 
 	<div class="row" style="text-align: center;"> 
 		<h5 class="mx-auto" style="width: 100px;">Om OLLI</h5>
-		  <div class="card" style="background-color:#aed9f0;">
+		  <div class="card mt-3" style="background-color:#aed9f0;">
 		  <div class="card-body text-justify" style="font-family: Calibri;">
-			OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och 
+			<p>OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och 
 			sjukvård. Tjänsten innehåller terminologi som är viktig för verksamheter inom hälso- 
 			och sjukvård. Tanken är att OLLI ska användas som en uppslagsbok och vara ett stöd 
-			för enhetligt språk inom VGR. 
+			för enhetligt språk inom VGR.</p>
 
-			För kliniska termer hänvisas till Snomed CT. <a href="https://insidan.vgregion.se/stod-och-tjanster/amnen-a-o/informatik/snomed-ct/" target="_bkank">Läs mer om Snomed CT</a>(Endast åtkomligt 
-			för anställda i VGR) 
+            <p>För kliniska termer hänvisas till Snomed CT. <a href="https://insidan.vgregion.se/stod-och-tjanster/amnen-a-o/informatik/snomed-ct/" target="_blank" rel="noopener">Läs mer om Snomed CT</a>(Endast åtkomligt 
+			för anställda i VGR)</p>
 		  </div>
 		</div>
 	  </div>
@@ -102,7 +83,7 @@ categorySelect.addEventListener('change', function() {
 	</div>
     <div class="col-4" id="replaceable-content-right-column"></div>
   </div>
-</div>
+</section>
 
 {% endblock replaceable-content %}
 

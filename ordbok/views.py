@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 
 re_pattern = re.compile(r'\s+')
 
-färg_status_dict = {'Avråds' : 'table-danger',
+COLOUR_STATUS_DICT = {'Avråds' : 'table-danger',
                     'Avställd' : 'table-danger',
                     'Beslutad': 'table-success',
                     'Pågår': 'table-warning',
@@ -194,7 +194,7 @@ def concatentate_all_dictionary_values_to_single_string(dictionary : dict, key :
 
     return ' ½ '.join([i.get(key) for i in dictionary])
 
-def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, key='definition'):
+def creating_tooltip_hover_with_search_result(search_results, all_terms_and_definitions, key='definition'):
 
     """ Manipulate an incoming dictionary that has a 'term' and 'definition'
      key:value so that when a definition has references to other term/s
@@ -202,32 +202,42 @@ def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, 
      connected show the definition on the UI.
      
      Arguments: 
-    begrepp_dict_list {dict} -- A list of  key:values of the search results
-    term_def_dict {} -- A list of all the term:definitions within :model:`ordbok.Begrepp`
+    search_results {dict} -- A list of key:values of the search results
+    all_terms_and_definitions [{}] -- A list of dictionaries of all term:definitions within :model:`ordbok.Begrepp`
 
-    :return:
+    :return: A dictionary where the 'key' has been altered
     :rtype:
     """
     
     # create dictionary of term:definition where the value contains the term definition and tooltip HTML
-    term_def_dict_uncleaned = {
-        record.get('term'):f'''<div class="definitiontooltip">{record.get('term').strip()}<div class="definitiontooltiptext">{record.get(key)}</div></div>&nbsp;''' for record in term_def_dict
-        }
+    # search_results_uncleaned = {
+    #     record.get('term'):f'''<div class="definitiontooltip">{record.get('term').strip()}<div class="definitiontooltiptext">{record.get(key)}</div></div>&nbsp;''' for record in term_def_dict
+    #     }
+    
+    search_results_uncleaned = {
+        record.get('term'):f'''
+        <span class="term" 
+              tabindex="0" 
+              role="button" 
+              aria-describedby="def-{record.get('term').strip()}">{record.get('term').strip()}</span>
+        <div id="def-{record.get('term').strip()}" class="tooltiptext" hidden>{record.get('definition')}</div>
 
-    term_def_dict = clean_dict_of_extra_characters(term_def_dict_uncleaned)
+        ''' for record in all_terms_and_definitions}
+    
+    all_terms_and_definitions = clean_dict_of_extra_characters(search_results_uncleaned)
 
     # Would be good to be able to send a list of plurals that we could 
     # group togther in the pattern creation, but as Xlator is a dict
     # class, I'm not sure how to accomplish that.
 
-    translator = Xlator(term_def_dict)
+    translator = Xlator(all_terms_and_definitions)
     
     # loop through each definition in the begrepp_dict_list and make one string with all the
     # definitions separated by the ' ½ ' string. Without the spaces, certain instances of words
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all 
     # the occurrences of begrepp in definitions with a hover tooltip text.
 
-    joined_definitions = concatentate_all_dictionary_values_to_single_string(begrepp_dict_list, key)
+    joined_definitions = concatentate_all_dictionary_values_to_single_string(search_results, key)
     joined_definitions_minus_nbsp = nbsp2space(joined_definitions)
     gt_brackets, lt_brackets = find_all_angular_brackets(joined_definitions_minus_nbsp)
     
@@ -239,13 +249,13 @@ def creating_tooltip_hover_with_search_result(begrepp_dict_list, term_def_dict, 
     # resplit the now altered string back into a list
     resplit_altered_strings = altered_strings.split(' ½ ')
 
-    for index, begrepp in enumerate(begrepp_dict_list):
+    for index, begrepp in enumerate(search_results):
         try:
-           begrepp_dict_list[index][key] = resplit_altered_strings[index]
+           search_results[index][key] = resplit_altered_strings[index]
         except (re.error, KeyError) as e:
            print(e)
 
-    return begrepp_dict_list
+    return search_results
 
 def find_all_angular_brackets(bracket_string):
 
@@ -359,45 +369,45 @@ def hämta_data_till_begrepp_view(url_parameter, domain):
     """
 
     if (len(url_parameter) == 1) and (url_parameter.isupper()):
-        search_request = filter_by_first_letter(letter=url_parameter, domain=domain)
+        search_results = filter_by_first_letter(letter=url_parameter, domain=domain)
         highlight=False
     else: 
-        search_request = retur_general_sök(url_parameter, domain=domain)
-        logger.info(f'len of search result = {len(search_request)}')
+        search_results = retur_general_sök(url_parameter, domain=domain)
+        logger.info(f'len of search result = {len(search_results)}')
         highlight=True
 
     # this is all the terms and definitions from the DB
-    all_terms_and_definitions_dict = return_list_of_term_and_definition()
+    all_terms_and_definitions = return_list_of_term_and_definition()
     
-    return_list_dict = creating_tooltip_hover_with_search_result(
-        begrepp_dict_list = search_request.values(),
-        term_def_dict = all_terms_and_definitions_dict
+    stylised_results = creating_tooltip_hover_with_search_result(
+        search_results = search_results.values(),
+        all_terms_and_definitions = all_terms_and_definitions
         )
 
     if highlight==True:
-        return_list_dict = highlight_search_term_i_definition(
+        stylised_results = highlight_search_term_i_definition(
             url_parameter, 
-            return_list_dict
+            stylised_results
             )
     
-    return_list_dict = sort_results_according_to_search_term(
-        return_list_dict, 
+    stylised_results = sort_results_according_to_search_term(
+        stylised_results, 
         url_parameter
         )
 
-    return_list_dict = mark_fields_as_safe_html(return_list_dict, ['definition',])
+    stylised_results = mark_fields_as_safe_html(stylised_results, ['definition',])
 
     html = render_to_string(
         template_name="term-results-partial.html", 
-        context={'begrepp': return_list_dict,
-        'färg_status' : färg_status_dict,
-        'queryset' : search_request,
+        context={'stylised_results': stylised_results,
+        'colour_status' : COLOUR_STATUS_DICT,
+        'search_results' : search_results,
         'searched_for_term' : url_parameter,
         'chosen_domain' : domain
         }
         )    
     
-    return html, return_list_dict
+    return html, stylised_results
 
 def begrepp_view(request):
 
@@ -412,9 +422,9 @@ def begrepp_view(request):
     domain = request.GET.get("category")
   
     if is_ajax(request):
-        data_dict, return_list_dict = hämta_data_till_begrepp_view(url_parameter, domain)
+        data_dict, stylised_results = hämta_data_till_begrepp_view(url_parameter, domain)
     
-        mäta_sök_träff(sök_term=url_parameter,sök_data=return_list_dict, request=request)
+        mäta_sök_träff(sök_term=url_parameter,sök_data=stylised_results, request=request)
         return JsonResponse(data=data_dict, safe=False)
 
     else:
@@ -445,7 +455,7 @@ def begrepp_förklaring_view(request):
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
 
-        status_färg_dict = {'begrepp' : färg_status_dict.get(single_term.status),
+        status_färg_dict = {'begrepp' : COLOUR_STATUS_DICT.get(single_term.status),
                             'synonym' : [[i.synonym,i.synonym_status] for i in single_term.synonym_set.all()]}
         
         template_context = {'begrepp_full': single_term,

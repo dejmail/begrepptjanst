@@ -1,6 +1,6 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
-const begrepp_div = $('#mitten-span-middle-column');
+const begrepp_div = $('#display-middle-column');
 const rootUrl =  window.location.href;
 
 
@@ -61,7 +61,7 @@ const ajax_call = function (endpoint, requestParameters) {
         console.log("endpoint", endpoint);
         changeBrowserURL(responseData, endpoint);
         toggle_element("replaceable-content-middle-column");
-        toggle_element("mitten-span-middle-column");
+        toggle_element("display-middle-column");
         // fade out the begrepp_div, then:
         begrepp_div.fadeTo('fast', 0).promise().then(() => {
             // replace the HTML contents
@@ -86,7 +86,7 @@ $("#user-input").keyup(function (event) {
 
     console.log('user entering search parameters');
     console.log('current value:', $(this).val());
-    $("#mitten-span-middle-column").empty();
+    $("#display-middle-column").empty();
     toggle_element("replaceable-content-middle-column");
 
     const requestParameters = {
@@ -139,7 +139,6 @@ document.body.addEventListener("click", function(e) {
 	}
 });
 
-
 /*
 * Function to modify URL within browser address bar.
 */
@@ -168,8 +167,7 @@ function popStateHandler() {
 	  window.addEventListener("popstate", function(e) {
 		// Get the URL from the address bar and fetch the page.
 		console.log('popstateHandler eventlistener fired, next stop getPage function')
-		//debugger;
-		$('#mitten-span-middle-column').html(history.state);
+		$('#display-middle-column').html(history.state);
 		//getPage(document.URL);
 	  });
 }

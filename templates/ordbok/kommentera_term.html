@@ -45,10 +45,10 @@
 		}).done(function(response){ 
 			$('body').removeClass('modal-open');
 			$('.modal-backdrop').remove();
-			$("#mitten-span-middle-column").html(response);
+			$("#display-middle-column").html(response);
             history.pushState(post_url, '', post_url)
             setTimeout(function(){
-            $("#mitten-span-middle-column").html('<div id="mitten-span-middle-column"></div>')}, 2500);
+            $("#display-middle-column").html('<div id="display-middle-column"></div>')}, 2500);
             document.getElementById('user-input').value = '';
             history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', '/');
 		});
