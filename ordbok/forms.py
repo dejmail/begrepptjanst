@@ -1,5 +1,5 @@
 from django import forms
-from .models import Doman, Begrepp, BegreppExternalFiles
+from .models import Dictionary, Begrepp, BegreppExternalFiles
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
@@ -47,7 +47,26 @@ class MultipleFileField(forms.FileField):
             result = single_file_clean(data, initial)
         return result
 
+class GroupFilteredModelForm(forms.ModelForm):
+    """ A form that filters choices based on the logged-in user's group membership. """
 
+    def __init__(self, *args, **kwargs):
+        # Pass the request user to the form
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if self.user and not self.user.is_superuser:
+            # Filter queryset for fields that need group-based filtering
+            self.filter_queryset()
+
+    def filter_queryset(self):
+        user = self.user
+        if user and not user.is_superuser:
+            set_trace()
+            user_groups = user.groups.all()
+            domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
+            begrepp_ids = Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).values_list('id', flat=True)
+            self.fields['begrepp'].queryset = Begrepp.objects.filter(id__in=begrepp_ids)
 
 class TermRequestForm(forms.Form):
 
@@ -138,7 +157,7 @@ class ExternalFilesForm(forms.ModelForm):
     support_file = forms.FileField()
 
 
-class BegreppForm(forms.ModelForm):
+class BegreppForm(GroupFilteredModelForm):
     
     class Meta:
         model = Begrepp

@@ -3,6 +3,8 @@ from django.db import models
 from pdb import set_trace
 from django.conf import settings
 from simple_history.models import HistoricalRecords
+from django.contrib.auth.models import User, Group
+
 
 DEFAULT_STATUS = "Ej Påbörjad"
 
@@ -34,19 +36,19 @@ class Begrepp(models.Model):
     begrepp_kontext = models.TextField(default='Inte definierad')
     senaste_ändring = models.DateTimeField(auto_now=True, verbose_name='Senaste ändring')
     datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
-    beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE)
+    beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE, related_name="begrepp")
     definition = models.TextField(blank=True)
     tidigare_definition_och_källa = models.TextField(blank=True, null=True)
-    externt_id = models.CharField(max_length=255, null=True, verbose_name="Kod")
-    källa = models.CharField(max_length=255, null=True)
-    annan_ordlista = models.CharField(max_length=255, null=True)
+    externt_id = models.CharField(max_length=255, null=True, verbose_name="Kod", blank=True)
+    källa = models.CharField(max_length=255, null=True, blank=True)
+    annan_ordlista = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255, default='Angavs ej')
     plural = models.CharField(max_length=10, null=True)
     utländsk_term = models.CharField(max_length=255, blank=True)
-    id_vgr = models.CharField(max_length=255, null=True)
-    anmärkningar = models.TextField(null=True)
-    kommentar_handläggning = models.TextField(null=True)
+    id_vgr = models.CharField(max_length=255, null=True, blank=True)
+    anmärkningar = models.TextField(null=True, blank=True)
+    kommentar_handläggning = models.TextField(null=True, blank=True)
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
     link = models.URLField(help_text="Länk till externt dokument", verbose_name='Länk till begreppsutredning', null=True, blank=True)
     history = HistoricalRecords('datum_skapat')
@@ -100,23 +102,23 @@ class Bestallare(models.Model):
         """
         return self.beställare_namn
 
-class Doman(models.Model):
+class Dictionary(models.Model):
 
-    """The domain that the term belongs to"""
+    """The dictionary that a term belongs to. The same term can belong
+    to more than one dictionary"""
     
     class Meta:     
-        verbose_name_plural = "Domäner"
+        verbose_name_plural = "Ordböcker"
         app_label = 'ordbok'
 
     begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name='begrepp_fk')
-    domän_id = models.AutoField(primary_key=True)
-    domän_kontext = models.TextField(blank=True, null=True)
-    domän_namn = models.CharField(max_length=255)
+    dictionary_id = models.AutoField(primary_key=True)
+    dictionary_context = models.TextField(blank=True, null=True)
+    dictionary_name = models.CharField(max_length=255)
 
     def __str__(self):
-
         """Return the name of the domain"""
-        return self.domän_namn
+        return self.dictionary_name
 
 class Synonym(models.Model):
 
@@ -159,6 +161,11 @@ class KommenteraBegrepp(models.Model):
     namn = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_VAL, default=DEFAULT_STATUS)
     telefon = models.CharField(max_length=30)
+    
+    def __str__(self):
+
+        """Retrun the term that is the synonym"""
+        return f"{self.begrepp} den {self.datum} av {self.namn}" 
 
 class SökData(models.Model):
 

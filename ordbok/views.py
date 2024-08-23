@@ -15,6 +15,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
 from django.http import (
     HttpRequest, 
@@ -33,7 +34,7 @@ from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, nbsp2space, sort_begrepp_keys)
 from ordbok.models import (Begrepp, BegreppExternalFiles, Bestallare,
-                           Doman, KommenteraBegrepp, Synonym)
+                           Dictionary, KommenteraBegrepp, Synonym)
 
 logger = logging.getLogger(__name__)
 
@@ -72,9 +73,9 @@ def retur_general_sök(url_parameter, domain):
     ).distinct()
     
     if domain=='SjukhusApotek':
-        return queryset.filter(begrepp_fk__domän_namn='SjukhusApotek')
+        return queryset.filter(begrepp_fk__dictionary_name='SjukhusApotek')
     else: 
-        return queryset.exclude(begrepp_fk__domän_namn='SjukhusApotek')
+        return queryset.exclude(begrepp_fk__dictionary_name='SjukhusApotek')
 
 def filter_by_first_letter(letter, domain):
 
@@ -95,9 +96,9 @@ def filter_by_first_letter(letter, domain):
         ).distinct()
     
     if domain=='SjukhusApotek':
-        return queryset.filter(begrepp_fk__domän_namn='SjukhusApotek')
+        return queryset.filter(begrepp_fk__dictionary_name='SjukhusApotek')
     else: 
-        return queryset.exclude(begrepp_fk__domän_namn='SjukhusApotek')
+        return queryset.exclude(begrepp_fk__dictionary_name='SjukhusApotek')
 
 def return_single_term(id):
 
@@ -194,7 +195,9 @@ def concatentate_all_dictionary_values_to_single_string(dictionary : dict, key :
 
     return ' ½ '.join([i.get(key) for i in dictionary])
 
-def creating_tooltip_hover_with_search_result(search_results, all_terms_and_definitions, key='definition'):
+def creating_tooltip_hover_with_search_result(search_results, 
+                                              all_terms_and_definitions, 
+                                              key='definition'):
 
     """ Manipulate an incoming dictionary that has a 'term' and 'definition'
      key:value so that when a definition has references to other term/s
@@ -208,12 +211,7 @@ def creating_tooltip_hover_with_search_result(search_results, all_terms_and_defi
     :return: A dictionary where the 'key' has been altered
     :rtype:
     """
-    
-    # create dictionary of term:definition where the value contains the term definition and tooltip HTML
-    # search_results_uncleaned = {
-    #     record.get('term'):f'''<div class="definitiontooltip">{record.get('term').strip()}<div class="definitiontooltiptext">{record.get(key)}</div></div>&nbsp;''' for record in term_def_dict
-    #     }
-    
+        
     search_results_uncleaned = {
         record.get('term'):f'''
         <span class="term" 
@@ -475,7 +473,7 @@ def begrepp_förklaring_view(request):
 
     return render(request, "base.html", context={})
 
-def hantera_request_term(request):
+def request_new_term(request):
 
     """ Send the form data when a user wants to request a new term or 
     manage the POST data if the user submits the request.
@@ -530,18 +528,18 @@ def hantera_request_term(request):
                 ny_term.beställare = ny_beställare
                 ny_term.save()
                 
-                inkommande_domän = Doman()
+                inkommande_domän = Dictionary()
 
                 if form.cleaned_data.get('workstream') == "Övrigt/Annan":
                     ny_domän = form.clean_not_previously_mentioned_in_workstream()
                     if (ny_domän is not None) and (ny_domän != ''):
-                        inkommande_domän.domän_namn = ny_domän
+                        inkommande_domän.dictionary_name = ny_domän
                         inkommande_domän.begrepp = ny_term
                         inkommande_domän.save()
                 elif form.cleaned_data.get('workstream') == 'Inte relevant':
                     pass
                 else:
-                    inkommande_domän.domän_namn = form.clean_workstream()
+                    inkommande_domän.dictionary_name = form.clean_workstream()
                     inkommande_domän.begrepp = ny_term
                     inkommande_domän.save()
 
@@ -556,7 +554,7 @@ def hantera_request_term(request):
                                 </div>''')
         else:
             
-            return render(request, 'requestTerm.html', {'form': form,
+            return render(request, 'request_new_term.html', {'form': form,
                                                         'whichTemplate' : 'requestTerm'}, 
                                                         status=500)
 
@@ -564,7 +562,7 @@ def hantera_request_term(request):
        
         form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
         
-        return render(request, 'requestTerm.html', {'form': form, 
+        return render(request, 'request_new_term.html', {'form': form, 
                                                     'whichTemplate' : 'requestTerm',
                                                     'header' : 'Önskemål om nytt begrepp'})
 
@@ -647,22 +645,35 @@ def prenumera_till_epost(request):
     return HttpResponseRedirect(get_script_prefix())
 
 
+@login_required
 def return_number_of_comments(request):
-    
     """ Returns JSON with total number of comments, and total number of unread comments
-    based on a status of Beslutad
-    
-    :return: JSON response containing the total number of comments, and total number of
-    unread comments.
-    :rtype: {JsonResponse}
+    based on a status of 'Beslutad', filtered by the logged-in user's groups.
     """
-    
-
     if request.method == 'GET':
-        total_comments = KommenteraBegrepp.objects.all()
-        status_list = [i.get('status') for i in total_comments.values()]
-        return JsonResponse({'unreadcomments' : len(status_list)-status_list.count("Beslutad"),
-                             'totalcomments' : len(status_list)})
+        # Get the logged-in user
+        user = request.user
+
+        # Get the groups the user belongs to
+        user_groups = user.groups.all()
+
+        # Find all Domain IDs associated with the user's groups
+        domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
+
+        # Find all Begrepp IDs associated with these Domain IDs
+        begrepp_ids = Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).values_list('id', flat=True)
+
+        # Filter KommenteraBegrepp based on Begrepp IDs
+        total_comments = KommenteraBegrepp.objects.filter(begrepp__id__in=begrepp_ids)
+        
+        # Calculate unread comments
+        unread_comments_count = total_comments.exclude(status="Beslutad").count()
+        total_comments_count = total_comments.count()
+
+        return JsonResponse({
+            'unreadcomments': unread_comments_count,
+            'totalcomments': total_comments_count
+        })
 
 def no_search_result(request):
 

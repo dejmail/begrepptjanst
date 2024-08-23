@@ -47,8 +47,12 @@
               <div class="row" id="header_row"> 
                 <div class="col-2 mt-3" id="header_left_column"></div>
                 <header class="col-8 text-center mt-3" id="header_center_column">
-                  <h3>OLLI Begreppstjänst (beta)</h3>
-                </header>
+                  <h3>
+                      <a href="{% url 'begrepp' %}" style="text-decoration: none; color: inherit;">
+                          OLLI Begreppstjänst (beta)
+                      </a>
+                  </h3>
+              </header>                            
                 <div class="col-2" id="header_left_column"></div>
               </div>
               <div class="row" id="thermos_flask_icon_row">
@@ -129,10 +133,21 @@
   {% endblock replaceable-content %}  
   {% block mitten-span %}
   <div class="row mt-1" id="mitten-span-row">
-    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-left-column"></div>
+    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-left-column">
+      {% include 'colour_explanation_panel.html' %}
+    </div>
     <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column"></div>
-    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-right-column">
-      {% include 'farg-panel.html' %}
+    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 scrollable-content" id="display-right-column">
+        <!-- Container for tooltips and the close button -->
+        <div class="tooltip-container" role="region" aria-labelledby="tooltip-container-label">
+          <h2 id="tooltip-container-label" class="sr-only">Tooltips</h2>
+          <button id="close-all-tooltips" aria-label="Close all tooltips" style="display: none;">Close All</button>
+          <div class="tooltip-area">
+              <!-- Tooltips will be appended here -->
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
   {% endblock mitten-span %}   

@@ -1,6 +1,7 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
 const begrepp_div = $('#display-middle-column');
+$("#colour-panel").addClass('d-none');
 const rootUrl =  window.location.href;
 
 
@@ -103,7 +104,7 @@ $("#user-input").keyup(function (event) {
         search_icon.addClass('blink');
 
         // Rehide the color panel
-        $("#färg_panel").addClass('d-none');
+        $("#colour-panel").addClass('d-none');
 
         // If scheduled_function is NOT false, cancel the execution of the function
         if (scheduled_function) {

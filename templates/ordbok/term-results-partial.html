@@ -13,7 +13,7 @@
     <div class="container">
       <div class="row">
       <div class="col-12">
-        <div class="text-right" id="färg_förklaring" data-toggle="tooltip" data-placement="right" title="Vad betyder färgerna?">
+        <div class="text-left" id="colour-explanation" data-toggle="tooltip" data-placement="top" title="Vad betyder färgerna?">
           <img src="{% static 'images/farg_panel.svg' %}" width="20px" height="20px" alt="Grön - beslutad av Informatik och Standardisering, Gul - Efterfrågat begrepp under handläggning, Röd - term ska inte användas">
         </div>
 
@@ -101,56 +101,9 @@
 {% endspaceless %}
 {% block extra_javascript %}
 
-
-<!-- <script>
-
-  // $(document).ready(function(){
-   
-  // });
-
-// var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-// var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-//   return new bootstrap.Tooltip(tooltipTriggerEl)
-// })
-
-console.log('Script run...');
-
-
-</script> -->
-
 <script src="{% static 'javascript/tooltipDefinitions.js' %}"></script>
 <style>
-.copied-definition {
-  position: relative;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  width: calc(100% - 40px);
-  max-width: 300px;
-  margin: 20px;
-  box-sizing: border-box;
-  z-index: 1000;
-}
 
-.close-definition {
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      background: none;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;      
-    }
-    .close-definition:hover {
-      color: red;
-    }
-    h5 {
-      margin-top: 5px;
-      padding-right: 30px; /* Add padding to avoid overlap with the button */
-      word-wrap: break-word; /* Ensure long words wrap */
-      overflow-wrap: break-word; /* Ensure content wraps */
-    }
 </style>
 {% endblock extra_javascript %}
 
