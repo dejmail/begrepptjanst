@@ -1,4 +1,4 @@
-const baseUrl = '{% url "begrepp" %}';
+const baseUrl = home_url;
 console.log(`baseUrl: ${baseUrl}`);
 
 const categorySelect = document.querySelector('select[name="category"]');
