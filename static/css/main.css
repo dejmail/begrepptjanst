@@ -72,6 +72,12 @@ th {
   z-index: 2000;
   }
 
+th[scope="col"] {
+  position: sticky;
+  left: 0;
+  z-index: 2001;
+}
+
 nav {
     margin-bottom: 4em;
 }
@@ -304,9 +310,9 @@ text-decoration: line-through;
 }
 
 /* Specific colors for different statuses */
-.table-success { background-color: #d4edda; }
-.table-warning { background-color: #fff3cd; }
-.table-danger { background-color: #f8d7da; }
+.table-success { background-color: #d4edda;}
+.table-warning { background-color: #fff3cd;}
+.table-danger { background-color: #f8d7da;}
 
 /* Styling for text inside the indicators */
 .text-smaller {
