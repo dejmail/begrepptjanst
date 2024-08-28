@@ -23,6 +23,24 @@ SYSTEM_VAL = (('Millennium', "Millennium"),
               ('Annat system', "Annat system"),
               ('VGR Begreppsystem',"VGR Begreppsystem"))
 
+class Dictionary(models.Model):
+
+    """The dictionary that a term belongs to. The same term can belong
+    to more than one dictionary"""
+    
+    class Meta:     
+        verbose_name_plural = "Ordböcker"
+        app_label = 'ordbok'
+
+    dictionary_id = models.AutoField(primary_key=True)
+    dictionary_context = models.TextField(blank=True, null=True)
+    dictionary_name = models.CharField(max_length=255)
+    groups = models.ManyToManyField(Group, related_name='dictionaries', blank=True)
+
+    def __str__(self):
+        """Return the name of the domain"""
+        return self.dictionary_name
+
 class Begrepp(models.Model):
 
     """Model that contains all the metadata regarding a term. Model has
@@ -52,6 +70,9 @@ class Begrepp(models.Model):
     term_i_system = models.CharField(verbose_name="Används i system",max_length=255,blank=True,null=True, choices=SYSTEM_VAL)
     link = models.URLField(help_text="Länk till externt dokument", verbose_name='Länk till begreppsutredning', null=True, blank=True)
     history = HistoricalRecords('datum_skapat')
+
+    dictionaries = models.ManyToManyField(Dictionary, related_name='begrepp')
+
 
     def __str__(self):
 
@@ -101,24 +122,6 @@ class Bestallare(models.Model):
         """Return the requesters name
         """
         return self.beställare_namn
-
-class Dictionary(models.Model):
-
-    """The dictionary that a term belongs to. The same term can belong
-    to more than one dictionary"""
-    
-    class Meta:     
-        verbose_name_plural = "Ordböcker"
-        app_label = 'ordbok'
-
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name='begrepp_fk')
-    dictionary_id = models.AutoField(primary_key=True)
-    dictionary_context = models.TextField(blank=True, null=True)
-    dictionary_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        """Return the name of the domain"""
-        return self.dictionary_name
 
 class Synonym(models.Model):
 
