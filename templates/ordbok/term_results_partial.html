@@ -2,7 +2,7 @@
 {% spaceless %}
 
 {% block mitten-span %}
-{% if stylised_results %}
+{% if styled_results %}
 
 {% load get_item %}
 
@@ -34,9 +34,9 @@
               </tr>
             </thead>
             <tbody id="myTable">
-              {% for term in stylised_results %}            
+              {% for term in styled_results %}            
                 <tr class="{{ colour_status|get_item:term.status }}">
-                  <th scope="row"><a href="{% url 'begrepp_förklaring' %}?q={{term.id}}" id="term_{{term.id}}">{{term.term}}</a></th>
+                  <th scope="row"><a href="{% url 'term_metadata' %}?q={{term.id}}" id="term_{{term.id}}">{{term.term}}</a></th>
                   <td>
                     {% for item in search_results %}
                     {% if item.id == term.id %}
@@ -101,7 +101,6 @@
 {% endspaceless %}
 {% block extra_javascript %}
 
-<script src="{% static 'javascript/tooltipDefinitions.js' %}"></script>
 <style>
 
 </style>

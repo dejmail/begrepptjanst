@@ -16,7 +16,7 @@
 <div class="col-6" id="search-middle-column">
     <div class="d-flex">
         <form class="d-flex w-100" method="GET" action="{% url 'begrepp' %}" onsubmit="return false;" role="search">
-            <label for="category-select" class="sr-only">Välj domän att söka i</label>
+            <label for="category-select" class="sr-only">Välj ordbok att söka i</label>
             <select id="category-select" name="category" class="form-control form-control-md mr-4 custom-select" style="width: 150px;">
               {% for category_value, category_label in categories %}
                 <option value="{{ category_value }}" {% if forloop.first %}selected{% endif %}>
@@ -58,8 +58,6 @@
 	{% endblock search-right-column %}
 </div>
 {% endblock search_bar %}
-
-
 
 {% block replaceable-content %}
 

@@ -1,19 +1,10 @@
-{% extends 'base_front.html' %}
-
-{% block preamble %}
-{% block header_row1 %}
-{% endblock header_row1 %}
-
-{% endblock preamble %}
-
-{% block mitten-span %}
-{{ block.super }}
+{% block display-middle-column %}
 
 {% load crispy_forms_filters %}
     {% if form %}
     
     <h5>{{header}}</h5>
-    <form id="beställ_form" action="{% url 'hantera_term_request' %}?{{whichTemplate}}" method='POST' enctype="multipart/form-data">{% csrf_token %}
+    <form id="beställ_form" action="{% url 'request_new_term' %}?{{whichTemplate}}" method='POST' enctype="multipart/form-data">{% csrf_token %}
       
     {{ form|crispy }}
 
@@ -28,7 +19,7 @@
 
 </form>
 
-{% endblock mitten-span %}
+{% endblock display-middle-column %}
 
 {% block extra_javascript %}
 
