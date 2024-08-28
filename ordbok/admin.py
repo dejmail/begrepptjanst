@@ -4,7 +4,7 @@ from pdb import set_trace
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db.models import Case, IntegerField, Q, Value, When, Count
 from django.db.models.functions import Lower
 from django.shortcuts import render
 from django.urls import reverse
@@ -21,80 +21,18 @@ from django.conf import settings
 
 from ordbok import admin_actions
 from ordbok.forms import BegreppExternalFilesForm, ChooseExportAttributes
+from ordbok.admin_actions import change_dictionaries, export_chosen_begrepp_attrs_action
 
 admin.site.site_header = """OLLI Begreppstjänst Admin
  För fakta i livet"""
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
-def add_non_breaking_space_to_status(status_item):
-
-    length = len(status_item)
-    length_to_add = 12 - length
-    for x in range(length_to_add):
-        if x % 2 == 0:
-            status_item += '&nbsp;'
-        else:
-            status_item = '&nbsp;' + status_item
-    return mark_safe(status_item)
-
-def get_filtered_begrepp_queryset(request):
-    """
-    Returns a queryset of Begrepp instances filtered by the user's group memberships.
-    """
-    user_groups = request.user.groups.all()
-    domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
-    return Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).order_by(Lower('term'))
-
-class GroupBasedForeignKeyFilterMixin:
-
-    """
-    A mixin to filter foreign key fields to Begrepp based on the user's group memberships.
-    """
-
-    begrepp_fk_field_name = 'begrepp'
-
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == self.begrepp_fk_field_name:
-            kwargs["queryset"] = get_filtered_begrepp_queryset(request)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
-
-class GroupBasedFilterMixin:
-    
-    """
-    A mixin to filter objects in the Django admin based on the logged-in user's group memberships.
-    This mixin filters `Begrepp` instances, which in turn are filtered by the `Dictionary` instances 
-    related to the user's groups.
-    """
-
-    begrepp_fk_field_name = 'begrepp'
-
-    def get_queryset(self, request):
-        # Start with the default queryset from the parent class
-        qs = super().get_queryset(request)
-
-        if request.user.is_superuser:
-            # Superusers get full access
-            return qs
-
-        # Get all the groups the user belongs to
-        user_groups = request.user.groups.all()
-
-        # Find all Domain IDs associated with the user's groups
-        domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
-
-        # Find all Begrepp IDs associated with these Domain IDs
-        begrepp_ids = Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).values_list('id', flat=True)
-        
-        if hasattr(self.model, self.begrepp_fk_field_name):
-            # Filter models that directly have a ForeignKey to Begrepp
-#            return qs.filter(begrepp__id__in=begrepp_ids).distinct()
-             return qs.filter(**{f'{self.begrepp_fk_field_name}__id__in': begrepp_ids}).distinct()
-
-
-        # If the model does not have the expected relationship fields, return the original queryset
-        return qs
-    
+from ordbok.admin_functions import (DictionaryRestrictedAdminMixin, 
+                                    DictionaryRestrictedOtherModelAdminMixin,
+                                    DictionaryFilter, 
+                                    add_non_breaking_space_to_status)                             
+  
 class SynonymInlineForm(forms.ModelForm):
 
     class Meta:
@@ -124,14 +62,6 @@ class BegreppExternalFilesInline(admin.StackedInline):
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
 
-class BelongsToDictionaryInline(admin.StackedInline):
-    
-    model = Dictionary
-    extra = 1
-    verbose_name = "Ingår i ordbok"
-    verbose_name_plural = "Ingår i ordböcker"
-    exclude = ['dictionary_context']
-
 class StatusListFilter(MultipleChoiceListFilter):
     title = 'Status'
     template = "admin/multiple_status_filter.html"
@@ -140,7 +70,7 @@ class StatusListFilter(MultipleChoiceListFilter):
     def lookups(self, request, model_admin):
         return STATUS_VAL
 
-class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
+class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
 
     class Media:
         css = {
@@ -150,7 +80,7 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
            )
          }
     
-    inlines = [BegreppExternalFilesInline, SynonymInline, BelongsToDictionaryInline]
+    inlines = [BegreppExternalFilesInline, SynonymInline]
 
     change_form_template = 'change_form_autocomplete.html'
 
@@ -173,7 +103,8 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
                     ('annan_ordlista', 'externt_id'),
                     ('begrepp_kontext'),
                     ('beställare','beställare__beställare_epost'),
-                    'kommentar_handläggning']
+                    'kommentar_handläggning',
+                    'dictionaries']
         }]
     ]
 
@@ -190,11 +121,14 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
                     'definition',
                     'status_button',
                     'senaste_ändring',
-                    'domäner')
+                    'list_dictionaries')
 
     list_filter = (StatusListFilter,
                    ('senaste_ändring', DateRangeFilter),
+                   DictionaryFilter,
     )
+
+    filter_horizontal = ('dictionaries',)
 
     search_fields = ('term',
                     'definition',
@@ -204,14 +138,11 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
 
     date_hierarchy = 'senaste_ändring'
 
+    actions = [change_dictionaries, export_chosen_begrepp_attrs_action]
+
     def get_queryset(self, request):
 
         queryset = super().get_queryset(request)
-        if not request.user.is_superuser:
-            user_groups = request.user.groups.all()
-            domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
-            begrepp_ids = Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).values_list('id', flat=True)
-            queryset = queryset.filter(id__in=begrepp_ids).distinct()
 
         if request.GET.get('q'):
             search_term = request.GET.get('q')
@@ -256,6 +187,21 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
                 till --> <span class="text_highlight_green">{getattr(delta.new_record, field)}</span></p>"""
             return mark_safe(return_text)
         return None
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        actions['change_dictionaries'] = (change_dictionaries, 'change_dictionaries', "Change Dictionary of selected Begrepp")
+        return actions
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['available_dictionaries'] = Dictionary.objects.all()
+        return super(BegreppAdmin, self).changelist_view(request, extra_context=extra_context)
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['available_dictionaries'] = Dictionary.objects.all()
+        return super(BegreppAdmin, self).changeform_view(request, object_id, form_url, extra_context=extra_context)
 
     def export_chosen_attrs_view(request):
 
@@ -269,23 +215,6 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
             if form.is_valid():
                 response = admin_actions.export_chosen_begrepp_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
             return response
-
-    def export_chosen_begrepp_attrs_action(self, request, queryset):
-
-        db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
-                                                                                                            'kommenterabegrepp',
-                                                                                                            'begreppexternalfiles'])
-        chosen_begrepp_ids = queryset.values_list('pk', flat=True)
-        chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
-
-        
-        return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
-                                                                                 "chosen_begrepp" : chosen_begrepp_ids,
-                                                                                 "chosen_begrepp_terms" : chosen_begrepp_terms})
-
-    export_chosen_begrepp_attrs_action.short_description = "Exportera valde begrepp"
-
-    actions = ['export_chosen_begrepp_attrs_action',]
 
     def önskad_slutdatum(self, obj):
         
@@ -306,11 +235,11 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
 
     synonym.admin_order_field = 'synonym'
 
-    def domäner(self, obj):
-        domäner = Dictionary.objects.filter(begrepp_id=obj.pk)
-        return list(domäner)
+    def list_dictionaries(self, obj):
+        return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
 
-    domäner.short_description = 'Domän'
+    list_dictionaries.short_description = 'Ordbok'
+    list_dictionaries.verbose = 'Ordböcker'
     
     def status_button(self, obj):
 
@@ -330,7 +259,7 @@ class BegreppAdmin(GroupBasedFilterMixin, SimpleHistoryAdmin):
 
     status_button.short_description = 'Status'
 
-class BestallareAdmin(GroupBasedForeignKeyFilterMixin, admin.ModelAdmin):
+class BestallareAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin):
 
     list_display = ('beställare_namn',
                     'beställare_email',
@@ -353,21 +282,20 @@ class BestallareAdmin(GroupBasedForeignKeyFilterMixin, admin.ModelAdmin):
             return mark_safe(display_text)
         return display_text
 
-class DictionaryAdmin(GroupBasedFilterMixin, admin.ModelAdmin):
+class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     list_display = ('dictionary_name',
                     'dictionary_id',
-                    'dictionary_context',
-                    'begrepp',)
+                    'dictionary_context')
 
-    list_select_related = (
-        'begrepp',
-    )
+    #list_select_related = (
+    #    'begrepp',
+    #)
 
     list_filter = ("dictionary_name",)
-    search_fields = ('begrepp__term',)
+    #search_fields = ('begrepp__term',)
 
-class SynonymAdmin(GroupBasedForeignKeyFilterMixin, admin.ModelAdmin):
+class SynonymAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin):
     
     ordering = ['begrepp__term']
     list_display = ('begrepp',
@@ -389,8 +317,7 @@ class ContextFilesInline(admin.StackedInline):
     exclude = ('begrepp',)
 
 
-class KommenteraBegreppAdmin(GroupBasedForeignKeyFilterMixin, 
-                             #GroupBasedFilterMixin, 
+class KommenteraBegreppAdmin(DictionaryRestrictedOtherModelAdminMixin, 
                              admin.ModelAdmin):
 
     class Media:
@@ -460,9 +387,7 @@ class SökDataAdmin(admin.ModelAdmin):
                     'sök_timestamp',
                     'records_returned')
 
-
-class BegreppExternalFilesAdmin(GroupBasedForeignKeyFilterMixin, 
-                                GroupBasedFilterMixin, 
+class BegreppExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin, 
                                 admin.ModelAdmin):
 
     model = BegreppExternalFiles
@@ -479,10 +404,6 @@ class BegreppExternalFilesAdmin(GroupBasedForeignKeyFilterMixin,
             ).distinct()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    
-class ExtendedGroupAdmin(admin.ModelAdmin):
-    list_display = ('group',)
-    filter_horizontal = ('domains',)  # Allows selecting multiple domains
 
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)

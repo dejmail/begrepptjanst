@@ -1,23 +1,21 @@
-from django.http import HttpResponse, HttpResponseRedirect
-from django.template import RequestContext, loader
+from django.http import HttpResponse
 from django.urls import reverse
-from django.shortcuts import render
-from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import render, redirect
+
 from .models import Bestallare
 
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, message, send_mail
 
-import codecs
+
 import io
 import xlsxwriter
-
 import datetime
-
-from .forms import ChooseExportAttributes
 
 import logging
 from pdb import set_trace
+
+from ordbok.models import Dictionary
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +79,7 @@ def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
                 logger.debug(f'writing {field} - {field_value}')
             elif field == 'term':
                 field_value = getattr(obj, field)
-                link = request.build_absolute_uri(reverse('begrepp_förklaring'))  + f'?q={obj.pk}'
+                link = request.build_absolute_uri(reverse('term_metadata'))  + f'?q={obj.pk}'
                 worksheet.write_url(row=row_index, col=col_index, url=link, string=field_value)
                 logger.debug(f'writing {field} - {field_value}')
             elif field == 'beställare':
@@ -112,6 +110,49 @@ def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
     response['Content-Disposition'] = f'attachment; filename={filename}'
 
     return response
+
+def change_dictionaries(modeladmin, request, queryset):
+    logger = logging.getLogger(__name__)
+
+    logger.info("change_dictionaries action called.")
+
+    if 'apply' in request.POST:
+        set_trace()
+        selected_dictionaries = request.POST.getlist('dictionaries')
+        if selected_dictionaries:
+            dictionaries = Dictionary.objects.filter(pk__in=selected_dictionaries)
+            for begrepp in queryset:
+                begrepp.dictionaries.set(dictionaries)
+            modeladmin.message_user(request, f"{queryset.count()} Begrepp updated with the selected Dictionaries.")
+        return redirect(request.get_full_path())
+
+    # Prepare context including _selected_action and select_across
+    context = {
+        'queryset': queryset,
+        'dictionaries': Dictionary.objects.all(),
+        'action_name': 'change_dictionaries',
+        'selected_action': request.POST.getlist('_selected_action'),
+        'select_across': request.POST.get('select_across'),
+    }
+    return render(request, 'admin/change_dictionary_action.html', context)
+
+change_dictionaries.short_description = "Change Dictionaries of selected Begrepp"
+
+
+def export_chosen_begrepp_attrs_action(self, request, queryset):
+
+    db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
+                                                                                                        'kommenterabegrepp',
+                                                                                                        'begreppexternalfiles'])
+    chosen_begrepp_ids = queryset.values_list('pk', flat=True)
+    chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
+
+    
+    return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
+                                                                                "chosen_begrepp" : chosen_begrepp_ids,
+                                                                                "chosen_begrepp_terms" : chosen_begrepp_terms})
+
+export_chosen_begrepp_attrs_action.short_description = "Exportera valde begrepp"
 
 def ändra_status_till_översättning(queryset):
     
