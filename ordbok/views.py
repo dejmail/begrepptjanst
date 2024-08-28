@@ -245,7 +245,7 @@ def clean_dict_of_extra_characters(incoming_dict: dict) -> dict:
     for keys,values in incoming_dict.items():
         clean_dict[keys.strip()] = re.sub('\xa0', ' ', values)
 
-    logger.debug(f' After stripping and subst - (patient : {clean_dict.get('patient')}')
+    logger.debug(f"After stripping and subst - patient : {clean_dict.get('patient')}")
     return clean_dict
 
 def concatenate_all_dictionary_values_to_single_string(dictionary: Dict, 
