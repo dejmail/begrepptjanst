@@ -538,13 +538,13 @@ def main_search_view(request):
     domain = request.GET.get("category")
   
     if is_ajax(request):
-        data_dict, styled_results = hämta_data_till_main_search_view(url_parameter, domain)
+        data_dict, styled_results = assemble_search_results_view(url_parameter, domain)
     
         mäta_sök_träff(sök_term=url_parameter,sök_data=styled_results, request=request)
         return JsonResponse(data=data_dict, safe=False)
 
     else:
-        print("Got nothing in the search results")
+        logger.debug("Search not ajax, or no search term")
         begrepp = Begrepp.objects.none()
     
     html = render_to_string('term.html', context={'begrepp' : begrepp})
