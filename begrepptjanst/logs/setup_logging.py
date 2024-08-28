@@ -1,14 +1,15 @@
 import socket
 import os
 import logging
+import logging.config
 
 if socket.gethostname() == 'suijin.oderland.com':
-    FILENAME = '/home/vgrinfor/begrepptjanst/logging/debug.log'
-elif socket.gethostname() == 'W363207':
+    FILENAME = './logs.log'
+elif socket.gethostname() == 'W450772':
     if os.path.isdir('/mnt/c'):
         FILENAME = '/mnt/c/Users/liath1/coding/begrepptjanst/logs.log'
     else:
-        FILENAME = '/Users/liath1/coding/begrepptjanst/logs.log'
+        FILENAME = '/home/liath1/coding/begrepptjanst/logs.log'
 
 logging_schema = {
     # Always 1. Schema versioning may be added in a future release of logging
