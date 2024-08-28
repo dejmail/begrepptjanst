@@ -18,9 +18,10 @@
       <script src="{% static '/javascript/jquery-3.4.1.min.js' %}"></script>
       <!-- Bootstrap CDN -->
       <script src="{% static '/javascript/popper.min.js' %}" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-      <script src="{% static '/javascript/bootstrap.min.js' %}" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>      
-      <link rel="stylesheet" href="{% static '/css/bootstrap.min.css' %}" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">        
-      <!-- FontAwesome CDN -->
+      <script src="{% static '/javascript/bootstrap.min.js' %}" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="{% static 'javascript/tooltipDefinitions.js' %}"></script>
+
+      <link rel="stylesheet" href="{% static '/css/bootstrap.min.css' %}" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
       <link rel="stylesheet" href="{% static '/css/all.css' %}" integrity="sha384-auPUsi7xBPi42agztVxY2mYib6liO5KcD0wN/aupjzbo895Nad/WXtxjqvuSZaxL" >
       <link rel="stylesheet" href="{% static '/css/main.css' %}" media="screen">
   {% endblock base_static %}
@@ -132,11 +133,16 @@
   </div>
   {% endblock replaceable-content %}  
   {% block mitten-span %}
-  <div class="row mt-1" id="mitten-span-row">
+  <div class="row mt-1" id="display-row">
+    {% block display-left-column %}
     <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-left-column">
       {% include 'colour_explanation_panel.html' %}
     </div>
+    {% endblock display-left-column %}
+    {% block display-middle-column %}
     <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column"></div>
+    {% endblock display-middle-column %}
+    {% block display-right-column %}
     <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 scrollable-content" id="display-right-column">
         <!-- Container for tooltips and the close button -->
         <div class="tooltip-container" role="region" aria-labelledby="tooltip-container-label">
@@ -148,6 +154,7 @@
         </div>
 
       </div>
+      {% endblock display-right-column %}
     </div>
   </div>
   {% endblock mitten-span %}   
@@ -174,7 +181,8 @@ function no_search_result(requested_term)
     url: "{% url 'no_search_result' %}?q="+requested_term,
     success: function(data) {
       var display_html = data.html_from_view;
-      $('#display-middle-column').html(data);
+      document.getElementById("colour-panel").style.display = "none";
+      $('#display-middle-column').html(data);      
       changeBrowserURL(data, this.url);
     popStateHandler();
     
@@ -187,12 +195,17 @@ function populate_request_form(requested_term)
     $.ajax({
         type: "GET",
         dataType: "html",
-        url: "{% url 'hantera_term_request' %}?q="+requested_term,
+        headers: {"X-CUSTOM-REQUESTED-WITH": "XMLHttpRequest"},
+        url: "{% url 'request_new_term' %}?q="+requested_term,
+        beforeSend: function() {
+          document.getElementById("colour-panel").style.display = "none";
+          closeAllTooltips();
+        },
         success: function(data) {
-            var display_html = data.html_from_view;
-            $('#display-middle-column').html(data);
-            changeBrowserURL(data, this.url);
-            popStateHandler();
+          var display_html = data.html_from_view;
+          $('#display-middle-column').html(data);
+          changeBrowserURL(data, this.url);
+          popStateHandler();
         },
         error: function() {
         $('#display-middle-column').html("There has been an error loading this form");
