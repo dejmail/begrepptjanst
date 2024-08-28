@@ -514,7 +514,7 @@ def assemble_search_results_view(url_parameter, dictionary):
     styled_results = mark_fields_as_safe_html(styled_results, ['definition',])
 
     html = render_to_string(
-        template_name="term-results-partial.html", 
+        template_name="term_results_partial.html", 
         context={'styled_results': styled_results,
         'colour_status' : COLOUR_STATUS_DICT,
         'search_results' : search_results,
@@ -587,7 +587,7 @@ def term_metadata_view(request):
             if url_parameter is None:
                 return render(request, "term.html", context={})
             else:
-                return render(request, "term_forklaring.html", context=template_context)
+                return render(request, "term_full_metadata.html", context=template_context)
 
     return render(request, "base.html", context={})
 
