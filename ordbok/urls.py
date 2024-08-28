@@ -5,10 +5,10 @@ from ordbok import admin as admin_views
 
 
 urlpatterns = [
-    path('', views.begrepp_view, name="begrepp"),
+    path('', views.main_search_view, name="begrepp"),
     path('kommentera/', views.kommentera_term, name="kommentera_term"),
-    path('begrepp-forklaring/', views.begrepp_förklaring_view, name="begrepp_förklaring"),
-    path('requesttermform/', views.request_new_term, name='hantera_term_request'),
+    path('begrepp-forklaring/', views.term_metadata_view, name="term_metadata"),
+    path('requesttermform/', views.request_new_term, name='request_new_term'),
     path('unread-comments/', views.return_number_of_comments, name='unread_comments'),
     path('prenumera/', views.prenumera_till_epost, name="email_subscribe"),
     path('no-search-result/', views.no_search_result, name='no_search_result'),
