@@ -89,7 +89,7 @@ $("#user-input").keyup(function (event) {
     console.log('current value:', $(this).val());
     $("#display-middle-column").empty();
     toggle_element("replaceable-content-middle-column");
-
+    
     const requestParameters = {
         category: $('[name="category"]').val(),
         q: $(this).val() 

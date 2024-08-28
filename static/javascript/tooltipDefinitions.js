@@ -32,36 +32,46 @@ function sanitizeId(id) {
     return id.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
 }
 
-document.body.addEventListener('click', (e) => {
-    if (e.target.classList.contains('term')) {
-        console.log('Term clicked:', e.target);
-        e.preventDefault();
-        
-        const term = e.target;
-        const definitionId = term.getAttribute('aria-describedby');
-        const definitionElement = document.getElementById(definitionId);        
-        if (currentTerm === term) {
-            // If clicking the same term, hide the definition
-            console.log('Hiding definition');
-            hideDefinition(definitionElement);
-        } else {
-            // Show definition for the new term
-            console.log('Showing definition');
-            showDefinition(term, definitionElement);
-        }
-    } else {
-        // Hide definition when clicking outside
-        console.log('Clicked outside term');
+document.addEventListener("DOMContentLoaded", function() {
+    document.body.addEventListener('click', (e) => {
+        if (e.target.classList.contains('term')) {
+            console.log('Term clicked:', e.target);
+            e.preventDefault();
+            
+            const term = e.target;
+            const definitionId = term.getAttribute('aria-describedby');
+            const definitionElement = document.getElementById(definitionId);
 
-        hideAllDefinitions();
+            // Check if the definitionElement exists
+            if (definitionElement) {
+                if (currentTerm === term) {
+                    // If clicking the same term, hide the definition
+                    console.log('Hiding definition');
+                    hideDefinition(definitionElement);
+                } else {
+                    // Show definition for the new term
+                    console.log('Showing definition');
+                    showDefinition(term, definitionElement);
+                }
+            } else {
+                console.error('Definition element not found for ID:', definitionId);
+            }
+        } else {
+            // Hide definition when clicking outside
+            console.log('Clicked outside term');
+            hideAllDefinitions();
+        }
+    });
+
+      
+    document.body.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideAllDefinitions();
     }
+    });
 });
-  
-document.body.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-        hideAllDefinitions();
-    }
-});
+
+
   
 function hideDefinition(definitionElement) {
     if (definitionElement) {
@@ -76,7 +86,7 @@ function hideAllDefinitions() {
 }
 
 // To make the span elements selectable with the Enter key
-const termElements = document.querySelectorAll('.term');
+var termElements = document.querySelectorAll('.term');
 
 termElements.forEach(term => {
     term.addEventListener('keydown', function(event) {
@@ -132,8 +142,10 @@ function updateDefinitionsPosition() {
 function updateTooltips() {
     const definitions = document.querySelectorAll('.copied-definition');
     const closeAllButton = document.getElementById('close-all-tooltips');
-    debugger;
-    if (definitions.length > 1) {
+    
+    if (definitions.length == 0) {
+    }
+    else if (definitions.length > 1) {
         closeAllButton.style.display = 'block'; // Show button if more than one tooltip
     } else {
         closeAllButton.style.display = 'none'; // Hide button if one or no tooltips
@@ -198,7 +210,13 @@ function closeAllTooltips() {
 }
 
 // Event listener for the "Close All Tooltips" button
-document.getElementById('close-all-tooltips').addEventListener('click', closeAllTooltips);
+document.addEventListener("DOMContentLoaded", function() {
+    const closeAllButton = document.getElementById('close-all-tooltips');
+    
+    if (closeAllButton) {
+        closeAllButton.addEventListener('click', closeAllTooltips);
+    }
+});
 
 // Call this function initially and on window resize and scroll
 updateDefinitionsPosition();
