@@ -8,26 +8,6 @@ from pdb import set_trace
 
 from .models import STATUS_VAL
 
-workstream_choices = [('Inte relevant','Inte relevant'),
-('Akutsjukvård','Akutsjukvård'),
-('DokumentationVårdproffesion','DokumentationVårdproffesion'),
-('Resursstyrning','Resursstyrning'),
-('Kärnfunktioner','Kärnfunktioner'),
-('Läkemedel','Läkemedel'),
-('Masterdata','Masterdata'),
-('Materiallogistik','Materiallogistik'),
-('MedicinskDokumentation','MedicinskDokumentation'),
-('MödravårdObstetrik','MödravårdObstetrik'),
-('Onkologi','Onkologi'),
-('Operation','Operation'),
-('Ordination&Beställningar','Ordination&Beställningar'),
-('PAS','PAS'),
-('Primärvård','Primärvård'),
-('Psykiatri','Psykiatri'),
-('Rapporter','Rapporter'),
-('Övrigt/Annan','Övrigt/Annan')]
-
-
 class CustomDateInput(forms.DateInput):
     input_type = 'date'
 
@@ -62,25 +42,15 @@ class GroupFilteredModelForm(forms.ModelForm):
     def filter_queryset(self):
         user = self.user
         if user and not user.is_superuser:
-            set_trace()
             user_groups = user.groups.all()
-            domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
-            begrepp_ids = Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).values_list('id', flat=True)
+            domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('dictionary_id', flat=True)
+            begrepp_ids = Begrepp.objects.filter(begrepp_fk__dictionary_id__in=domain_ids).values_list('id', flat=True)
             self.fields['begrepp'].queryset = Begrepp.objects.filter(id__in=begrepp_ids)
 
 class TermRequestForm(forms.Form):
 
     def clean(self):
-        cleaned_data = super().clean()
-        workstream = cleaned_data.get("workstream")
-        other = cleaned_data.get("other")
-        
-        if (workstream == 'Övrigt/Annan') and (other is None or other == ''):
-        # Only do something if both fields are valid so far.
-            self.add_error('other', 'Måste ge var begreppet används om du har valt Övrigt/Annan'
-            )
-            raise ValidationError("Måste ge var begreppet används om du har valt Övrigt/Annan")
-        
+        cleaned_data = super().clean()        
         return cleaned_data
 
     def clean_name(self):
@@ -94,19 +64,6 @@ class TermRequestForm(forms.Form):
     def clean_telefon(self):
         telefon = self.cleaned_data.get('telefon')
         return telefon
-    
-    def clean_önskad_datum(self):
-        return self.cleaned_data.get('önskad_datum')
-
-    def clean_önskad_datum(self):
-        return self.cleaned_data.get('önskad_datum')
-
-    def clean_not_previously_mentioned_in_workstream(self):
-        return self.cleaned_data.get('other')
-
-    def clean_önskad_datum(self):
-        önskad_datum = self.cleaned_data.get('önskad_datum')
-        return önskad_datum
 
     def clean_kontext(self):
         kontext = self.cleaned_data.get('kontext')
@@ -120,28 +77,19 @@ class TermRequestForm(forms.Form):
         begrepp = self.cleaned_data.get('begrepp')
         return begrepp
 
-    def clean_workstream(self):
-        return self.cleaned_data.get('workstream')
-
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
     utländsk_term = forms.CharField(max_length=254, required=False, label="Engelsk term")
-    kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:")
-    workstream = forms.CharField(label='Var används begreppet', widget=forms.Select(choices=workstream_choices))
-    other = forms.CharField(max_length=254, label="Om Övrigt/Annan, kan du specificera", required=False)
-    önskad_datum = forms.DateField(widget=CustomDateInput, label="Önskad slutdatum för prioritering", help_text="Klicka på kalendar ikon på höger sidan")
+    kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:") 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"})) 
+    telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Telefon"})) 
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
-
-
-
 
 class KommenteraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Skypenamn eller telefon"}))
+    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Telefon"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
