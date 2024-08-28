@@ -48,7 +48,7 @@ def sort_begrepp_keys(begrepp_dict):
     
     return OrderedDict([(v, begrepp_dict[v]) for v in desired_dict_order])
 
-def nbsp2space(string_with_bad_values):
+def replace_nbs_with_normal_space(string_with_bad_values):
     
     '''
     Replace a nonbreaking space (nbs) (Latin) with a normal space. The nbs can cause problems
@@ -57,30 +57,40 @@ def nbsp2space(string_with_bad_values):
     '''
     return re.sub('\\xa0', ' ', string_with_bad_values, flags=re.IGNORECASE|re.UNICODE)
 
+
 class Xlator(dict):
     """ All-in-one multiple-string-substitution class
-        a version to substitute only entire words """
+        with flexible word boundaries for suffixes like plurals."""
 
     def escape_keys(self):
-        
         return [re.escape(i) for i in self.keys()]
 
     def _make_regex(self):
+        # Define common suffixes for pluralization or word forms
+        suffixes = r"(en|er|ar|et|s)?\b"
         
+        # Escape the keys and join them with word boundaries
         escaped_keys = self.escape_keys()
-        joined_keys = r'\b'+r'\b|\b'.join(escaped_keys)
-        compiled_re = re.compile(joined_keys+r'\b')
+        joined_keys = r'\b(' + r'|'.join(escaped_keys) + r')' + suffixes
+        
+        # Compile the regular expression with the flexible word boundary
+        compiled_re = re.compile(joined_keys, re.IGNORECASE)
         
         return compiled_re
 
     def __call__(self, match):
         """ Handler invoked for each regex match """
-        return self[match.group(0)]
+        base_word = match.group(1)  # This captures the base word before the suffix
+        suffix = match.group(2) or ""  # This captures the suffix (if any)
+        tooltip = self.get(base_word, base_word)  # Lookup the base word in the dictionary
+        
+        # Return the tooltip with the original suffix added back
+        return tooltip.strip() + suffix
+
 
     def xlat(self, text):
         """ Translate text, returns the modified text. """
         return self._make_regex().sub(self, text)
-
 
 HTML_TAGS = ['a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside',
 'audio', 'b', 'base', 'basefont', 'bb', 'bdo', 'big', 'blockquote', 'body', 'br /', 'br',
