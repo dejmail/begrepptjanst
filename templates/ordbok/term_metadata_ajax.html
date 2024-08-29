@@ -24,9 +24,9 @@
                             {% if synonym.synonym is not None %}
                                 {% if synonym.synonym_status == "Avråds" %}
                                     -&nbsp;
-                                    <button type="button" class="btn-sm btn-avrådd strike">
+                                    <span class="btn-sm btn-avrådd strike" aria-label="Synonym avråds: {{synonym.synonym}}">
                                         <s class="strike">{{synonym.synonym}}</s>
-                                    </button><br>
+                                    </span><br>
                                 {% else %}
                                     -&nbsp;
                                     {{synonym.synonym}}<br>

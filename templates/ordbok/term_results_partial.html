@@ -6,14 +6,22 @@
 
 {% load get_item %}
 
-    <div class="d-flex flex-row justify-content-center">
-          <button class="btn btn-light-blue btn-sm" onclick="populate_request_form('{{searched_for_term}}')" aria-label="Efterfråga begrepp för '{{searched_for_term}}'">Efterfråga begrepp</a></button>
+    <div class="d-flex flex-column justify-content-center align-items-center">
+
+      <p class="h5 text-primary font-weight-bold">
+        Visar resultat för {{chosen_dictionary}}
+      </p>
+    
+          
+      <button class="btn btn-light-blue btn-sm mt-2" onclick="populate_request_form('{{searched_for_term}}')" aria-label="Efterfråga begrepp för '{{searched_for_term}}'">
+        Efterfråga begrepp
+      </button>
     </div>
   
     <div class="container">
       <div class="row">
       <div class="col-12">
-        <div class="text-left" id="colour-explanation" data-toggle="tooltip" data-placement="top" title="Vad betyder färgerna?">
+        <div class="text-left" id="colour-explanation" data-toggle="tooltip" data-placement="top" title="Vad betyder färgerna?" onclick="toggleVisibility('colour-panel');">
           <img src="{% static 'images/farg_panel.svg' %}" width="20px" height="20px" alt="Grön - beslutad av Informatik och Standardisering, Gul - Efterfrågat begrepp under handläggning, Röd - term ska inte användas">
         </div>
 
@@ -39,30 +47,36 @@
                   <th scope="row"><a href="{% url 'term_metadata' %}?q={{term.id}}" id="term_{{term.id}}">{{term.term}}</a></th>
                   <td>
                     {% for item in search_results %}
-                    {% if item.id == term.id %}
+                      {% if item.id == term.id %}
                         <ul class="synonym-list" aria-label="List of synonyms">
-                            {% for synonym in item.synonym_set.all %}
-                                <li class="synonym-item">
-                                    {% if synonym.synonym_status == "Avråds" %}
-                                        <span class="synonym deprecated" aria-describedby="status-{{ forloop.counter }}">
-                                            <del>{{ synonym.synonym }}</del>
-                                        </span>
-                                        <span id="status-{{ forloop.counter }}" class="visually-hidden">
-                                            Status: {{ synonym.synonym_status }}
-                                        </span>
-                                    {% else %}
-                                        <span class="synonym" aria-describedby="status-{{ forloop.counter }}">
-                                            {{ synonym.synonym }}
-                                        </span>
-                                        <span id="status-{{ forloop.counter }}" class="visually-hidden">
-                                            Status: {{ synonym.synonym_status }}
-                                        </span>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                {% endfor %}
+                        {% for synonym in item.synonym_set.all %}
+                          <li class="synonym-item">
+                              {% if synonym.synonym_status == "Avråds" %}
+                                  <div class="tooltip synonym deprecated" tabindex="0" role="button" aria-describedby="status-{{ forloop.counter }}">
+                                      <del class="text-danger">{{ synonym.synonym }}</del>
+                                      <span class="tooltiptext" style="background-color: red;">
+                                          Status: {{ synonym.synonym_status }}
+                                      </span>
+                                  </div>
+                                  <span id="status-{{ forloop.counter }}" class="visually-hidden">
+                                      Status: {{ synonym.synonym_status }}
+                                  </span>
+                              {% else %}
+                                  <div class="tooltip synonym" tabindex="0" role="button" aria-describedby="status-{{ forloop.counter }}">
+                                      {{ synonym.synonym }}
+                                      <span class="tooltiptext" style="background-color: green;">
+                                          Status: {{ synonym.synonym_status }}
+                                      </span>
+                                  </div>
+                                  <span id="status-{{ forloop.counter }}" class="visually-hidden">
+                                      Status: {{ synonym.synonym_status }}
+                                  </span>
+                              {% endif %}
+                          </li>
+                        {% endfor %}
+                  </ul>                  
+                      {% endif %}
+                    {% endfor %}
                 </td>
                 <td>{{term.definition}}</td>
                 <td>{{term.utländsk_term}}</td>
@@ -101,8 +115,21 @@
 {% endspaceless %}
 {% block extra_javascript %}
 
-<style>
+<script>
 
-</style>
+  document.addEventListener('click', function(event) {
+    const tooltips = document.querySelectorAll('.tooltip .tooltiptext');
+    tooltips.forEach(function(tooltip) {
+        if (tooltip.parentElement.contains(event.target)) {
+            tooltip.style.visibility = tooltip.style.visibility === 'visible' ? 'hidden' : 'visible';
+            tooltip.style.opacity = tooltip.style.opacity === '1' ? '0' : '1';
+        } else {
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = '0';
+        }
+    });
+});
+
+</script>
 {% endblock extra_javascript %}
 

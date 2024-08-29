@@ -7,7 +7,7 @@
 
 
 {% block header_row1_column_right %}
-<a href="https://vgrinformatik.se/begreppstjanst"><img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}" alt="Navigera tillbaka till OLLI"></a>
+<a href="{% url 'begrepp' %}"><img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}" alt="Navigera tillbaka till OLLI"></a>
 {% endblock header_row1_column_right %}
 
 {% block mitten-span %}
@@ -36,9 +36,9 @@
                             {% if synonym.synonym is not None %}
                                 {% if synonym.synonym_status == "Avråds" %}
                                     -&nbsp;
-                                    <button type="button" class="btn-sm btn-avrådd strike">
+                                    <span class="btn-sm btn-avrådd strike" aria-label="Synonym avråds: {{synonym.synonym}}">
                                         <s class="strike">{{synonym.synonym}}</s>
-                                    </button><br>
+                                    </span><br>
                                 {% else %}
                                     -&nbsp;
                                     {{synonym.synonym}}<br>
