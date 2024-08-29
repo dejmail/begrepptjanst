@@ -479,6 +479,7 @@ def assemble_search_results_view(url_parameter, dictionary):
 
     try:
         search_results, should_highlight = determine_search_strategy(url_parameter, dictionary)
+        logger.debug(f'Searching within {dictionary=}')
 
         log_result = [(search_result.term, search_result.definition) for search_result in search_results if search_result.term=='patient']
         logger.debug(f"After general search - {log_result}")
@@ -519,7 +520,8 @@ def assemble_search_results_view(url_parameter, dictionary):
         'colour_status' : COLOUR_STATUS_DICT,
         'search_results' : search_results,
         'searched_for_term' : url_parameter,
-        'chosen_dictionary' : dictionary
+        'chosen_dictionary' : Dictionary.objects.get(
+            dictionary_name=dictionary).dictionary_long_name
         }
         )    
 
@@ -549,10 +551,13 @@ def main_search_view(request):
     
     html = render_to_string('term.html', context={'begrepp' : begrepp})
     
-    return render(request, "term.html", context={'categories' : [('VGR', 'Grund VGR Ordbok'), 
-                                                                 ('SjukhusApotek', 'Sjukhusapotek')
-                                                                ],
-                                                'html' :  html})
+    return render(request, "term.html", context={
+        'categories' : Dictionary.objects.all().order_by('order').values_list(
+            'dictionary_name',
+            'dictionary_long_name'
+            ),
+        'html' : html
+        })
 
 def term_metadata_view(request):
 
@@ -576,7 +581,7 @@ def term_metadata_view(request):
         
         template_context = {'begrepp_full': single_term,
                             'färg_status' : status_färg_dict}
-        html = render_to_string(template_name="term_forklaring_ajax.html", context=template_context)
+        html = render_to_string(template_name="term_metadata_ajax.html", context=template_context)
 
         if is_ajax(request):        
             return JsonResponse(
@@ -587,7 +592,7 @@ def term_metadata_view(request):
             if url_parameter is None:
                 return render(request, "term.html", context={})
             else:
-                return render(request, "term_full_metadata.html", context=template_context)
+                return render(request, "term_.html", context=template_context)
 
     return render(request, "base.html", context={})
 

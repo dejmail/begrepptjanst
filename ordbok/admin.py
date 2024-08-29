@@ -286,7 +286,8 @@ class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     list_display = ('dictionary_name',
                     'dictionary_id',
-                    'dictionary_context')
+                    'dictionary_context',
+                    'order')
 
     #list_select_related = (
     #    'begrepp',

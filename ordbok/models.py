@@ -34,8 +34,10 @@ class Dictionary(models.Model):
 
     dictionary_id = models.AutoField(primary_key=True)
     dictionary_context = models.TextField(blank=True, null=True)
-    dictionary_name = models.CharField(max_length=255)
+    dictionary_name = models.CharField(max_length=50)
+    dictionary_long_name = models.CharField(max_length=255, null=True)
     groups = models.ManyToManyField(Group, related_name='dictionaries', blank=True)
+    order = models.IntegerField(null=True)
 
     def __str__(self):
         """Return the name of the domain"""
