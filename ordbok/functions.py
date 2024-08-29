@@ -67,7 +67,7 @@ class Xlator(dict):
 
     def _make_regex(self):
         # Define common suffixes for pluralization or word forms
-        suffixes = r"(en|er|ar|et|s)?\b"
+        suffixes = r"(en|ens|er|ar|et|s)?\b"
         
         # Escape the keys and join them with word boundaries
         escaped_keys = self.escape_keys()
