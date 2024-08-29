@@ -1,11 +1,8 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
 const begrepp_div = $('#display-middle-column');
-$("#colour-panel").addClass('d-none');
 const rootUrl =  window.location.href;
 
-
-console.log('loading the main.js');
 function endpoint_check() {
     
     if (location.hostname == "127.0.0.1") { 
@@ -18,7 +15,6 @@ function endpoint_check() {
 
 }
 
-
 const endpoint = endpoint_check();
 
 const delay_by_in_ms = 1000
@@ -30,6 +26,25 @@ function toggle_element(element_id) {
 		div.removeChild(div.firstChild);
 	}
 }
+
+function toggleVisibility(elementId, status='toggle') {
+    const element = document.getElementById(elementId);
+    if (element) {
+        if (element.classList.contains('d-none') && status === 'off') {
+            return
+        } else if (element.classList.contains('d-none') && status === 'on') {
+            element.classList.remove('d-none');
+        } else if (!element.classList.contains('d-none') && status === 'off') {
+            element.classList.add('d-none');
+        } else if (status === 'toggle') {
+            element.classList.toggle('d-none');
+        }
+    else {
+        console.error(`Element with ID '${elementId}' not found.`);
+    }
+    }
+}
+
 
 /**
  * @param {URL} endpoint - The URL to make the AJAX call to
@@ -63,6 +78,7 @@ const ajax_call = function (endpoint, requestParameters) {
         changeBrowserURL(responseData, endpoint);
         toggle_element("replaceable-content-middle-column");
         toggle_element("display-middle-column");
+
         // fade out the begrepp_div, then:
         begrepp_div.fadeTo('fast', 0).promise().then(() => {
             // replace the HTML contents
@@ -89,6 +105,8 @@ $("#user-input").keyup(function (event) {
     console.log('current value:', $(this).val());
     $("#display-middle-column").empty();
     toggle_element("replaceable-content-middle-column");
+    toggleVisibility('colour-panel', 'off');
+    closeAllTooltips();
     
     const requestParameters = {
         category: $('[name="category"]').val(),
@@ -120,8 +138,23 @@ $("#user-input").keyup(function (event) {
     
 });
 
+
+// 
+document.getElementById('category-select').addEventListener('change', function() {
+    document.getElementById('display-middle-column').innerHTML = '';
+    document.getElementById('display-right-column').innerHTML = ''; 
+    toggleVisibility('colour-panel', 'off');
+    document.getElementById('user-input').value = '';
+
+});
+
+
 document.body.addEventListener("click", function(e) {
 	// e.target was the clicked element
+    if (e.target.classList.contains('non-ajax-link')) {
+        console.log('Following a non-ajax-link')
+        return
+    }
 	if(e.target && e.target.nodeName == "A") {
     // Stop the browser redirecting to  the HREF value.
     e.preventDefault();    

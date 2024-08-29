@@ -231,10 +231,6 @@ text-decoration: line-through;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-.synonym-list {
-  cursor: pointer;
-}
-
 .term:hover, .term:focus {
   text-decoration: none;
   background-color: #FFFF00;  /* Yellow highlight */
@@ -256,20 +252,57 @@ text-decoration: line-through;
   max-width: 100%;
 }
 
-  
-  .tooltip .tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    color: #fff;
-    background-color: rgb(114, 211, 127);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    /* Position the tooltip */
-    position: absolute;
-    opacity : 1;
-    z-index: 1000;
-  }
+.tooltip {
+  position: relative;
+  display: inline-block;
+  opacity : 1;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, "“Helvetica Neue”", Arial, sans-serif, "“Apple Color Emoji”", "“Segoe UI Emoji”", "“Segoe UI Symbol”";
+  word-break: normal;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  color: #fff;
+  background-color: rgb(114, 211, 127);
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  /* Position the tooltip */
+  position: absolute;
+  opacity : 1;
+  z-index: 1000;
+}
+
+#tooltiptext span.red{
+  background-color: red !important;
+}
+
+.tooltip:hover .tooltiptext,
+.tooltip:focus .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.synonym-list {
+  list-style-type: disc; /* Set the list item style to disc (or use decimal for numbers) */
+  padding-left: 20px; /* Add padding to align the bullets or numbers */
+}
+
+.synonym-item {
+  display: flex;
+  align-items: normal; 
+  margin-bottom: 5px; 
+}
+
+.synonym-item::before {
+  content: '\2022'; /* Unicode for a bullet point */
+  display: inline-block;
+  margin-right: 8px; /* Space between bullet and text */
+  font-size: 1.2em; /* Adjust size as needed */
+  color: black; /* Set color of the bullet */
+}
 
   .scrollable-content {
     max-height: 100vh; /* Ensure the container doesn't exceed the viewport height */
@@ -365,13 +398,7 @@ mark {
     z-index: 1;
   }
 
-#tooltiptext span.red{
-  background-color: red !important;
-}
-  
-  .tooltip:hover .tooltiptext {
-    visibility: visible;
-  }
+ 
   
   .definitiontooltip:hover .definitiontooltiptext {
     visibility: visible;
