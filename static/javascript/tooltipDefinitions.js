@@ -32,6 +32,19 @@ function sanitizeId(id) {
     return id.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
 }
 
+document.querySelectorAll('.tooltip').forEach(function(tooltip) {
+    tooltip.addEventListener('click', function(event) {
+        const tooltipText = tooltip.querySelector('.tooltiptext');
+        
+        // Toggle visibility
+        tooltipText.style.visibility = tooltipText.style.visibility === 'visible' ? 'hidden' : 'visible';
+        tooltipText.style.opacity = tooltipText.style.opacity === '1' ? '0' : '1';
+
+        // Prevent click from bubbling up to document
+        event.stopPropagation();
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function() {
     document.body.addEventListener('click', (e) => {
         if (e.target.classList.contains('term')) {
@@ -58,8 +71,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         } else {
             // Hide definition when clicking outside
-            console.log('Clicked outside term');
-            hideAllDefinitions();
+            console.log('Not clicking on a tooltip definition');
+            // hideAllDefinitions();
         }
     });
 
