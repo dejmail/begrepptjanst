@@ -113,14 +113,14 @@ def filter_by_dictionary(queryset: QuerySet, dictionary: List) -> QuerySet:
 
     return queryset.filter(dictionaries__dictionary_name=dictionary)
 
-def determine_search_strategy(url_parameter, domain):
+def determine_search_strategy(url_parameter, dictionary):
 
     if len(url_parameter) == 1 and url_parameter.isupper():
         logger.info(f'Searching by single letter - {url_parameter}')
-        return filter_by_first_letter(letter=url_parameter, domain=domain), False
+        return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
     else:
         logger.info(f'Searching by entered term - {url_parameter}')
-        return retur_general_sök(url_parameter, dictionary=domain), True
+        return retur_general_sök(url_parameter, dictionary=dictionary), True
 
 def return_single_term_by_id(id: int) -> Begrepp:
 
@@ -454,12 +454,12 @@ def is_ajax(request: HttpRequest) -> HttpResponse:
     
     return request.headers.get('X-Custom-Requested-With')
         
-def determine_search_strategy(url_parameter, domain):
+def determine_search_strategy(url_parameter, dictionary):
 
     if len(url_parameter) == 1 and url_parameter.isupper():
-        return filter_by_first_letter(letter=url_parameter, domain=domain), False
+        return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
     else:
-        return retur_general_sök(url_parameter, dictionary=domain), True
+        return retur_general_sök(url_parameter, dictionary=dictionary), True
 
 def assemble_search_results_view(url_parameter, dictionary):
 
