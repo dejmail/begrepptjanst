@@ -444,13 +444,13 @@ mark {
 .close-definition {
   position: absolute; /* Absolute positioning within the tooltip */
   top: 10px; /* Distance from the top */
-  left: -32px; /* Distance from the right */
+  left: -24px; /* Distance from the right */
   background: #f1f1f1; /* Light background for the button */
   border: 1px solid #ddd; /* Border for the button */
   color: #333; /* Text color for the button */
   cursor: pointer; /* Pointer cursor on hover */
   font-size: 16px; /* Font size for the button */
-  padding: 5px 10px; /* Padding inside the button */
+  padding: 3px 6px; /* Padding inside the button */
   border-radius: 3px; /* Rounded corners for the button */
   line-height: 1; /* Align button with text */
 }
