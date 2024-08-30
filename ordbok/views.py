@@ -781,7 +781,7 @@ def prenumera_till_epost(request):
 @login_required
 def return_number_of_comments(request):
     """ Returns JSON with total number of comments, and total number of unread comments
-    based on a status of 'Beslutad', filtered by the logged-in user's groups.
+    based on a status of 'Beslutad', filtered by the logged-in user's groups and dictionaries.
     """
     if request.method == 'GET':
         # Get the logged-in user
@@ -790,13 +790,13 @@ def return_number_of_comments(request):
         # Get the groups the user belongs to
         user_groups = user.groups.all()
 
-        # Find all Domain IDs associated with the user's groups
-        domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('domän_id', flat=True)
+        # Find all Dictionary IDs associated with the user's groups
+        dictionary_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('dictionary_id', flat=True)
 
-        # Find all Begrepp IDs associated with these Domain IDs
-        begrepp_ids = Begrepp.objects.filter(begrepp_fk__domän_id__in=domain_ids).values_list('id', flat=True)
+        # Find all Begrepp IDs associated with these Dictionary IDs
+        begrepp_ids = Begrepp.objects.filter(dictionaries__dictionary_id__in=dictionary_ids).values_list('id', flat=True)
 
-        # Filter KommenteraBegrepp based on Begrepp IDs
+        # Filter KommenteraBegrepp based on the filtered Begrepp IDs
         total_comments = KommenteraBegrepp.objects.filter(begrepp__id__in=begrepp_ids)
         
         # Calculate unread comments
