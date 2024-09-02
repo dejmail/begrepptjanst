@@ -1,22 +1,26 @@
-$('[data-toggle="tooltip"]').tooltip({
-    placement: function(context, source) {
-        const position = $(source).offset();
-        if (position.top < 200) {
-            return "bottom";
-        } else if ($(window).width() - position.left < 200) {
-            return "left";
-        }
-        return "top";
-    }
-});
+// $('[data-toggle="tooltip"]').tooltip({
+//     placement: function(context, source) {
+//         console.log('synonym tooltip')
+//         const position = $(source).offset();
+//         if (position.top < 200) {
+//             return "bottom";
+//         } else if ($(window).width() - position.left < 200) {
+//             return "left";
+//         }
+//         return "top";
+//     }
+// });
 
-$('[data-toggle="tooltip"]').on('shown.bs.tooltip', function () {
-    const tooltipId = $(this).attr('aria-describedby');
-    const tooltipElement = $('#' + tooltipId);
-    const currentTop = parseInt(tooltipElement.css('top'), 10);
-    const newTop = currentTop + 250; // Example: Move it 50px down
-    tooltipElement.css('top', newTop + 'px');
-});
+// $('[data-toggle="tooltip"]').on('shown.bs.tooltip', function () {
+
+//     console.log('clicking on a synonym');
+
+//     const tooltipId = $(this).attr('aria-describedby');
+//     const tooltipElement = $('#' + tooltipId);
+//     const currentTop = parseInt(tooltipElement.css('top'), 10);
+//     const newTop = currentTop + 250; // Example: Move it 50px down
+//     tooltipElement.css('top', newTop + 'px');
+// });
 
 $("#colour-panel").removeClass('d-none');
 $("#colour-explanation").click(function(){
@@ -48,43 +52,46 @@ document.querySelectorAll('.tooltip').forEach(function(tooltip) {
 document.addEventListener("DOMContentLoaded", function() {
     document.body.addEventListener('click', (e) => {
         if (e.target.classList.contains('term')) {
-            console.log('Term clicked:', e.target);
-            e.preventDefault();
-            
-            const term = e.target;
-            const definitionId = term.getAttribute('aria-describedby');
-            const definitionElement = document.getElementById(definitionId);
-
-            // Check if the definitionElement exists
-            if (definitionElement) {
-                if (currentTerm === term) {
-                    // If clicking the same term, hide the definition
-                    console.log('Hiding definition');
-                    hideDefinition(definitionElement);
-                } else {
-                    // Show definition for the new term
-                    console.log('Showing definition');
-                    showDefinition(term, definitionElement);
-                }
-            } else {
-                console.error('Definition element not found for ID:', definitionId);
-            }
+            handleTermInteraction(e.target);
         } else {
             // Hide definition when clicking outside
             console.log('Not clicking on a tooltip definition');
             // hideAllDefinitions();
         }
-    });
+    })
 
-      
     document.body.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             hideAllDefinitions();
-    }
+        } else if (e.key === 'Enter' && e.target.classList.contains('term')) {
+            e.preventDefault();  // Prevent default Enter key behavior
+            handleTermInteraction(e.target);
+        }
     });
-});
 
+    function handleTermInteraction(term) {
+        console.log('Term clicked:', term);
 
+        const definitionId = term.getAttribute('aria-describedby');
+        const definitionElement = document.getElementById(definitionId);
+
+        if (definitionElement) {
+            if (currentTerm === term) {
+                // If clicking the same term, hide the definition
+                console.log('Hiding definition');
+                hideDefinition(definitionElement);
+            } else {
+                // Show definition for the new term
+                console.log('Showing definition');
+                showDefinition(term, definitionElement);
+            }
+        } else {
+            console.error('Definition element not found for ID:', definitionId);
+        }
+    
+    }
+
+    });
   
 function hideDefinition(definitionElement) {
     if (definitionElement) {
@@ -97,25 +104,6 @@ function hideAllDefinitions() {
     document.querySelectorAll('.definition').forEach(def => def.hidden = true);
     currentTerm = null;
 }
-
-// To make the span elements selectable with the Enter key
-var termElements = document.querySelectorAll('.term');
-
-termElements.forEach(term => {
-    term.addEventListener('keydown', function(event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            term.click();
-        }
-    });
-    
-    // Optional: If you want to handle the click event separately
-    term.addEventListener('click', function() {
-        const definitionId = term.getAttribute('aria-describedby');
-        const definitionElement = document.getElementById(definitionId);
-    });
-});
-
 
 function updateDefinitionsPosition() {
 
