@@ -118,8 +118,7 @@
 <script>
 
 document.addEventListener('click', function(event) {
-  debugger;
-  if (event.target.classList.contains('synonym')) {
+  if (event.target.parentElement.classList.contains('synonym')) {
     handleTooltipToggle(event.target);
   }
 });
