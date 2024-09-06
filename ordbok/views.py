@@ -155,9 +155,12 @@ def return_list_of_term_and_definition():
     :rtype: class of type Queryset
     """
 
-    result = Begrepp.objects.all().exclude(status='Publicera ej').values('term','definition')
-
-    return result
+    return Begrepp.objects.all().filter(
+        ~Q(status__icontains='publicera ej'),
+        ~Q(status__icontains='ej påbörjad'),
+        ~Q(status__icontains='pågår'),
+        ~Q(status__icontains='internremiss'),
+        ).prefetch_related().values()
 
 def clean_dict_of_extra_characters(incoming_dict):
 
@@ -759,22 +762,38 @@ def add_related_terms(terms_with_definitions, all_terms_dict):
     :param all_terms_dict: Dictionary of all terms where key is the term and value is its definition
     :return: List of terms with related terms added
     """
+
     # Create a term list from the all_terms_dict keys (which are the terms)
-    term_list = list(all_terms_dict.keys())
+    term_list = {i.get('term'):i.get('definition') for i in all_terms_dict}
     
     # Initialize Xlator for matching terms in definitions
-    xlator = Xlator(term_list)
+    xlator = FindTerms(term_list)
 
     # Iterate over all terms and add related terms
     for term in terms_with_definitions:
         definition = term.get('definition', '')
         # Find related terms using the Xlator
         related_terms = xlator.find_matches(definition)
+        
+        # Extract terms in context (enclosed in < >)
+        in_context_terms = extract_in_context_terms(definition)
+        
         # Add related terms to the current term
         term['related_terms'] = related_terms
-    
+        term['in_context_of'] = in_context_terms
+
     return terms_with_definitions
 
+def extract_in_context_terms(definition):
+    """
+    Extract terms enclosed in < > (like HTML tags) from the definition.
+    
+    :param definition: The text containing terms enclosed in < >
+    :return: A list of terms found within < > brackets
+    """
+    # Regular expression to find terms within < >
+    in_context_terms = re.findall(r'<(.*?)>', definition)
+    return in_context_terms
 
 def merge_term_and_synonym(qs, syn_qs):
 
@@ -823,13 +842,7 @@ def all_accepted_terms(request):
     :rtype: {JsonResponse}
     """
 
-    queryset = Begrepp.objects.all().filter(
-        ~Q(status__icontains='publicera ej'),
-        ~Q(status__icontains='ej påbörjad'),
-        ~Q(status__icontains='pågår'),
-        ~Q(status__icontains='internremiss'),
-        ).prefetch_related().values()
-    
+    queryset = return_list_of_term_and_definition()    
     
     qs_dict = {i.get('id'): i for i in queryset}
 
@@ -840,16 +853,9 @@ def all_accepted_terms(request):
     
     merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
 
-    set_trace()
     merged_result_with_related = add_related_terms(list(merged_result.values()), queryset)
     
-    #merged_result = list(merged_result.values())
-
     return JsonResponse(merged_result_with_related, json_dumps_params={'ensure_ascii':False}, safe=False)
-
-
-from django.core import serializers
-
 
 def get_term(request, id):
 
@@ -870,8 +876,13 @@ def get_term(request, id):
     
     merged_result = merge_term_and_synonym(queryset, synonym_qs)
 
+    merged_result_with_related = add_related_terms(
+        list(merged_result.values()), 
+        return_list_of_term_and_definition()
+        )
+
     if queryset:
-        return JsonResponse(list(merged_result), json_dumps_params={'ensure_ascii':False}, safe=False)
+        return JsonResponse(list(merged_result_with_related), json_dumps_params={'ensure_ascii':False}, safe=False)
     else:
         return JsonResponse({'error' : 'No terms that match that id'})
 
