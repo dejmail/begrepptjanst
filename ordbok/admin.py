@@ -160,6 +160,18 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
             ).order_by('position')#.distinct()
             
         return queryset
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        
+        # Only show dictionaries the user has permission to edit
+        if not request.user.is_superuser:
+            
+            # Assuming you have a relation like 'dictionary' in Begrepp model
+            form.base_fields['dictionaries'].queryset = form.base_fields['dictionaries'].queryset.filter(
+                groups__in=request.user.groups.all()
+            )
+        return form
 
     def position(self, obj):
         return obj.position
