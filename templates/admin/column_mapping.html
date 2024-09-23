@@ -1,0 +1,92 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div id="content" class="">
+
+<h1>Mappnings förslag av Excel kolumnar och model attribut</h1>
+
+<h4>Anpassa där till tycker förslag är fel</h4>
+
+<form method="POST" id="column-mapping-form" class="admin-form">
+    <div class="form-container">
+    
+        {% csrf_token %}
+        
+        {{ mapping_form.excel_file }}
+
+        <!-- Loop through the form fields, except the dictionary field -->
+        {% for field in mapping_form %}
+            {% if field.name != 'dictionary' %}
+            <div class="form-row">
+                    <div class="label">{{ field.label_tag }}</div>
+                    <div class="field">{{ field }}</div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Render the dictionary field only if it's not present in the Excel file -->
+        {% if not dictionary_in_excel %}
+            <div class="form-row">
+                    <div class="label">
+                        <div for="{{ mapping_form.dictionary.id_for_label }}" class="required">Välja en ordbok:</div>
+                    </div>
+                    <div class="field">
+                        {{ mapping_form.dictionary }}
+                    </div>
+                </div>
+            </div>  
+        {% endif %}        
+
+        <input type="hidden" id="column_mapping_json" name="column_mapping_json">
+        <input type="hidden" name="apply_mapping" id="apply_mapping_hidden" value="">
+        
+        <div class="submit-row submit-row-left">
+            <input type="submit" name="apply_mapping" class="default" value="Skicka Mappning">
+        </div>
+    
+    </div>
+</form>
+</div>
+
+<script>
+    document.getElementById('column-mapping-form').addEventListener('submit', function(event) {
+        // Prevent form submission to collect data
+        event.preventDefault();
+        
+        var columnMapping = {};
+        // Collect the column mappings from the form
+        var formElements = document.getElementById('column-mapping-form').elements;
+        for (var i = 0; i < formElements.length; i++) {
+            var element = formElements[i];
+            if (element.tagName === 'SELECT' && element.name) {
+                columnMapping[element.name] = element.value;
+            }
+        }
+
+        console.log("Collected column mappings: ", columnMapping);  // Log the collected mappings
+        // Serialize the mappings into JSON and store them in the hidden input field
+        document.getElementById('column_mapping_json').value = JSON.stringify(columnMapping);
+
+        // Submit the form now that the hidden field is populated
+        event.target.submit();
+    });
+</script>
+
+<style>
+    .form-container {
+        margin-top: 20px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        margin-bottom: 10px;
+    }
+
+    .label {
+        text-align: right;
+        padding-right: 20px;
+        font-weight: bold;
+    }
+
+</style>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load get_item %}
+
+{% block content %}
+    <h1>Confirm Begrepp Creation or Update</h1>
+    <p>Please review the following Begrepp objects:</p>
+
+    <form method="POST" id="confirm-form">
+        {% csrf_token %}
+        
+        <input type="hidden" name="begrepp_data_list" id="begrepp_data_list" value="{{ begrepp_data_list_json }}">
+
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    {% for header in column_headers %}
+                        <th>{{ header }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for begrepp in begrepp_data_list %}
+                <tr>
+                    <td>
+                        {% if begrepp.is_update %}
+                            <span class="text-warning">Uppdatera</span>
+                        {% else %}
+                            <span class="text-success">Skapa</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Render the dynamic data fields corresponding to the headers -->
+                    {% for header in column_headers %}
+                        <td>{{ begrepp|get_item:header }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="submit-row">
+            <input type="submit" name="confirm_import" value="Confirm and Import" class="default">
+            <a href="{% url 'admin:ordbok_begrepp_changelist' %}" class="button">Cancel</a>
+        </div>
+    </form>
+
+{% endblock %}

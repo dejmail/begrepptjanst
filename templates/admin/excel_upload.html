@@ -1,0 +1,16 @@
+{% extends "admin/base.html" %}
+{% load static %}
+{% block content %}
+{{ block.super }}
+<div id="content" class="">
+
+    <h1>Ladda upp en Excel fil</h1>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="submit-row submit-row-left">
+            <input type="submit" value="Ladda upp" class="default" name="apply">
+        </div>
+    </form>
+</div>
+{% endblock content %}

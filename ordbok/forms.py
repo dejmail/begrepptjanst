@@ -49,6 +49,11 @@ class GroupFilteredModelForm(forms.ModelForm):
 
 class TermRequestForm(forms.Form):
 
+    def __init__(self, *args, **kwargs):
+        super(TermRequestForm, self).__init__(*args, **kwargs)
+        self.fields['dictionary'].widget.attrs['readonly'] = True
+
+
     def clean(self):
         cleaned_data = super().clean()        
         return cleaned_data
@@ -61,6 +66,14 @@ class TermRequestForm(forms.Form):
         epost = self.cleaned_data.get('epost')
         return epost
     
+    def clean_dictionary(self):
+        dictionary = Dictionary.objects.filter(dictionary_long_name=self.cleaned_data.get('dictionary'))
+                # Assuming you're checking if the dictionary exists in the database
+        if not dictionary.exists():
+            raise ValidationError("The dictionary does not exist.")
+
+        return dictionary
+
     def clean_telefon(self):
         telefon = self.cleaned_data.get('telefon')
         return telefon
@@ -78,12 +91,14 @@ class TermRequestForm(forms.Form):
         return begrepp
 
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
+    dictionary = forms.CharField(max_length=64, label="Ordbok")
     utländsk_term = forms.CharField(max_length=254, required=False, label="Engelsk term")
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:") 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
     telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Telefon"})) 
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+
 
 class KommenteraTermForm(forms.Form):
 
@@ -104,6 +119,30 @@ class ExternalFilesForm(forms.ModelForm):
     kommentar = forms.CharField(widget=forms.HiddenInput())  
     support_file = forms.FileField()
 
+class ExcelImportForm(forms.Form):
+    excel_file = forms.FileField(label='Excel fil')
+
+class ColumnMappingForm(forms.Form):
+    excel_file = forms.CharField(widget=forms.HiddenInput())
+    dictionary = forms.ChoiceField(label="Select Dictionary", required=False)  # Add dictionary field here
+
+    def __init__(self, *args, **kwargs):
+        columns = kwargs.pop('columns')
+        model_fields = kwargs.pop('model_fields')
+        available_dictionaries = kwargs.pop('available_dictionaries', [])  # Pass available dictionaries
+        super().__init__(*args, **kwargs)
+        
+        # Dynamically create form fields for mapping columns to model fields
+        for col in columns:
+            self.fields[col] = forms.ChoiceField(
+                choices=[(None, '---')] + [(field, field) for field in model_fields],
+                required=False,
+                label=f"Mappa excel kolumn '{col}' mot model attribut"
+            )
+        
+        # If dictionaries are available, allow the user to choose one
+        if available_dictionaries:
+            self.fields['dictionary'].choices = [(None, '---')] + [(dict_id, dict_name) for dict_id, dict_name in available_dictionaries]
 
 class BegreppForm(GroupFilteredModelForm):
     

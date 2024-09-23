@@ -6,16 +6,19 @@ from .models import Bestallare
 
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, message, send_mail
+from django.contrib import messages
 
 
 import io
 import xlsxwriter
 import datetime
+import pandas as pd
 
 import logging
 from pdb import set_trace
 
-from ordbok.models import Dictionary
+from ordbok.models import Dictionary, Begrepp, Synonym
+from ordbok.forms import ColumnMappingForm, ExcelImportForm
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +120,6 @@ def change_dictionaries(modeladmin, request, queryset):
     logger.info("change_dictionaries action called.")
 
     if 'apply' in request.POST:
-        set_trace()
         selected_dictionaries = request.POST.getlist('dictionaries')
         if selected_dictionaries:
             dictionaries = Dictionary.objects.filter(pk__in=selected_dictionaries)
@@ -158,7 +160,6 @@ def ändra_status_till_översättning(queryset):
     
     queryset.update(status='Översättning')
     
-
 
 def skicka_epost_till_beställaren_status(queryset):
 

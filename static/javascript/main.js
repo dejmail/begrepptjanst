@@ -109,7 +109,7 @@ $("#user-input").keyup(function (event) {
     closeAllTooltips();
     
     const requestParameters = {
-        category: $('[name="category"]').val(),
+        dictionary: $('[name="dictionary"]').val(),
         q: $(this).val() 
     }
     
@@ -140,7 +140,7 @@ $("#user-input").keyup(function (event) {
 
 
 // 
-document.getElementById('category-select').addEventListener('change', function() {
+document.getElementById('dictionary-select').addEventListener('change', function() {
     document.getElementById('display-middle-column').innerHTML = '';
     document.getElementById('display-right-column').innerHTML = ''; 
     toggleVisibility('colour-panel', 'off');
@@ -163,7 +163,7 @@ document.body.addEventListener("click", function(e) {
     
     const url = new URL(e.target.href);
     const requestParameters = {
-        category: url.searchParams.get('category'), 
+        dictionary: url.searchParams.get('dictionary'), 
         q: url.searchParams.get('q') 
     }
     //changeBrowserURL(null, e.target.href);            

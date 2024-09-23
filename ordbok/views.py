@@ -520,8 +520,7 @@ def assemble_search_results_view(url_parameter, dictionary):
         'colour_status' : COLOUR_STATUS_DICT,
         'search_results' : search_results,
         'searched_for_term' : url_parameter,
-        'chosen_dictionary' : Dictionary.objects.get(
-            dictionary_name=dictionary).dictionary_long_name
+        'chosen_dictionary' : Dictionary.objects.get(dictionary_name=dictionary).dictionary_name
         }
         )    
 
@@ -537,10 +536,10 @@ def main_search_view(request):
     :rtype: HttpResponse
     """
     url_parameter = request.GET.get("q")
-    domain = request.GET.get("category")
-  
+    dictionary = request.GET.get("dictionary")
     if is_ajax(request):
-        data_dict, styled_results = assemble_search_results_view(url_parameter, domain)
+        
+        data_dict, styled_results = assemble_search_results_view(url_parameter, dictionary)
     
         mäta_sök_träff(sök_term=url_parameter,sök_data=styled_results, request=request)
         return JsonResponse(data=data_dict, safe=False)
@@ -552,7 +551,7 @@ def main_search_view(request):
     html = render_to_string('term.html', context={'begrepp' : begrepp})
     
     return render(request, "term.html", context={
-        'categories' : Dictionary.objects.all().order_by('order').values_list(
+        'dictionaries' : Dictionary.objects.all().order_by('order').values_list(
             'dictionary_name',
             'dictionary_long_name'
             ),
@@ -592,7 +591,7 @@ def term_metadata_view(request):
             if url_parameter is None:
                 return render(request, "term.html", context={})
             else:
-                return render(request, "term_.html", context=template_context)
+                return render(request, "term_full_metadata.html", context=template_context)
 
     return render(request, "base.html", context={})
 
@@ -673,8 +672,9 @@ def request_new_term(request):
                 new_term.begrepp_kontext = form.clean_kontext()
                 new_term.beställare = new_ordered
                 new_term.save()
-                
 
+                # saving not necessary again
+                new_term.dictionaries.set(form.clean_dictionary())
 
                 for filename in file_list:
                     new_file = BegreppExternalFiles()
@@ -693,7 +693,9 @@ def request_new_term(request):
         
     elif is_ajax(request):
        
-        form = TermRequestForm(initial={'begrepp' : request.GET.get('q')})
+        form = TermRequestForm(initial={'begrepp' : request.GET.get('q'),
+                                        'dictionary' : request.GET.get('dictionary')
+                                        })
         
         return render(request, 'request_new_term.html', {'form': form, 
                                                     'whichTemplate' : 'requestTerm',
@@ -818,9 +820,11 @@ def no_search_result(request):
     """
 
     url_parameter = request.GET.get("q")
+    dictionary = request.GET.get("dictionary")
     if request.method == 'GET':
         
-         return render(request, "no_search_result.html", context={'searched_for_term' : url_parameter})    
+         return render(request, "no_search_result.html", context={'searched_for_term' : url_parameter,
+                                                                  'chosen_dictionary' : dictionary})    
  
 def autocomplete_suggestions(request, attribute, search_term):
     """

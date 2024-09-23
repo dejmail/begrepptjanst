@@ -173,12 +173,13 @@
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
-function no_search_result(requested_term)
+function no_search_result(requested_term, chosen_dictionary)
+
     {
     $.ajax({
     type: "get", 
     dataType: "html",
-    url: "{% url 'no_search_result' %}?q="+requested_term,
+    url: "{% url 'no_search_result' %}?q="+requested_term+"&dictionary="+chosen_dictionary,
     success: function(data) {
       var display_html = data.html_from_view;
       document.getElementById("colour-panel").style.display = "none";
@@ -190,13 +191,13 @@ function no_search_result(requested_term)
     })
     }
 
-function populate_request_form(requested_term)
-    {    
+function populate_request_form(requested_term,chosen_dictionary)
+    {
     $.ajax({
         type: "GET",
         dataType: "html",
         headers: {"X-CUSTOM-REQUESTED-WITH": "XMLHttpRequest"},
-        url: "{% url 'request_new_term' %}?q="+requested_term,
+        url: "{% url 'request_new_term' %}?q="+requested_term+"&dictionary="+chosen_dictionary,
         beforeSend: function() {
           document.getElementById("colour-panel").style.display = "none";
           closeAllTooltips();

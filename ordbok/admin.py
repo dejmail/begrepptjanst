@@ -1,12 +1,13 @@
 import re
 from pdb import set_trace
+import logging
 
 from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.db.models import Case, IntegerField, Q, Value, When, Count
 from django.db.models.functions import Lower
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -14,25 +15,33 @@ from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from simple_history.admin import SimpleHistoryAdmin
+from django.http import HttpResponse
 
-from ordbok.forms import BegreppForm, GroupFilteredModelForm
+from ordbok.forms import BegreppForm, ColumnMappingForm, ExcelImportForm
 from ordbok.models import *
 from django.conf import settings
 
 from ordbok import admin_actions
 from ordbok.forms import BegreppExternalFilesForm, ChooseExportAttributes
-from ordbok.admin_actions import change_dictionaries, export_chosen_begrepp_attrs_action
+from ordbok.admin_actions import (change_dictionaries,
+                                  export_chosen_begrepp_attrs_action)
+
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 admin.site.site_header = """OLLI Begreppstjänst Admin
  För fakta i livet"""
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
-from ordbok.admin_functions import (DictionaryRestrictedAdminMixin, 
+from ordbok.admin_functions import (DictionaryRestrictAdminMixin,
                                     DictionaryRestrictedOtherModelAdminMixin,
-                                    DictionaryFilter, 
+                                    ConceptFileImportMixin,
+                                    DictionaryFilter,
+                                    DuplicateTermFilter,
                                     add_non_breaking_space_to_status)                             
-  
+
+logger = logging.getLogger(__name__)
+
 class SynonymInlineForm(forms.ModelForm):
 
     class Meta:
@@ -70,7 +79,12 @@ class StatusListFilter(MultipleChoiceListFilter):
     def lookups(self, request, model_admin):
         return STATUS_VAL
 
-class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
+class ExcelImportForm(forms.Form):
+    excel_file = forms.FileField()
+
+class BegreppAdmin(DictionaryRestrictAdminMixin,
+                   ConceptFileImportMixin,
+                   SimpleHistoryAdmin):
 
     class Media:
         css = {
@@ -83,6 +97,7 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
     inlines = [BegreppExternalFilesInline, SynonymInline]
 
     change_form_template = 'change_form_autocomplete.html'
+    change_list_template = "begrepp_changelist.html"
 
     form = BegreppForm
 
@@ -126,6 +141,7 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
     list_filter = (StatusListFilter,
                    ('senaste_ändring', DateRangeFilter),
                    DictionaryFilter,
+                   DuplicateTermFilter
     )
 
     filter_horizontal = ('dictionaries',)
@@ -157,9 +173,30 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
                     default=Value(0),
                     output_field=IntegerField()
                 )
-            ).order_by('position')#.distinct()
-            
-        return queryset
+            ).order_by('position')
+    
+        accessible_dictionaries = self.get_accessible_dictionaries(request)
+        return queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
+    
+    # # Override the change_view method
+    # def change_view(self, request, object_id, form_url='', extra_context=None):
+    #     obj = self.get_object(request, object_id)
+        
+    #     # Check if the user has access to the object's dictionary
+    #     accessible_dictionaries = self.get_accessible_dictionaries(request)
+    #     if obj and obj.dictionaries.filter(dictionary_id__in=accessible_dictionaries).exists():
+    #         # User has access, proceed with the normal form view
+    #         return super().change_view(request, object_id, form_url, extra_context)
+    #     else:
+    #         # User does not have access, show a read-only template
+    #         context = {
+    #             'object': obj,
+    #             'title': f'View Begrepp: {obj.term}',
+    #             'opts': self.model._meta,
+    #             'has_view_permission': True,
+    #             'has_change_permission': False,  # No permission to edit
+    #         }
+    #         return render(request, 'admin/begrepp_readonly.html', context)
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
@@ -172,7 +209,8 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
                 groups__in=request.user.groups.all()
             )
         return form
-
+    
+    
     def position(self, obj):
         return obj.position
     position.short_description = 'Position'
@@ -194,7 +232,6 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
             delta = obj.diff_against(obj.prev_record)
             return_text = ""
             for field in delta.changed_fields:
-                # set_trace()
                 return_text += f"""<p><strong>{field}</strong> ändrad från --> <span class="text_highlight_yellow">{getattr(delta.old_record, field)}</span></br></br>
                 till --> <span class="text_highlight_green">{getattr(delta.new_record, field)}</span></p>"""
             return mark_safe(return_text)
@@ -271,7 +308,7 @@ class BegreppAdmin(DictionaryRestrictedAdminMixin, SimpleHistoryAdmin):
 
     status_button.short_description = 'Status'
 
-class BestallareAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin):
+class BestallareAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
     list_display = ('beställare_namn',
                     'beställare_email',
@@ -294,7 +331,7 @@ class BestallareAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin
             return mark_safe(display_text)
         return display_text
 
-class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
+class DictionaryAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
     list_display = ('dictionary_name',
                     'dictionary_id',

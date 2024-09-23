@@ -353,6 +353,7 @@ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
 
 
 
+
   .buttonwidth {
     width: 100px;
     text-align: center;
@@ -362,7 +363,9 @@ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
     font-size: 12px; 
   }
 
-
+.submit-row-left {
+    text-align: left;
+}
 mark {
   padding-left: .1em;
   padding-top: .2em;
