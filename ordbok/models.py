@@ -56,7 +56,7 @@ class Begrepp(models.Model):
     begrepp_kontext = models.TextField(default='Inte definierad')
     senaste_ändring = models.DateTimeField(auto_now=True, verbose_name='Senaste ändring')
     datum_skapat = models.DateTimeField(auto_now_add=True, verbose_name='Datum skapat')
-    beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE, related_name="begrepp")
+    beställare = models.ForeignKey('Bestallare', to_field='id', on_delete=models.CASCADE, related_name="begrepp", null=True, blank=True)
     definition = models.TextField(blank=True)
     tidigare_definition_och_källa = models.TextField(blank=True, null=True)
     externt_id = models.CharField(max_length=255, null=True, verbose_name="Kod", blank=True)
