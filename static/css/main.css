@@ -140,6 +140,13 @@ text-decoration: line-through;
     padding-top: 1em;
   }
 
+  .tag-avrådd {
+    border-color: #f44336;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+  }
+
   .btn-avrådd {
       border-color: #f44336;
       background-color: rgba(255, 0, 0, 0.8);
@@ -154,12 +161,20 @@ text-decoration: line-through;
       border-radius: 4px;
     }
 
+  .tag-grön {
+    background-color: rgb(105, 189, 27);
+  }
+
 .btn-grön {
       border-color: rgb(105, 189, 27);
       background-color: rgb(105, 189, 27);
       color: rgb(0, 0, 0);
       border-radius: 4px;
     }
+
+.tag-oklart{
+background-color: rgb(255, 126, 41);
+}
 
 .btn-oklart {
       border-color: rgb(255, 126, 41);
@@ -175,6 +190,10 @@ text-decoration: line-through;
       border-radius: 4px;
     }
 
+.tag-light-blue {
+      background-color: rgb(222,234,246);
+
+    }
     .btn-light-blue{
       border-color: rgb(222,234,246);
       background-color: rgb(222,234,246);
@@ -487,4 +506,14 @@ mark {
 
 #close-all-tooltips:hover {
   background-color: #c00; /* Darker red on hover */
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 4px;
+  font-size: 85%;
+  font-weight: 700;
+  border-radius: 3px;
+  color: #ffffff;
+  white-space: nowrap;
 }

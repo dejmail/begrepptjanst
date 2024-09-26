@@ -64,7 +64,7 @@ class Begrepp(models.Model):
     annan_ordlista = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(max_length=255, choices=STATUS_VAL, default=DEFAULT_STATUS)
     term = models.CharField(max_length=255, default='Angavs ej')
-    plural = models.CharField(max_length=10, null=True)
+    plural = models.CharField(max_length=10, null=True, blank=True)
     utländsk_term = models.CharField(max_length=255, blank=True)
     id_vgr = models.CharField(max_length=255, null=True, blank=True)
     anmärkningar = models.TextField(null=True, blank=True)
@@ -206,3 +206,17 @@ class SökFörklaring(models.Model):
     def __str__(self):
         return self.sök_term
     
+class ConfigurationOptions(models.Model):
+
+    class Meta:
+        verbose_name = ('Inställningar')
+        verbose_name_plural = "Inställningar"
+        app_label = 'ordbok'
+    
+    name = models.CharField(max_length=255)     
+    description = models.TextField()
+    visible = models.BooleanField()
+    config = models.JSONField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name

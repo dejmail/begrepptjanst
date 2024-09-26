@@ -51,13 +51,6 @@ class DictionaryRestrictAdminMixin:
     memberships and their relation to dictionaries.
     """
 
-    # def get_queryset(self, request):
-    #     qs = super().get_queryset(request)
-    #     if request.user.is_superuser:
-    #         return qs
-    #     user_groups = request.user.groups.all()
-    #     return qs.filter(Q(dictionaries__groups__in=user_groups)).distinct()
-    
     def get_accessible_dictionaries(self, request):
         """
         Returns the dictionaries accessible to the user's groups.
@@ -93,7 +86,7 @@ class DictionaryRestrictedOtherModelAdminMixin:
         ).distinct()
 
         # Filter the queryset based on the accessible dictionaries
-        return qs.filter(begrepp__dictionaries__in=accessible_dictionaries).distinct()
+        return qs.filter(begrepp__dictionaries__in=accessible_dictionaries)
 
 class ConceptFileImportMixin:
 
@@ -182,57 +175,51 @@ class ConceptFileImportMixin:
                     'dictionary_in_excel': dictionary_in_excel  # Pass whether dictionary is in the Excel file
                 })
 
-            # Initial file upload form
-            form = ExcelImportForm()
-            return render(request, 'admin/excel_upload.html', {
-                'form': form
-            })
-        
-          # Step 2: Handle intermediate confirmation page
+        # Step 2: Handle intermediate confirmation page
         if 'apply_mapping' in request.POST:
-            
-            # Collect the data to be created/updated based on the mappings
+            # Assume form contains the parsed data from the uploaded file
+
             column_mapping = json.loads(request.POST.get('column_mapping_json'))
             df = pd.read_excel(io.BytesIO(base64.b64decode(request.POST.get('excel_file'))), engine='openpyxl')
             column_headers = df.columns.to_list()
-
-            try:
-                if request.user.email in ['',None]:
-                    messages.error(request, "Din profil har ingen registerad epost address, så sparingsprocess kan inte fortsätta.")
-                    return redirect(reverse('admin:login')) 
-                else:
-                    beställare = Bestallare.objects.filter(beställare_email=request.user.email).first()
-                    messages.info(request, "Din profil har en beställar-ID som kommer användas till importeringen.")
-            except Bestallare.DoesNotExist:                
-                if not request.user.email:
-                    messages.error(request, 'Inloggad användare har ingen registrerad epost address')
-
-                beställare = Bestallare.objects.create(
-                    user=request.user,
-                    name=request.user.get_full_name(),
-                    email=request.user.email
-                )
-                messages.info(request, "En beställare id har skapats åt din användareprofil.")
             available_dictionaries = self.get_accessible_dictionaries(request)
-            # Prepare a list of Begrepp data to show in confirmation page
+    
+            updated_records = []
             begrepp_data_list = []
+            
             for _, row in df.iterrows():
                 data = {column_mapping[col]: row[col] for col in df.columns if column_mapping.get(col)}
-                data['term'] = conditional_lowercase(data.get('term'))  # Assume term is the unique identifier
-                existing_begrepp = Begrepp.objects.filter(term=data.get('term'), dictionaries__in=available_dictionaries).exists()
-                # Mark if it's going to be created or updated
-                data['definition'] = data.get('definition').replace('\u200b','').strip()
-                data['is_update'] = existing_begrepp
-                data['beställare'] = beställare.pk
-                data['dictionary'] = column_mapping.get('dictionary')
-                begrepp_data_list.append(data)
+                data['term'] = conditional_lowercase(data.get('term'))
+                data['definition'] = data.get('definition').replace('\u200b','').strip()            
+                data['dictionary'] = column_mapping.get('dictionary') 
+                
+                try:        
+                    
+                    existing_begrepp = Begrepp.objects.get(term=data.get('term'), dictionaries__in=available_dictionaries)
+                                            
+                    is_changed = False
+                    for field, value in data.items():
+                        # Get the corresponding field value from the existing object
+                        existing_value = getattr(existing_begrepp, field, None)
+                        if str(existing_value) != str(value):  # Convert both to string for safe comparison
+                            is_changed = True
+                            continue
+                    
+                    data['is_changed'] = is_changed        
+                    data['is_new'] = True
+                    begrepp_data_list.append(data)
+
+                except Begrepp.DoesNotExist:
+                    # Create a new Begrepp if it doesn't exist
+                    data['is_changed'] = False 
+                    data['is_new'] = True   
+                    begrepp_data_list.append(data)
             
-            # Render the confirmation page
+            #Render the confirmation page
             return render(request, 'admin/confirm_mapping.html', {
                 'begrepp_data_list': begrepp_data_list,
                 'begrepp_data_list_json': json.dumps(begrepp_data_list, ensure_ascii=False),
                 'column_headers': column_headers,
-
             })
 
         # Step 3: Final creation or update after confirmation
@@ -251,14 +238,10 @@ class ConceptFileImportMixin:
                 # additionally is_update is not part of the Begrepp model.
                 
                 dictionary_id = data.pop('dictionary', [])
-                data.pop('is_update', None)
+                data.pop('is_changed', None)
+                data.pop('is_new', None)
 
-                data['beställare'] = Bestallare.objects.filter(pk=data.get('beställare')).first()
-
-                begrepp_instance, created = Begrepp.objects.update_or_create(
-                    term=data.get('term'),
-                    defaults=data
-                )
+                begrepp_instance, created = Begrepp.objects.update_or_create(term=data.get('term'), defaults=data)
                 
                 # Handle the M2M relation (dictionaries)
                 if dictionary_id:
@@ -274,12 +257,8 @@ class ConceptFileImportMixin:
             'form': form
         })
 
-# from django.contrib import admin
-# from django.db.models import Count
-# from .models import Begrepp
-
 class DuplicateTermFilter(admin.SimpleListFilter):
-    title = 'Dupliceringar av termer'
+    title = 'Term dubbletter'
     parameter_name = 'duplicates'
 
     def lookups(self, request, model_admin):

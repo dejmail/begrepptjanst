@@ -96,38 +96,13 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
     
     inlines = [BegreppExternalFilesInline, SynonymInline]
 
-    change_form_template = 'change_form_autocomplete.html'
+    change_form_template = 'begrepp_change_form.html'
     change_list_template = "begrepp_changelist.html"
 
     form = BegreppForm
 
-    fieldsets = [
-        ['Main', {
-        'fields': [('datum_skapat','senaste_ändring'), ('status', 'id_vgr',)],
-        }],
-        [None, {
-        #'classes': ['collapse'],
-        'fields' : ['term',
-                    'definition',
-                    'link',
-                    'källa',
-                    'tidigare_definition_och_källa',
-                    'anmärkningar',
-                    'utländsk_term',
-                    'term_i_system',
-                    ('annan_ordlista', 'externt_id'),
-                    ('begrepp_kontext'),
-                    ('beställare','beställare__beställare_epost'),
-                    'kommentar_handläggning',
-                    'dictionaries']
-        }]
-    ]
-
-    readonly_fields = ['senaste_ändring','datum_skapat','beställare__beställare_epost']
+    readonly_fields = ['senaste_ändring','datum_skapat']
     history_list_display = ['changed_fields']
-
-    def beställare__beställare_epost(self, obj):
-        return obj.beställare.beställare_email
 
     save_on_top = True
 
@@ -159,7 +134,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
     def get_queryset(self, request):
 
         queryset = super().get_queryset(request)
-
+        
         if request.GET.get('q'):
             search_term = request.GET.get('q')
             queryset = queryset.annotate(
@@ -174,33 +149,15 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
                     output_field=IntegerField()
                 )
             ).order_by('position')
-    
-        accessible_dictionaries = self.get_accessible_dictionaries(request)
-        return queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
-    
-    # # Override the change_view method
-    # def change_view(self, request, object_id, form_url='', extra_context=None):
-    #     obj = self.get_object(request, object_id)
-        
-    #     # Check if the user has access to the object's dictionary
-    #     accessible_dictionaries = self.get_accessible_dictionaries(request)
-    #     if obj and obj.dictionaries.filter(dictionary_id__in=accessible_dictionaries).exists():
-    #         # User has access, proceed with the normal form view
-    #         return super().change_view(request, object_id, form_url, extra_context)
-    #     else:
-    #         # User does not have access, show a read-only template
-    #         context = {
-    #             'object': obj,
-    #             'title': f'View Begrepp: {obj.term}',
-    #             'opts': self.model._meta,
-    #             'has_view_permission': True,
-    #             'has_change_permission': False,  # No permission to edit
-    #         }
-    #         return render(request, 'admin/begrepp_readonly.html', context)
+        if not request.user.is_superuser:
+            accessible_dictionaries = self.get_accessible_dictionaries(request)
+            return queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
+        else:
+            return queryset
     
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        
+                
         # Only show dictionaries the user has permission to edit
         if not request.user.is_superuser:
             
@@ -208,8 +165,42 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
             form.base_fields['dictionaries'].queryset = form.base_fields['dictionaries'].queryset.filter(
                 groups__in=request.user.groups.all()
             )
+
         return form
     
+    # def changelist_view(self, request, extra_context=None):
+    #     extra_context = extra_context or {}
+    #     extra_context['available_dictionaries'] = Dictionary.objects.all()
+    #     return super(BegreppAdmin, self).changelist_view(request, extra_context=extra_context)
+    
+    def get_fieldsets(self, request, obj=None):
+        # Get visible config in the required order
+        config = ConfigurationOptions.objects.get(name='visibleOnFrontPage').config
+
+        # Combine regular fields and ManyToManyFields
+        all_fields = list(self.model._meta.fields) + list(self.model._meta.many_to_many)
+
+        # Initialize dictionaries to hold the ordered fields
+        visible_fields = []
+        other_fields = []
+
+        # Loop through the config to ensure the correct order of visible fields
+        for field_name in config:
+            if any(field.name == field_name for field in all_fields):
+                visible_fields.append(field_name)
+
+        # Add remaining fields to 'other_fields' in any order
+        for field in all_fields:
+            if field.name != 'id' and field.name not in visible_fields:
+                other_fields.append(field.name)
+
+            # Define the fieldsets based on the lists of fields
+        fieldsets = (
+            ('Synliga attribut på framsida', {'fields': visible_fields}),
+            ('Övriga attribut', {'fields': other_fields}),
+        )
+        return fieldsets
+
     
     def position(self, obj):
         return obj.position
@@ -242,15 +233,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
         actions['change_dictionaries'] = (change_dictionaries, 'change_dictionaries', "Change Dictionary of selected Begrepp")
         return actions
 
-    def changelist_view(self, request, extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['available_dictionaries'] = Dictionary.objects.all()
-        return super(BegreppAdmin, self).changelist_view(request, extra_context=extra_context)
-
-    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
-        extra_context = extra_context or {}
-        extra_context['available_dictionaries'] = Dictionary.objects.all()
-        return super(BegreppAdmin, self).changeform_view(request, object_id, form_url, extra_context=extra_context)
+  
 
     def export_chosen_attrs_view(request):
 
@@ -290,20 +273,21 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
     list_dictionaries.short_description = 'Ordbok'
     list_dictionaries.verbose = 'Ordböcker'
     
+    
     def status_button(self, obj):
 
         if (obj.status == 'Avråds') or (obj.status == 'Avrådd'):
-            display_text = f'<button class="btn-xs btn-avrådd text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<span class="tag tag-avrådd text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
         elif (obj.status == 'Publicera ej'):
-            display_text = f'<button class="btn-xs btn-light-blue text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<span class="tag tag-light-blue text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
         elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
-            display_text = f'<button class="btn-xs btn-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<span class="tag tag-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
         elif (obj.status == 'Preliminär'):
-            display_text = f'<button class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<span class="btn-xs btn-gul text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
         elif (obj.status == 'Beslutad'):
-            display_text = f'<button class="btn-xs btn-grön text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<span class="tag tag-grön text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
         else:
-            display_text = f'<button class="btn-xs btn-white text-monospace">{add_non_breaking_space_to_status(obj.status)}</button>'
+            display_text = f'<span class="tag btn-white text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
@@ -455,6 +439,10 @@ class BegreppExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin,
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+class ConfigurationOptionsAdmin(admin.ModelAdmin):
+    
+    model = ConfigurationOptions
+
 admin.site.register(Begrepp, BegreppAdmin)
 admin.site.register(Bestallare, BestallareAdmin)
 admin.site.register(Dictionary, DictionaryAdmin)
@@ -463,4 +451,5 @@ admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
 admin.site.register(SökFörklaring, SökFörklaringAdmin)
 admin.site.register(SökData, SökDataAdmin)
 admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
+admin.site.register(ConfigurationOptions, ConfigurationOptionsAdmin)
 

@@ -149,11 +149,14 @@ class BegreppForm(GroupFilteredModelForm):
     class Meta:
         model = Begrepp
         exclude = ()
+        fields = '__all__'
         help_texts = {'term': 'Rullistan visar termer redan i DB',
                       'definition': 'Visas som HTML på framsidan',
                       'källa': 'Rullistan visar termer redan i DB'}
         
-    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def clean(self):
         
         cleaned_definition = self.cleaned_data.get('definition')
@@ -162,7 +165,6 @@ class BegreppForm(GroupFilteredModelForm):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
         
         return self.cleaned_data
-
 
 class BegreppExternalFilesForm(forms.ModelForm):
 

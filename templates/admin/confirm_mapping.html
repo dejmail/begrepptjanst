@@ -1,4 +1,5 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/base.html" %}
+{% load static %}
 {% load get_item %}
 
 {% block content %}
@@ -24,10 +25,10 @@
                 {% for begrepp in begrepp_data_list %}
                 <tr>
                     <td>
-                        {% if begrepp.is_update %}
-                            <span class="text-warning">Uppdatera</span>
-                        {% else %}
-                            <span class="text-success">Skapa</span>
+                        {% if begrepp.is_changed %}
+                            <span class="tag tag-warning">Uppdatera</span>
+                        {% elif begrepp.is_new %}
+                            <span class="tag tag-success">Ny</span>
                         {% endif %}
                     </td>
                     
@@ -45,5 +46,18 @@
             <a href="{% url 'admin:ordbok_begrepp_changelist' %}" class="button">Cancel</a>
         </div>
     </form>
+
+|<style>
+
+
+.tag-warning {
+    background-color: #ffb84d; /* Orange warning color */
+}
+
+.tag-success {
+    background-color: #32cd32; /* Green success color */
+}
+
+</style>
 
 {% endblock %}
