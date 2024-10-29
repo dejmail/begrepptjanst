@@ -33,6 +33,8 @@ from django.db.models import QuerySet
 from typing import List, Dict
 
 
+
+
 from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, replace_nbs_with_normal_space, sort_begrepp_keys)
@@ -882,13 +884,15 @@ def get_autocomplete_suggestions(attribute, search_term):
 
 def get_dictionary_data(request, dictionary):
 
+    logger.info(f'Getting card text for {dictionary}')
     try:
-        dictionary_instance = Dictionary.objects.get(dictionary_name=dictionary)
+        dictionary_instance = Dictionary.objects.get(dictionary_name=unquote(dictionary))
         # Convert to a dictionary and filter out non-field attributes
         data = {k: v for k, v in dictionary_instance.__dict__.items() if not k.startswith('_')}
         
         return JsonResponse(data)
     except Dictionary.DoesNotExist:
+        logger.info(f'Requestion dictionary *{dictionary}* does not exist')
         return JsonResponse({'error': 'Dictionary not found'}, status=404)
 
 
