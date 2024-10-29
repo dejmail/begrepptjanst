@@ -3,7 +3,9 @@ document.getElementById('dictionary-select').addEventListener('change', function
     console.log('Getting new about text for card');
     console.log(`${baseUrl}get-dictionary-content/${selectedValue}`);
     // Make an AJAX call to the Django view
-    fetch(`${baseUrl}get-dictionary-content/${selectedValue}`)
+    const encodedName = encodeURIComponent(selectedValue);
+    console.log(`Encoded dictionary name = ${encodedName}`);
+    fetch(`${baseUrl}get-dictionary-content/${encodedName}`)
       .then(response => response.json())
       .then(html => {
         document.getElementById('about-card-text').innerHTML = html.dictionary_context;
