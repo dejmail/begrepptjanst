@@ -1,4 +1,4 @@
-Django==4.2.15
+Django==4.2.16
 django-admin-multiple-choice-list-filter==0.1.1
 django-admin-rangefilter==0.8.1
 django-crispy-forms==1.9.0
