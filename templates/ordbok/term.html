@@ -38,7 +38,7 @@
         <ul class="list-inline d-flex justify-content-between flex-wrap mt-2">
           {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
             <li class="list-inline-item">
-              <a href="{% url 'begrepp' %}?dictionary={{ categories.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>
+              <a href="{% url 'begrepp' %}?dictionary={{ dictionaries.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>
             </li>
           {% endfor %}
         </ul>
@@ -49,6 +49,7 @@
   var home_url ='{% url "begrepp" %}';
 </script>
 <script src="{% static 'javascript/captureInput.js' %}"></script>
+<script src="{% static 'javascript/about-card-text.js' %}"></script>
 
 {% endblock search-middle-column %}
 
@@ -61,22 +62,19 @@
 
 {% block replaceable-content %}
 
-<section id="om_olli">
+<section id="about-card">
 <div class="row mt-2" id="replaceable-content-row">
     <div class="col-4" id="replaceable-content-left-column"></div>
     <div class="col-4 text-left" id="replaceable-content-middle-column">
 
 	<div class="row" style="text-align: center;"> 
-		<h5 class="mx-auto" style="width: 100px;">Om OLLI</h5>
-		  <div class="card mt-3" style="background-color:#aed9f0;">
-		  <div class="card-body text-justify" style="font-family: Calibri;">
-			<p>OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och 
-			sjukvård. Tjänsten innehåller terminologi som är viktig för verksamheter inom hälso- 
-			och sjukvård. Tanken är att OLLI ska användas som en uppslagsbok och vara ett stöd 
-			för enhetligt språk inom VGR.</p>
+		<h5 class="mx-auto" style="width: 150px;">Om ordlistan</h5>
+		  <div class="card mt-2" style="background-color:#aed9f0;">
+		  <div id="about-card-text" class="card-body text-justify" style="font-family: Calibri;">
+        <p>OLLI är VGR:s begreppstjänst, en ordlista över termer som används inom hälso- och sjukvård. Tjänsten innehåller terminologi som är viktig för verksamheter inom hälso- och sjukvård. 
+          Tanken är att OLLI ska användas som en uppslagsbok och vara ett stöd för enhetligt språk inom VGR.</p>
 
-            <p>För kliniska termer hänvisas till Snomed CT. <a href="https://insidan.vgregion.se/stod-och-tjanster/amnen-a-o/informatik/snomed-ct/" target="_blank" rel="noopener">Läs mer om Snomed CT</a>(Endast åtkomligt 
-			för anställda i VGR)</p>
+        <p>För kliniska termer hänvisas till Snomed CT. <a href="https://insidan.vgregion.se/stod-och- tjanster/amnen-a-o/informatik/snomed-ct/" target="_blank" rel="noopener">Läs mer om Snomed CT</a>(Endast åtkomligt för anställda i VGR)</p>
 		  </div>
 		</div>
 	  </div>

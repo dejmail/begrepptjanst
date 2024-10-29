@@ -880,6 +880,17 @@ def get_autocomplete_suggestions(attribute, search_term):
     # Extract just the value
     return [value for _, _, value in suggestions][:6]
 
+def get_dictionary_data(request, dictionary):
+
+    try:
+        dictionary_instance = Dictionary.objects.get(dictionary_name=dictionary)
+        # Convert to a dictionary and filter out non-field attributes
+        data = {k: v for k, v in dictionary_instance.__dict__.items() if not k.startswith('_')}
+        
+        return JsonResponse(data)
+    except Dictionary.DoesNotExist:
+        return JsonResponse({'error': 'Dictionary not found'}, status=404)
+
 
 def redirect_to_all_beslutade_terms(request):
 
