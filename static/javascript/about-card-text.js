@@ -8,7 +8,7 @@ document.getElementById('dictionary-select').addEventListener('change', function
     fetch(`${baseUrl}get-dictionary-content/${encodedName}`)
       .then(response => response.json())
       .then(html => {
-        let decodedContent = decodeURIComponent(data);
+        let decodedContent = decodeURIComponent(html);
         document.getElementById('about-card-text').innerHTML = decodedContent.dictionary_context;
       })
       .catch(error => console.error('Error fetching content:', error));
