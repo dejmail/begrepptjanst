@@ -67,9 +67,10 @@ class TermRequestForm(forms.Form):
         return epost
     
     def clean_dictionary(self):
-        dictionary = Dictionary.objects.filter(dictionary_long_name=self.cleaned_data.get('dictionary'))
+        
+        dictionary = Dictionary.objects.filter(dictionary_long_name=self.cleaned_data.get('dictionary')).first()
                 # Assuming you're checking if the dictionary exists in the database
-        if not dictionary.exists():
+        if not dictionary:
             raise ValidationError("The dictionary does not exist.")
 
         return dictionary

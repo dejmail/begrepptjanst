@@ -619,10 +619,13 @@ def handle_file_uploads(request_files):
 
 def get_or_create_orderer(name, email):
 
+    """ Return one and only one person if they already exist within the 
+    database """
+
     return Bestallare.objects.filter(
                     Q(beställare_namn__icontains=name) |
                     Q(beställare_email__icontains=email)
-                )
+                ).first()
 
 
 def request_new_term(request):
@@ -659,7 +662,7 @@ def request_new_term(request):
                 existing_orderer = get_or_create_orderer(form.clean_name(),
                                                          form.clean_epost)
 
-                if existing_orderer and len(existing_orderer) == 1:
+                if existing_orderer is not None:
                     new_ordered = existing_orderer
                 else:
                     new_ordered = Bestallare()
@@ -676,7 +679,9 @@ def request_new_term(request):
                 new_term.save()
 
                 # saving not necessary again
-                new_term.dictionaries.set(form.clean_dictionary())
+
+                chosen_dictionary = form.clean_dictionary()
+                new_term.dictionaries.set([chosen_dictionary])
 
                 for filename in file_list:
                     new_file = BegreppExternalFiles()
@@ -694,8 +699,12 @@ def request_new_term(request):
                                                         status=500)
         
     elif is_ajax(request):
-       
-        form = TermRequestForm(initial={'begrepp' : request.GET.get('q'),
+        
+        if len(request.GET.get('q')) == 1: 
+            term = ''
+        else: 
+            term = request.GET.get('q')
+        form = TermRequestForm(initial={'begrepp' : term,
                                         'dictionary' : request.GET.get('dictionary')
                                         })
         
