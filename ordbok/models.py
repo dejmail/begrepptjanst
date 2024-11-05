@@ -11,10 +11,6 @@ DEFAULT_STATUS = "Ej Påbörjad"
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Avställd', "Avställd"),
               ('Beslutad', 'Beslutad'), 
-              ('Definiera ej', 'Definiera ej'), 
-              ('För validering', 'För validering'), 
-              ("Internremiss", "Internremiss"),
-              ('Preliminär', 'Preliminär'),
               ('Publicera ej', 'Publicera ej'),
               ('Pågår', 'Pågår'), 
               (DEFAULT_STATUS, DEFAULT_STATUS))

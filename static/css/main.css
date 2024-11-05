@@ -92,6 +92,14 @@ nav {
   font-size: 11px;
 }
 
+.dark-text {
+  color: darkslategrey;
+}
+
+.light-text {
+  color: white;
+}
+
 strike {
 text-decoration: line-through;
 }
@@ -514,6 +522,10 @@ mark {
   font-size: 85%;
   font-weight: 700;
   border-radius: 3px;
-  color: #ffffff;
   white-space: nowrap;
+}
+
+.help, p.help, form p.help, div.help, form div.help, div.help li {
+  font-size: 0.6875rem;
+  color: var(--body-quiet-color);
 }

@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django_admin_multiple_choice_list_filter',
     'rangefilter',
     'simple_history',    
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
@@ -114,3 +115,5 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = False
+
+DEFAULT_CHARSET = "utf-8"

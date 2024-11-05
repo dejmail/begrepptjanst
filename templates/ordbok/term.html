@@ -13,37 +13,56 @@
 	<div class="col-3" id="search-left-column"></div>
 	{% endblock search-left-column %}
 	{% block search-middle-column %}
-<div class="col-6" id="search-middle-column">
-    <div class="d-flex">
-        <form class="d-flex w-100" method="GET" action="{% url 'begrepp' %}" onsubmit="return false;" role="search">
-            <label for="dictionary-select" class="sr-only">Välj ordbok att söka i</label>
-            <select id="dictionary-select" name="dictionary" class="form-control form-control-md mr-4 custom-select" style="width: 220px;">
-              {% for dict_value, dict_label in dictionaries %}
-                <option value="{{ dict_value }}" {% if forloop.first %}selected{% endif %}>
-                  {{ dict_label }}
-                </option>
-              {% endfor %}
-            </select>
-          
-            <div class="input-group w-100">
-              <label for="user-input" class="sr-only">Sök</label>
-              <div class="input-group-prepend">
-                <span class="input-group-text" id="search-icon"><i class="fas fa-search" aria-label="Sökikon"></i></span>
-              </div>
-              <input id="user-input" name="q" class="form-control form-control-md" type="text" placeholder="Sök" aria-label="Sök fält för önskad term">
+    <div class="col-6" id="search-middle-column">
+        <!-- Help text in its own row -->
+        <div class="row">
+            <div class="col-12">
+                <div class="help mb-1" id="helptext">
+                    <div>Välj ordlista</div>
+                </div>
             </div>
-          </form>
+        </div>
+        
+        <!-- Dropdown and Input Fields in the same row -->
+        <div class="row">
+            <form class="d-flex w-100" method="GET" action="{% url 'begrepp' %}" onsubmit="return false;" role="search">
+                <div class="col-4">
+                    <label for="dictionary-select" class="sr-only">Välj ordlista</label>
+                    <select id="dictionary-select" name="dictionary" class="form-control form-control-md custom-select">
+                        {% for dict_value, dict_label in dictionaries %}
+                            <option value="{{ dict_value }}" {% if forloop.first %}selected{% endif %}>
+                                {{ dict_label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-8">
+                    <div class="input-group w-100">
+                        <label for="user-input" class="sr-only">Sök</label>
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="search-icon"><i class="fas fa-search" aria-label="Sökikon"></i></span>
+                        </div>
+                        <input id="user-input" name="q" class="form-control form-control-md" type="text" placeholder="Sök" aria-label="Sök fält för önskad term">
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Alphabetical Navigation -->
+        <nav aria-label="Alfabetisk navigation som väljer alla ord som börjar med en bokstav" class="mb-0">
+            <ul class="list-inline d-flex justify-content-between flex-wrap mt-2">
+                {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
+                    <li class="list-inline-item">
+                        <a href="{% url 'begrepp' %}?dictionary={{ dictionaries.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </nav>
     </div>
-    <nav aria-label="Alfabetisk navigation som väljer alla ord som börjar med en bokstav" class="mb-0">
-        <ul class="list-inline d-flex justify-content-between flex-wrap mt-2">
-          {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
-            <li class="list-inline-item">
-              <a href="{% url 'begrepp' %}?dictionary={{ dictionaries.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>
-            </li>
-          {% endfor %}
-        </ul>
-      </nav>
-</div>
+    
+    
+
+
 
 <script>
   var home_url ='{% url "begrepp" %}';
