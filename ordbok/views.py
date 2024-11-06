@@ -12,8 +12,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.core.mail import EmailMessage, send_mail
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
-from django.db import connection, transaction
+from django.db import connection
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.forms.models import model_to_dict
@@ -27,8 +26,6 @@ from django.shortcuts import redirect, render
 from django.template.loader import render_to_string
 from django.urls import get_script_prefix, reverse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
-from django.views.generic import ListView
 from django.db.models import QuerySet
 from typing import List, Dict
 
@@ -49,11 +46,7 @@ COLOUR_STATUS_DICT = {'Avråds' : 'table-danger',
                     'Avställd' : 'table-danger',
                     'Beslutad': 'table-success',
                     'Pågår': 'table-warning',
-                    'Preliminär': 'table-warning',
-                    'För validering': 'table-warning',
-                    'Internremiss': 'table-warning',
                     'Ej Påbörjad': 'table-warning',
-                    'Definiera ej': 'table-success',
                     'Publiceras ej' : 'table-light-blue'}
 
 def retur_general_sök(url_parameter, dictionary):
@@ -188,12 +181,6 @@ def highlight_search_term_i_definition(search_term : str,
     :rtype: class of type Queryset
     """
 
-    # for idx, begrepp in enumerate(begrepp_dict_list):
-    #     set_trace()
-    #     begrepp_dict_list[idx]['definition'] = begrepp.get('definition').replace(search_term, f'<mark>{search_term}</mark>')
-        
-    # return begrepp_dict_list
-
     # Pattern to match <span> tags that contain the search term
     span_pattern = re.compile(
         rf"(<span[^>]*>[^<]*?{re.escape(search_term)}[^<]*?</span>)", 
@@ -310,15 +297,8 @@ def creating_tooltip_hover_substitution_object(all_terms_and_definitions : Query
         ''' for record in all_terms_and_definitions}
     
     logger.debug(f'Number of records in {len(terms_with_tooltips)=}') 
-    logger.debug(f"After tooltip adding - (patient, {terms_with_tooltips.get('patient')}")
-    
+        
     clean_terms_with_tooltips = clean_dict_of_extra_characters(terms_with_tooltips)
-    
-    logger.debug(f"After cleaning tooltip of extra chars - (patient, {clean_terms_with_tooltips.get('patient')}")
-    
-    # Would be good to be able to send a list of plurals that we could 
-    # group togther in the pattern creation, but as Xlator is a dict
-    # class, I'm not sure how to accomplish that.
 
     xlator_instance = Xlator(clean_terms_with_tooltips)
 

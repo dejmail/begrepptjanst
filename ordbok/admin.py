@@ -275,16 +275,19 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
     
     
     def status_button(self, obj):
-        if (obj.status == 'Avråds') or (obj.status == 'Avrådd') or (obj.status == 'Avställd'):
-            display_text = f'<span class="tag tag-avrådd text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
-        elif (obj.status == 'Publicera ej'):
-            display_text = f'<span class="tag tag-light-blue text-monospace dark-text">{add_non_breaking_space_to_status(obj.status)}</span>'
-        elif (obj.status == 'Pågår') or (obj.status == 'Ej Påbörjad'):
-            display_text = f'<span class="tag tag-oklart text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
-        elif (obj.status == 'Beslutad'):
-            display_text = f'<span class="tag tag-grön light-text text-monospace">{add_non_breaking_space_to_status(obj.status)}</span>'
-        else:
-            display_text = f'<span class="tag btn-white dark-text text-monospace ">{add_non_breaking_space_to_status(obj.status)}</span>'
+        status_classes = {
+        'Avråds': 'tag tag-avrådd text-monospace',
+        'Avrådd': 'tag tag-avrådd text-monospace',
+        'Avställd': 'tag tag-avrådd text-monospace',
+        'Publicera ej': 'tag tag-light-blue text-monospace dark-text',
+        'Pågår': 'tag tag-oklart light-text text-monospace',
+        'Ej Påbörjad': 'tag tag-oklart light-text text-monospace',
+        'Beslutad': 'tag tag-grön light-text text-monospace'
+        }
+
+        css_class = status_classes.get(obj.status, 'tag btn-white dark-text text-monospace')
+        
+        display_text = f'<span class="{css_class}">{add_non_breaking_space_to_status(obj.status)}</span>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
