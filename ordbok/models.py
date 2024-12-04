@@ -4,9 +4,14 @@ from pdb import set_trace
 from django.conf import settings
 from simple_history.models import HistoricalRecords
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import ValidationError
 
 
 DEFAULT_STATUS = "Ej Påbörjad"
+
+CONCEPT_STATUS = (('Avråds', "Avråds"),
+                  ('Beslutad', 'Beslutad'),
+                  ('Pågår', 'Pågår'))
 
 STATUS_VAL = (('Avråds', "Avråds"),
               ('Avställd', "Avställd"),
@@ -134,7 +139,8 @@ class Synonym(models.Model):
         verbose_name_plural = "Synonymer"
         app_label = 'ordbok'
 
-    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
+    begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name="legacy_synonyms")
+    concept = models.ForeignKey("Concept", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name="synonyms")
     synonym = models.CharField(max_length=255, blank=True, null=True)
     synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
 
@@ -216,3 +222,107 @@ class ConfigurationOptions(models.Model):
 
     def __str__(self):
         return self.name
+    
+# Word Model (Core Entity)
+class Concept(models.Model):
+    term = models.CharField(max_length=255)  # The word itself
+    definition = models.TextField()  # Primary definition
+    status = models.CharField(choices=CONCEPT_STATUS, max_length=15, null=True)
+    changed_at = models.DateTimeField(null=True, auto_now=True, verbose_name='Senaste ändring')
+    created_at = models.DateTimeField(null=True, auto_now_add=True, verbose_name='Datum skapat')
+    field_positions = models.JSONField(default=dict, null=True, blank=True)
+
+    dictionaries = models.ManyToManyField(Dictionary, related_name='concept')
+
+
+    def __str__(self):
+        return self.term
+    
+    def get_ordered_fields(self):
+        # Default field order with fallback positions
+        default_fields = {
+            'status': {'display_name': 'Status', 'position': 0},
+            'definition': {'display_name': 'Definition', 'position': 1},
+        }
+        # Merge defaults with custom positions
+        for field, meta in self.field_positions.items():
+            if field in default_fields:
+                default_fields[field]['position'] = meta.get('position', default_fields[field]['position'])
+        # Return sorted fields
+        return sorted(default_fields.items(), key=lambda x: x[1]['position'])
+
+
+# Attribute Model
+class Attribute(models.Model):
+    name = models.CharField(max_length=255)
+    display_name = models.CharField(max_length=255)
+    data_type = models.CharField(max_length=50, choices=[
+        ('string', 'String'),
+        ('integer', 'Integer'),
+        ('decimal', 'Decimal'),
+        ('boolean', 'Boolean'),
+        ('text', 'Text'),
+        ('url', 'URL'),
+    ])
+    description = models.TextField(null=True, blank=True)
+    position = models.PositiveIntegerField(default=0, null=True, blank=True)
+
+
+    def __str__(self):
+        return self.name
+
+# Attribute Value Model
+class AttributeValue(models.Model):
+    term = models.ForeignKey(Concept, on_delete=models.CASCADE, related_name='attributes')
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
+    value_string = models.CharField(max_length=255, null=True, blank=True)
+    value_text = models.TextField(null=True, blank=True)
+    value_integer = models.IntegerField(null=True, blank=True)
+    value_decimal = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    value_boolean = models.BooleanField(null=True, blank=True)
+    value_url = models.URLField(null=True, blank=True)
+
+    def clean(self):
+        """Ensure only one value field is populated."""
+        value_fields = [
+            self.value_string,
+            self.value_text,
+            self.value_integer,
+            self.value_decimal,
+            self.value_boolean,
+            self.value_url,
+        ]
+        populated_fields = [field for field in value_fields if field not in [None, ""]]
+        if len(populated_fields) > 1:
+            raise ValidationError("Only one value field can contain data.")
+    
+
+
+    def get_value(self):
+        if self.attribute.data_type == 'string':
+            return self.value_string
+        elif self.attribute.data_type == 'text':
+            return self.value_text
+        elif self.attribute.data_type == 'url':
+            return self.value_url
+        elif self.attribute.data_type == 'integer':
+            return self.value_integer
+        elif self.attribute.data_type == 'decimal':
+            return self.value_decimal
+        elif self.attribute.data_type == 'boolean':
+            return self.value_boolean
+        return 
+    get_value.short_description = "Värde"
+
+
+# Business Unit Model
+class BusinessUnit(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+# Business Unit Attributes
+class BusinessUnitAttribute(models.Model):
+    business_unit = models.ForeignKey(BusinessUnit, on_delete=models.CASCADE)
+    attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
