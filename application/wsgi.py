@@ -18,6 +18,8 @@ if socket.gethostname() == 'suijin.oderland.com':
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.dev')
     if 'test' in dir_path:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.test')
+    if 'eav' in dir_path:
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.eav')
     else:
         os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.production')
 else:
