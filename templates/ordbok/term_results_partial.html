@@ -25,7 +25,7 @@
           <img src="{% static 'images/farg_panel.svg' %}" width="20px" height="20px" alt="Grön - beslutad av Informatik och Standardisering, Gul - Efterfrågat begrepp under handläggning, Röd - term ska inte användas">
         </div>
 
-        <table class="table table-bordered top-buffer-10" id="definition_table">
+        <table class="table table-bordered top-buffer-10" id="searchResultTable">
           <caption class="visually-hidden">Termer och dess definitioner för {{searched_for_term}} i ordbok {{chosen_dictionary}}"</caption>
           <colgroup>
             <col class="col-3">
@@ -39,7 +39,10 @@
                 <th scope="col">Synonym</th>
                 <th scope="col">Definition</th>
                 <th scope="col">Term på annat språk</th>
+                <!-- <th scope="col">Dict</th> -->
+
               </tr>
+
             </thead>
             <tbody id="myTable">
               {% for term in styled_results %}            
@@ -49,7 +52,7 @@
                     {% for item in search_results %}
                       {% if item.id == term.id %}
                         <ul class="synonym-list" aria-label="List of synonyms">
-                        {% for synonym in item.synonym_set.all %}
+                        {% for synonym in item.synonyms %}
                           <li class="synonym-item">
                               {% if synonym.synonym_status == "Avråds" %}
                                   <div class="tooltip synonym deprecated" tabindex="0" role="button" aria-describedby="status-{{ forloop.counter }}">
@@ -80,6 +83,8 @@
                 </td>
                 <td>{{term.definition}}</td>
                 <td>{{term.utländsk_term}}</td>
+                
+                <!-- <td>{{term.dictionaries}}</td> -->
                 </tr>
               {% endfor %}
             </tbody>
@@ -168,5 +173,32 @@ function hideAllTooltips() {
 }
 
 </script>
+
+<style>
+  
+#searchResultTable {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+  }
+  
+#searchResultTable th,
+#searchResultTable td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+  }
+
+#searchResultTable tr:hover {
+    filter: brightness(90%);
+    transition: filter 0.2s ease;
+}
+  
+#searchResultTable tr:last-child td {
+      border-bottom: none;
+  }
+  </style>
 {% endblock extra_javascript %}
 

@@ -1,0 +1,40 @@
+{% load static %}
+
+<!-- <fieldset class="module aligned">
+    <h2>Attributes and Values</h2>
+    {% for inline_admin_form in inline_admin_formset.forms %}
+    <div class="form-row field-attribute">
+        <div>
+            <div class="flex-container">
+                <label>{{ inline_admin_form.instance.attribute.display_name }}</label>
+                {{ inline_admin_form.value }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</fieldset> -->
+
+<fieldset class="module aligned">
+    <legend>Attributes and Values</legend>
+    <table id="attributes-table" class="table table-bordered">
+        <tbody>
+            <!-- Dynamically added rows will appear here -->
+        </tbody>
+    </table>
+</fieldset>
+
+<script>
+$(document).ready(function() {
+    // var existingAttributes = {{ concept.attributes|safe }};
+    existingAttributes.forEach(function(attr) {
+        var fieldHtml = `
+            <tr class="dynamic-attributes">
+                <td>${attr.display_name}</td>
+                <td><input type="text" name="attribute_${attr.id}" value="${attr.value}" /></td>
+            </tr>
+        `;
+        $('#attributes-table tbody').append(fieldHtml);
+    });
+});
+</script>
+

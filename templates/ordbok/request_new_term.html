@@ -9,7 +9,7 @@
     {{ form|crispy }}
 
     {% else %}
-        {% for term in begrepp %}
+        {% for term in concept %}
         {{ term.term }}
         {% endfor %}
     <h5>Sökningen gav ingen träff!</h5>

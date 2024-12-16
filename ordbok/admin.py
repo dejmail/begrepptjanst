@@ -17,12 +17,12 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from simple_history.admin import SimpleHistoryAdmin
 from django.http import HttpResponse
 
-from ordbok.forms import BegreppForm, ColumnMappingForm, ExcelImportForm
+from ordbok.forms import ConceptForm, AttributeValueInlineForm
 from ordbok.models import *
 from django.conf import settings
 
 from ordbok import admin_actions
-from ordbok.forms import BegreppExternalFilesForm, ChooseExportAttributes
+from ordbok.forms import ConceptExternalFilesForm, ChooseExportAttributes
 from ordbok.admin_actions import (change_dictionaries,
                                   export_chosen_begrepp_attrs_action)
 
@@ -64,9 +64,9 @@ class SynonymInline(admin.StackedInline):
         formset.form.user = request.user  # Pass the user to the form
         return formset
 
-class BegreppExternalFilesInline(admin.StackedInline):
+class ConceptExternalFilesInline(admin.StackedInline):
 
-    model = BegreppExternalFiles
+    model = ConceptExternalFiles
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
@@ -77,7 +77,7 @@ class StatusListFilter(MultipleChoiceListFilter):
     parameter_name = 'status__in'
     
     def lookups(self, request, model_admin):
-        return STATUS_VAL
+        return STATUS_CHOICES
 
 class ExcelImportForm(forms.Form):
     excel_file = forms.FileField()
@@ -94,12 +94,12 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
            )
          }
     
-    inlines = [BegreppExternalFilesInline, SynonymInline]
+    inlines = [ConceptExternalFilesInline, SynonymInline]
 
     change_form_template = 'begrepp_change_form.html'
     change_list_template = "begrepp_changelist.html"
 
-    form = BegreppForm
+    form = ConceptForm
 
     readonly_fields = ['senaste_ändring','datum_skapat']
     history_list_display = ['changed_fields']
@@ -149,6 +149,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
                     output_field=IntegerField()
                 )
             ).order_by('position')
+        
         if not request.user.is_superuser:
             accessible_dictionaries = self.get_accessible_dictionaries(request)
             return queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
@@ -239,7 +240,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
 
         if request.method == 'POST':
             chosen_begrepp = [int(i) for i in request.POST.get('selected_begrepp').split("&")[:-1]]
-            queryset = Begrepp.objects.filter(id__in=chosen_begrepp)
+            queryset = Concept.objects.filter(id__in=chosen_begrepp)
             model_fields = [field.name for field in queryset.first()._meta.get_fields()]
             chosen_table_attrs = [i for i in model_fields if i in request.POST.keys()]
 
@@ -292,28 +293,24 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
 
     status_button.short_description = 'Status'
 
-class BestallareAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
+class TaskOrdererAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
-    list_display = ('beställare_namn',
-                    'beställare_email',
-                    'beställare_telefon',
-                    'beställare_datum',
-                    'önskad_slutdatum',
-                    'begrepp')
-    search_fields = ("begrepp__term","beställare_namn", "beställare_email") 
+    list_display = ('name',
+                    'email',
+                    'telephone',
+                    'create_date',
+                    'finished_by_date',
+                    'term')
+    search_fields = ("term__term","name", "email") 
 
-    def begrepp(self, obj):
+    def term(self, obj):
         
-        display_text = ", ".join([
-            "<a href={}>{}</a>".format(
-                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[0].name),
-                    args=(begrepp.id,)),
-                begrepp.term)
-             for begrepp in obj.begrepp.all()
-        ])
+        display_text = [
+        f"<a href='{reverse('admin:{}_{}_change'.format(obj._meta.app_label, obj._meta.related_objects[0].name), args=(concept.id,))}'>{concept.term}</a>"
+        for concept in obj.concepts.all()
+        ]        
         if display_text:
-            return mark_safe(display_text)
-        return display_text
+            return mark_safe(", ".join(display_text))   
 
 class DictionaryAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
@@ -331,27 +328,28 @@ class DictionaryAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
 class SynonymAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin):
     
-    ordering = ['begrepp__term']
-    list_display = ('begrepp',
+    ordering = ['concept__term']
+    list_display = ('concept',
+                    # 'begrepp',
                     'synonym',
                     'synonym_status')
 
     list_select_related = (
-        'begrepp',
+        'concept',
     )
     list_filter = ("synonym_status",)
-    search_fields = ("begrepp__term", "synonym")
+    search_fields = ("concept__term", "synonym")
 
 class ContextFilesInline(admin.StackedInline):
 
-    model = BegreppExternalFiles
+    model = ConceptExternalFiles
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
-    exclude = ('begrepp',)
+    exclude = ('concpt',)
 
 
-class KommenteraBegreppAdmin(DictionaryRestrictedOtherModelAdminMixin, 
+class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin, 
                              admin.ModelAdmin):
 
     class Media:
@@ -364,28 +362,28 @@ class KommenteraBegreppAdmin(DictionaryRestrictedOtherModelAdminMixin,
 
     inlines = [ContextFilesInline,]
 
-    list_display = ('begrepp',
-                    'begrepp_kontext',
-                    'bifogade_filer',
-                    'datum',
-                    'epost',
-                    'namn',
+    list_display = ('concept',
+                    'usage_context',
+                    'attached_files',
+                    'date',
+                    'email',
+                    'name',
                     'status',
-                    'telefon',
+                    'telephone',
                     )
 
     list_filter = ('status',)
 
-    readonly_fields = ['datum',]
+    readonly_fields = ['date',]
 
     fieldsets = [
         ['Main', {
-        'fields': [('begrepp', 'datum'), 
-        ('begrepp_kontext',), 
-        ('epost','namn','status','telefon'),]},
+        'fields': [('concept', 'date'), 
+        ('usage_context',), 
+        ('email','name','status','telephone'),]},
         ]]
 
-    def bifogade_filer(self, obj):
+    def attached_files(self, obj):
 
         if (obj.begreppexternalfiles_set.exists()) and (obj.begreppexternalfiles_set.name != ''):
             return format_html(f'''<a href={obj.begreppexternalfiles_set}>
@@ -396,7 +394,7 @@ class KommenteraBegreppAdmin(DictionaryRestrictedOtherModelAdminMixin,
             return format_html(f'''<span style="color: red;">            
                                        <i class="far fa-times-circle"></i>
                                     </span>''')
-    bifogade_filer.short_description = "Bifogade filer"
+    attached_files.short_description = "Bifogade filer"
 
     def save_formset(self, request, form, formset, change):
         
@@ -404,36 +402,36 @@ class KommenteraBegreppAdmin(DictionaryRestrictedOtherModelAdminMixin,
             instances = formset.save(commit=False)
             for instance in instances:
                 if not instance.begrepp_id:
-                    instance.begrepp_id = form.cleaned_data.get('begrepp').pk
+                    instance.begrepp_id = form.cleaned_data.get('concept').pk
                 instance.save()
         formset.save_m2m()
 
-class SökFörklaringAdmin(admin.ModelAdmin):
+class MetadataSearchTrackAdmin(admin.ModelAdmin):
 
     list_display = ('sök_term',
                     'ip_adress',
                     'sök_timestamp')
 
-class SökDataAdmin(admin.ModelAdmin):
+class SearchTrackAdmin(admin.ModelAdmin):
 
     list_display = ('sök_term',
                     'ip_adress',
                     'sök_timestamp',
                     'records_returned')
 
-class BegreppExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin, 
+class ConceptExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin, 
                                 admin.ModelAdmin):
 
-    model = BegreppExternalFiles
-    form = BegreppExternalFilesForm
+    model = ConceptExternalFiles
+    form = ConceptExternalFilesForm
 
-    list_display = ('begrepp', 'kommentar', 'support_file')
+    list_display = ('concept', 'comment', 'support_file')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "kommentar":
             # Filter the queryset for the ForeignKey field based on the user's group
             user_groups = request.user.groups.all()
-            kwargs["queryset"] = KommenteraBegrepp.objects.filter(
+            kwargs["queryset"] = ConceptComment.objects.filter(
             begrepp__begrepp_fk__groups__in=user_groups
             ).distinct()
 
@@ -443,13 +441,190 @@ class ConfigurationOptionsAdmin(admin.ModelAdmin):
     
     model = ConfigurationOptions
 
-admin.site.register(Begrepp, BegreppAdmin)
-admin.site.register(Bestallare, BestallareAdmin)
+class AttributeValueInline(admin.TabularInline):
+    model = AttributeValue
+    form = AttributeValueInlineForm
+    template = 'admin/attribute_value_inline_tabular.html'
+    extra = 0
+
+    def get_fieldsets(self, request, obj=None):
+        # Define the fields to display, including the dynamically added `value`
+        fieldsets = [
+            (None, {
+                'fields': ['attribute_display_name']
+            }),
+        ]
+        return fieldsets
+
+    def get_readonly_fields(self, request, obj=None):
+        # Make attribute_display_name read-only
+        return ['attribute_display_name']
+
+    def attribute_display_name(self, obj):
+        # Display the attribute's display_name
+        if obj and obj.attribute:
+            return obj.attribute.display_name
+        return "No attribute"
+
+    attribute_display_name.short_description = "Attribute"
+
+
+class ConceptAdmin(DictionaryRestrictAdminMixin,
+                   ConceptFileImportMixin,
+                   SimpleHistoryAdmin):
+
+    model = Concept
+    class Media:
+        css = {
+        'all': (
+            f'{settings.STATIC_URL}css/main.css',
+            f'{settings.STATIC_URL}css/begrepp_custom.css',
+           )
+         }
+        
+    # Below is not working
+    change_form_template = 'begrepp_change_form.html'
+    change_list_template = "begrepp_changelist.html"
+
+    list_display = ['id','term', 'definition', 'status_button', 'list_dictionaries']
+    search_fields = ('term',
+                    'definition',
+                    'synonyms__synonym',
+                    )
+    
+    inlines = [AttributeValueInline]
+
+    def status_button(self, obj):
+        status_classes = {
+        'Avråds': 'tag tag-avrådd text-monospace',
+        'Avrådd': 'tag tag-avrådd text-monospace',
+        'Avställd': 'tag tag-avrådd text-monospace',
+        'Publicera ej': 'tag tag-light-blue text-monospace dark-text',
+        'Pågår': 'tag tag-oklart light-text text-monospace',
+        'Ej Påbörjad': 'tag tag-oklart light-text text-monospace',
+        'Beslutad': 'tag tag-grön light-text text-monospace'
+        }
+
+        css_class = status_classes.get(obj.status, 'tag btn-white dark-text text-monospace')
+        
+        display_text = f'<span class="{css_class}">{add_non_breaking_space_to_status(obj.status)}</span>'
+        return mark_safe(display_text)
+
+    status_button.short_description = 'Status'
+
+    def get_queryset(self, request):
+
+        queryset = super().get_queryset(request)
+
+        # queryset = queryset.prefetch_related('synonym').distinct()
+
+        if request.GET.get('q'):
+            search_term = request.GET.get('q')
+            queryset = queryset.annotate(
+                position=Case(
+                    When(Q(term__iexact=search_term), then=Value(1)),
+                    When(Q(term__istartswith=search_term), then=Value(2)),
+                    When(Q(term__icontains=search_term), then=Value(3)),
+                    When(Q(synonyms__synonym__icontains=search_term), then=Value(4)),
+                    When(Q(definition__icontains=search_term), then=Value(5)),
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by('position')
+        return queryset
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+                
+        # Only show dictionaries the user has permission to edit
+        if not request.user.is_superuser:
+            
+            # Assuming you have a relation like 'dictionary' in Begrepp model
+            form.base_fields['dictionaries'].queryset = form.base_fields['dictionaries'].queryset.filter(
+                groups__in=request.user.groups.all()
+            )
+
+        return form
+    
+    def list_dictionaries(self, obj):
+        return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
+
+    list_dictionaries.short_description = 'Ordbok'
+    list_dictionaries.verbose = 'Ordböcker'
+
+class AttributeAdmin(admin.ModelAdmin):
+
+    list_display = ['display_name', 'data_type', 'description', 'list_groups']
+
+    def list_groups(self, obj):
+        return ", ".join([group.name for group in obj.groups.all()])
+
+class AttributeValueAdmin(admin.ModelAdmin):
+
+    model = AttributeValue
+
+    list_display = ['term', 'attribute__display_name', 'get_value']
+
+    search_fields = [
+    'term__term',
+    'attribute__display_name',
+    'value_string',
+    'value_text',
+    'value_integer',
+    'value_decimal',
+    'value_boolean',
+    'value_url',
+    ]
+
+
+    
+    def get_queryset(self, request):
+
+        queryset = super().get_queryset(request)
+
+        if request.GET.get('q'):
+            search_term = request.GET.get('q')
+            queryset = queryset.annotate(
+                position=Case(
+                    # Search in term fields
+                    When(Q(term__term__iexact=search_term), then=Value(1)),
+                    When(Q(term__term__istartswith=search_term), then=Value(2)),
+                    When(Q(term__term__icontains=search_term), then=Value(3)),
+
+                    # Search in definition field
+                    When(Q(term__definition__icontains=search_term), then=Value(4)),
+
+                    When(Q(attribute__display_name__icontains=search_term), then=Value(5)),
+
+                    # Search in value_* fields
+                    When(Q(value_string__icontains=search_term), then=Value(6)),
+                    When(Q(value_text__icontains=search_term), then=Value(7)),
+                    When(Q(value_integer__icontains=search_term), then=Value(8)),
+                    When(Q(value_decimal__icontains=search_term), then=Value(9)),
+                    When(Q(value_boolean__icontains=search_term), then=Value(10)),
+                    When(Q(value_url__icontains=search_term), then=Value(11)),
+
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by('position')
+        return queryset
+
+class GroupAttributeAdmin(admin.ModelAdmin):
+
+    list_display = ['group__name', 'attribute__display_name', 'position']
+
+# admin.site.register(Begrepp, BegreppAdmin)
+# admin.site.register(TaskOrderer, TaskOrdererAdmin)
 admin.site.register(Dictionary, DictionaryAdmin)
 admin.site.register(Synonym, SynonymAdmin)
-admin.site.register(KommenteraBegrepp, KommenteraBegreppAdmin)
-admin.site.register(SökFörklaring, SökFörklaringAdmin)
-admin.site.register(SökData, SökDataAdmin)
-admin.site.register(BegreppExternalFiles,BegreppExternalFilesAdmin)
+admin.site.register(ConceptComment, ConceptCommentsAdmin)
+admin.site.register(SearchTrack, SearchTrackAdmin)
+admin.site.register(MetadataSearchTrack, MetadataSearchTrackAdmin)
+admin.site.register(ConceptExternalFiles,ConceptExternalFilesAdmin)
 admin.site.register(ConfigurationOptions, ConfigurationOptionsAdmin)
-
+admin.site.register(Concept, ConceptAdmin)
+admin.site.register(Attribute, AttributeAdmin)
+admin.site.register(AttributeValue,AttributeValueAdmin)
+admin.site.register(GroupHierarchy)
+admin.site.register(GroupAttribute, GroupAttributeAdmin)

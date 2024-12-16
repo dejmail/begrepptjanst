@@ -1,5 +1,5 @@
 from pdb import set_trace
-from .models import SökData, SökFörklaring, Bestallare
+from .models import SearchTrack, MetadataSearchTrack, TaskOrderer
 
 from collections import OrderedDict
 
@@ -19,7 +19,7 @@ def besökare_ip_adress(request):
 
 def mäta_sök_träff(sök_term, sök_data, request):
 
-    ny_sök = SökData()
+    ny_sök = SearchTrack()
     ny_sök.sök_term = sök_term
     ny_sök.records_returned = str([i.get('begrepp_id') for i in sök_data])[1:-1]
     ny_sök.ip_adress = besökare_ip_adress(request)
@@ -28,12 +28,12 @@ def mäta_sök_träff(sök_term, sök_data, request):
 
 def mäta_förklaring_träff(sök_term, request):
 
-    ny_sök = SökFörklaring()
+    ny_sök = MetadataSearchTrack()
     ny_sök.sök_term = sök_term
     ny_sök.ip_adress = besökare_ip_adress(request)
     ny_sök.save()
 
-def sort_begrepp_keys(begrepp_dict):
+def sort_concept_keys(begrepp_dict):
 
     desired_dict_order = ['status',
                           'term',

@@ -22,21 +22,24 @@ from django.http import (
     HttpResponseRedirect, 
     JsonResponse
 )
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import get_script_prefix, reverse
 from django.utils.html import format_html
 from django.db.models import QuerySet
-from typing import List, Dict
+from typing import List, Dict, Optional
 
-
-
+from itertools import chain
+from django.db.models import Prefetch
+from django.contrib.auth.models import Group
 
 from ordbok.forms import KommenteraTermForm, TermRequestForm
 from ordbok.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
-                              mäta_sök_träff, replace_nbs_with_normal_space, sort_begrepp_keys)
-from ordbok.models import (Begrepp, BegreppExternalFiles, Bestallare,
-                           Dictionary, KommenteraBegrepp, Synonym)
+                              mäta_sök_träff, replace_nbs_with_normal_space)
+from ordbok.models import (Concept, ConceptExternalFiles, Dictionary, Synonym, 
+                           Concept, ConceptComment, Attribute, AttributeValue,
+                           GroupAttribute)
+
 
 logger = logging.getLogger(__name__)
 
@@ -49,52 +52,84 @@ COLOUR_STATUS_DICT = {'Avråds' : 'table-danger',
                     'Ej Påbörjad': 'table-warning',
                     'Publiceras ej' : 'table-light-blue'}
 
-def retur_general_sök(url_parameter, dictionary):
+from django.db.models import CharField, Value
+from django.db.models.functions import Concat
 
-    """ Check whether the  :model:`ordbok.Begrepp` contains entries in the 
-    attributes specified.
-    
-    Arguments: 
-    url_parameter {str} -- Search string sent by the user
-    :return: A queryset of matches
-    :rtype: Queryset
-        
+def get_prefetched_queryset(queryset: QuerySet[Concept], dictionary: Optional[str] = None) -> QuerySet[Concept]:
+
     """
+    Prefetch related fields and apply dictionary filtering if provided.
+    """
+    if dictionary:
+        queryset = queryset.filter(dictionaries__dictionary_name=dictionary)
 
-    queryset = Begrepp.objects.exclude(status='Publicera ej').filter(
-        Q(id__contains=url_parameter) |
-        Q(term__icontains=url_parameter) |
-        Q(anmärkningar__icontains=url_parameter) |
-        Q(definition__icontains=url_parameter) |
-        Q(utländsk_term__icontains=url_parameter) |
-        Q(synonym__synonym__icontains=url_parameter)
-    ).distinct()    
-    
-    return queryset.filter(dictionaries__dictionary_name=dictionary)
-    
-def filter_by_first_letter(letter, dictionary):
+    return queryset.prefetch_related('dictionaries', 'synonyms')
 
-    """ A filter of :model:`ordbok.Begrepp` which returns a queryset 
-    where the terms start with a certain letter.
-    
-    Arguments: 
-    letter {str} -- String letter to filter with
-    :return: A queryset of matches
-    :rtype: Queryset
-        
-    """ 
 
-    queryset = Begrepp.objects.filter(
-        ~Q(status="Publicera ej")
-        ).filter(
+def build_results(queryset: QuerySet[Concept]) -> List[dict]:
+
+    """
+    Convert a queryset of Concept objects into a list of dictionaries with additional data.
+    """
+    results = []
+    for concept in queryset:
+        concept_data = concept.__dict__.copy()  # Include all fields dynamically
+        concept_data['dictionaries'] = ", ".join(
+            d.dictionary_name for d in concept.dictionaries.all()
+        )
+        concept_data['synonyms'] = concept.synonyms.all()
+        results.append(concept_data)
+    return results
+
+
+def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) -> List[dict]:
+    
+    """
+    Search for concepts based on attributes or related data.
+    """
+    # Base queryset
+    queryset = Concept.objects.exclude(status='Publicera ej').filter(
+        Q(term__icontains=url_parameter) | Q(definition__icontains=url_parameter)
+    ).distinct()
+
+    # Search within AttributeValues
+    attribute_query = AttributeValue.objects.filter(
+        Q(value_string__icontains=url_parameter) |
+        Q(value_text__icontains=url_parameter) |
+        Q(value_integer__icontains=url_parameter) |
+        Q(value_decimal__icontains=url_parameter) |
+        Q(value_boolean__icontains=url_parameter),
+        term__in=queryset
+    ).values_list('term_id', flat=True)
+
+    # Extend queryset with attribute matches
+    queryset = queryset.filter(Q(id__in=attribute_query))
+
+    # Apply dictionary filtering and prefetch related fields
+    queryset = get_prefetched_queryset(queryset, dictionary)
+
+    return build_results(queryset)
+
+
+def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
+
+    """
+    Filter concepts where the term starts with a specific letter.
+    """
+    # Base queryset
+    queryset = Concept.objects.exclude(status="Publicera ej").filter(
         term__istartswith=letter
-        ).distinct()
-    
-    return queryset.filter(dictionaries__dictionary_name=dictionary)
+    ).distinct()
+
+    # Apply dictionary filtering and prefetch related fields
+    queryset = get_prefetched_queryset(queryset, dictionary)
+
+    return build_results(queryset)
+
 
 def filter_by_dictionary(queryset: QuerySet, dictionary: List) -> QuerySet:
     """
-    Filters a queryset of Begrepp objects by the specified Dictionary.
+    Filters a queryset of Concept objects by the specified Dictionary.
 
     Args:
         queryset (QuerySet): The queryset to filter.
@@ -108,36 +143,70 @@ def filter_by_dictionary(queryset: QuerySet, dictionary: List) -> QuerySet:
 
     return queryset.filter(dictionaries__dictionary_name=dictionary)
 
-def determine_search_strategy(url_parameter, dictionary):
+def determine_search_strategy(url_parameter: str, dictionary: str) -> QuerySet[Concept]:
+    """
+    Determine the search strategy based on the given URL parameter.
+
+    If the `url_parameter` is a single uppercase letter, the function uses a 
+    strategy to filter concepts by their first letter. Otherwise, it searches 
+    for concepts and their attributes.
+
+    Args:
+        url_parameter (str): The search string provided by the user.
+        dictionary (str): The name of the dictionary to filter by.
+
+    Returns:
+        QuerySet[Concept]: 
+            - A queryset of Concept objects matching the search criteria.
+    """
 
     if len(url_parameter) == 1 and url_parameter.isupper():
         logger.info(f'Searching by single letter - {url_parameter}')
         return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
     else:
         logger.info(f'Searching by entered term - {url_parameter}')
-        return retur_general_sök(url_parameter, dictionary=dictionary), True
+        return search_concepts_with_attributes(url_parameter, dictionary=dictionary), True
 
-def return_single_term_by_id(id: int) -> Begrepp:
+def return_single_term_by_id(id: int) -> QuerySet[Concept]:
 
-    """Return a single match of :model:`ordbok.Begrepp`
+    """Return a single match of :model:`ordbok.Concept`
 
     Arguments: 
     id {str} -- ID of the match requested by the user
     :return: A queryset match
-    :rtype: Begrepp
+    :rtype: Concept
 
     >>>return_single_term_by_id(1) #doctest: +ELLIPSIS
-    [<Begrepp: doctest_unpredicatable.Begrepp>]
+    [<Concept: doctest_unpredicatable.Concept>]
 
     """
+    
     try:
-        return Begrepp.objects.get(pk=id)
+        concept = Concept.objects.get(pk=id)
+
+        attribute_values = AttributeValue.objects.filter(term_id=id).select_related('attribute')
+
+        # Prepare attributes as a dictionary
+        attributes = {}
+        for attr_value in attribute_values:
+            # Dynamically get the correct value field
+            value = attr_value.get_value()
+            attributes[attr_value.attribute.name] = value
+
+        # Combine core fields and dynamic attributes
+        return {
+            'concept': concept,
+            'attributes': attributes,
+        }
     except ObjectDoesNotExist:
-        return 'No concept of this Id exists'
+        return {
+            'error': 'No concept with this ID exists',
+        }
 
-def filter_term_by_string(term: str) -> QuerySet[Begrepp]:
 
-    """Return a filter list of :model:`ordbok.Begrepp`
+def filter_term_by_string(term: str) -> QuerySet[Concept]:
+
+    """Return a filter list of :model:`ordbok.Concept`
 
     Arguments: 
     term {str} -- string of the match requested by the user
@@ -145,15 +214,15 @@ def filter_term_by_string(term: str) -> QuerySet[Begrepp]:
     :rtype: Queryset
 
     >>>filter_term_by_string(1) #doctest: +ELLIPSIS
-    [<Begrepp: doctest_unpredicatable.Begrepp>]
+    [<Concept: doctest_unpredicatable.Concept>]
 
     """
 
-    return Begrepp.objects.filter(term=term)
+    return Concept.objects.filter(term=term)
 
-def sort_results_according_to_search_term(queryset: QuerySet[Begrepp], 
-                                          url_parameter: str, position: 
-                                          int = 1) -> QuerySet[Begrepp]:
+def sort_results_according_to_search_term(queryset: QuerySet[Concept], 
+                                          url_parameter: str, 
+                                          position: int = 1) -> QuerySet[Concept]:
     
     """Returns a sorted list based on "column" from list-of-dictionaries data.
 
@@ -168,7 +237,7 @@ def sort_results_according_to_search_term(queryset: QuerySet[Begrepp],
 
 
 def highlight_search_term_i_definition(search_term : str, 
-                                       begrepp_dict_list: QuerySet[Dict[str, str]]
+                                       concept_dict_list: QuerySet[Dict[str, str]]
                                        ) -> Dict:
 
     """Encapsulate the search string with HTML <mark> tag in the definition of 
@@ -176,7 +245,7 @@ def highlight_search_term_i_definition(search_term : str,
 
     Arguments: 
     search_term {str} -- the string which should be encased in HTML <mark>
-    begrepp_dict_list -- class of type Queryset
+    concept_dict_list -- class of type Queryset
     :return: A list of dictionaries
     :rtype: class of type Queryset
     """
@@ -191,29 +260,32 @@ def highlight_search_term_i_definition(search_term : str,
         """Wrap <mark> around the entire <span> tag found."""
         return f'<mark>{match.group(0)}</mark>'
 
-    for idx, begrepp in enumerate(begrepp_dict_list):
-        definition = begrepp.get('definition', '')
+    for idx, concept in enumerate(concept_dict_list):
+        definition = concept.get('definition', '')
 
         # Wrap <mark> around <span> elements that contain the search term
         definition = span_pattern.sub(wrap_with_mark, definition)
 
-        begrepp_dict_list[idx]['definition'] = definition
+        concept_dict_list[idx]['definition'] = definition
 
-    return begrepp_dict_list
+    return concept_dict_list
 
 
-def return_list_of_term_and_definition(dictionary: str) -> QuerySet[Begrepp]:
+def return_list_of_term_and_definition(dictionary: str) -> QuerySet[Concept]:
     
     
     """Return values "term" and "definition" from a queryset of all terms in
-     :model:`ordbok.Begrepp`.
+     :model:`ordbok.Concept`. This is used to find references in realtime to
+     other instances of Concept within the definitions of the eventual search
+     result.
 
     Arguments: 
     :return: A queryset of dictionaries all terms excluding those with status 'Publicer ej'
     :rtype: class of type Queryset
     """
 
-    queryset = Begrepp.objects.all().exclude(status='Publicera ej').values('term','definition')
+    queryset = Concept.objects.all().exclude(status='Publicera ej').values('term','definition')
+    
     queryset = filter_by_dictionary(queryset, dictionary)
 
     return queryset
@@ -256,6 +328,7 @@ def concatenate_all_dictionary_values_to_single_string(dictionary: Dict,
     """
 
     definitions_list = []
+
     for entry in dictionary:        
         if not entry.get('definition').strip():  # Check if the value is empty or contains only whitespace
             logger.debug(f"Warning: The definition for key '{key}' is empty or contains only whitespace.")
@@ -275,12 +348,12 @@ def creating_tooltip_hover_substitution_object(all_terms_and_definitions : Query
 
     """ Manipulate an incoming dictionary that has a 'term' and 'definition'
      key:value so that when a definition has references to other term/s
-     within :model:`ordbok.Begrepp`, those references have a tooltip 
+     within :model:`ordbok.Concept`, those references have a tooltip 
      connected show the definition on the UI.
      
      Arguments: 
     search_results {dict} -- A list of key:values of the search results
-    all_terms_and_definitions [{}] -- A list of dictionaries of all term:definitions within :model:`ordbok.Begrepp`
+    all_terms_and_definitions [{}] -- A list of dictionaries of all term:definitions within :model:`ordbok.Concept`
 
     :return: A dictionary where the 'key' has been altered
     :rtype:
@@ -304,13 +377,12 @@ def creating_tooltip_hover_substitution_object(all_terms_and_definitions : Query
 
     return xlator_instance
     
-    # loop through each definition in the begrepp_dict_list and make one string with all the
+    # loop through each definition in the concept_dict_list and make one string with all the
     # definitions separated by the ' ½ ' string. Without the spaces, certain instances of words
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all 
-    # the occurrences of begrepp in definitions with a hover tooltip text.
+    # the occurrences of concept in definitions with a hover tooltip text.
 
 def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instance, key):
-
     joined_definitions = concatenate_all_dictionary_values_to_single_string(search_results, key)
 
     joined_definitions_minus_nbsp = replace_nbs_with_normal_space(joined_definitions)
@@ -328,9 +400,8 @@ def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instanc
     log_output = [(i.get('term'), i.get('definition')) for i in search_results if i.get('term') == 'patient']
     logger.debug(f"After replacing brackets, spaces {log_output}")    
     
-    for index, begrepp in enumerate(search_results):
+    for index, concept in enumerate(search_results):
         try:
-           #set_trace()
            search_results[index][key] = resplit_altered_strings[index]
         except (re.error, KeyError) as e:
            print(e) 
@@ -441,7 +512,7 @@ def determine_search_strategy(url_parameter, dictionary):
     if len(url_parameter) == 1 and url_parameter.isupper():
         return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
     else:
-        return retur_general_sök(url_parameter, dictionary=dictionary), True
+        return search_concepts_with_attributes(url_parameter, dictionary=dictionary), True
 
 def assemble_search_results_view(url_parameter, dictionary):
 
@@ -458,30 +529,21 @@ def assemble_search_results_view(url_parameter, dictionary):
         the search results and the stylised results.
     
     """
-
     try:
         search_results, should_highlight = determine_search_strategy(url_parameter, dictionary)
         logger.debug(f'Searching within {dictionary=}')
-
-        log_result = [(search_result.term, search_result.definition) for search_result in search_results if search_result.term=='patient']
-        logger.debug(f"After general search - {log_result}")
     except Exception as e:
         logger.error(f"Error determing search strategy: {e}")
         return render_to_string("error-page.html", context={})
 
     # this is all the terms and definitions from this dictiomary in the DB
     all_terms_and_definitions = return_list_of_term_and_definition(dictionary)
-
     xlator_instance = creating_tooltip_hover_substitution_object(all_terms_and_definitions)
-
     styled_results = substitute_occurrence_of_terms_in_definitions(
-        search_results = search_results.values(),
+        search_results = search_results,
         xlator_instance=xlator_instance,
         key='definition'
         )
-    
-    log_result = [(i.get('term'),i.get('definition')) for i in styled_results if i.get('term')=='patient']
-    logger.debug(f'After creating tooltip {log_result}')
 
     if should_highlight:
         styled_results = highlight_search_term_i_definition(
@@ -495,17 +557,18 @@ def assemble_search_results_view(url_parameter, dictionary):
         )
 
     styled_results = mark_fields_as_safe_html(styled_results, ['definition',])
-
     html = render_to_string(
         template_name="term_results_partial.html", 
-        context={'styled_results': styled_results,
-        'colour_status' : COLOUR_STATUS_DICT,
-        'search_results' : search_results,
-        'searched_for_term' : url_parameter,
-        'chosen_dictionary' : Dictionary.objects.get(dictionary_name=dictionary).dictionary_name
+        context={
+            'styled_results': styled_results,
+            'colour_status' : COLOUR_STATUS_DICT,
+            'search_results' : search_results,
+            'searched_for_term' : url_parameter,
+            'chosen_dictionary' : Dictionary.objects.get(
+                dictionary_name=dictionary
+                ).dictionary_name
         }
         )    
-
     return html, styled_results
 
 def main_search_view(request):
@@ -528,9 +591,9 @@ def main_search_view(request):
 
     else:
         logger.debug("Search not ajax, or no search term")
-        begrepp = Begrepp.objects.none()
+        concept = Concept.objects.none()
     
-    html = render_to_string('term.html', context={'begrepp' : begrepp})
+    html = render_to_string('term.html', context={'concept' : concept})
     
     return render(request, "term.html", context={
         'dictionaries' : Dictionary.objects.all().order_by('order').values_list(
@@ -556,12 +619,18 @@ def term_metadata_view(request):
         single_term = return_single_term_by_id(url_parameter)
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
-
-        status_färg_dict = {'begrepp' : COLOUR_STATUS_DICT.get(single_term.status),
-                            'synonym' : [[i.synonym,i.synonym_status] for i in single_term.synonym_set.all()]}
         
-        template_context = {'begrepp_full': single_term,
-                            'färg_status' : status_färg_dict}
+        status_colour_dict = {'concept' : COLOUR_STATUS_DICT.get(single_term.get('concept').status),
+                            'synonym' : [[i.synonym,i.synonym_status] for i in single_term.get('concept').synonyms.all()]}
+        
+        combined_fields = concept_detail_view(concept_id=url_parameter)
+
+        template_context = {'concept': single_term.get('concept'),
+                            #'attributes' : single_term.get('attributes'),
+                            'attributes' : combined_fields,
+                            'colour_status' : status_colour_dict}
+        
+        
         html = render_to_string(template_name="term_metadata_ajax.html", context=template_context)
 
         if is_ajax(request):        
@@ -576,6 +645,109 @@ def term_metadata_view(request):
                 return render(request, "term_full_metadata.html", context=template_context)
 
     return render(request, "base.html", context={})
+
+# def concept_detail_view(concept_id):
+#     # Get the Concept instance
+#     concept = Concept.objects.get(id=concept_id)
+
+#     # Prefetch Attributes and their corresponding AttributeValues for the Concept
+#     attributes_with_values = Attribute.objects.prefetch_related(
+#         Prefetch(
+#             'attributevalue_set',
+#             queryset=AttributeValue.objects.filter(term=concept_id),
+#             to_attr='values_for_concept'
+#         )
+#     )
+
+#     # Build the attribute fields with their values (if any)
+#     attribute_fields = [
+#         {
+#             'name': attr.name,
+#             'display_name': attr.display_name,
+#             'value' : attr.values_for_concept[0].get_value() if attr.values_for_concept else None,
+#             # 'position': attr.position,
+#         }
+#         for attr in attributes_with_values
+#     ]
+
+#     # Get Concept fields with positions
+#     concept_fields = [
+#         {
+#             'name': field_name,
+#             'display_name': meta['display_name'],
+#             'value': getattr(concept, field_name, None),
+#             'position': meta['position'],
+#         }
+#         for field_name, meta in concept.get_ordered_fields()
+#     ]
+
+#     # Combine and order by position
+#     combined_fields = chain(attribute_fields, concept_fields)
+        
+#     return combined_fields
+def concept_detail_view(concept_id):
+    """
+    Fetch concept details along with its attributes and their values, including position
+    from the GroupAttribute through table.
+    """
+    # Get the Concept instance
+    concept = Concept.objects.prefetch_related('dictionaries').get(id=concept_id)
+
+    # Get Groups associated with the Concept's Dictionaries
+    related_groups = Group.objects.filter(dictionaries__in=concept.dictionaries.all())
+    
+    print(f"Dictionaries for Concept {concept_id}: {concept.dictionaries.all()}")
+    print(f"Related Groups Query: {related_groups.query}")
+    print(f"Related Groups for Concept {concept_id}: {related_groups}")
+
+    # Fetch Attributes linked to these Groups and include position from GroupAttribute
+    attributes_with_values = Attribute.objects.filter(
+        groups__in=related_groups
+    ).prefetch_related(
+        Prefetch(
+            'attributevalue_set',
+            queryset=AttributeValue.objects.filter(term=concept_id),
+            to_attr='values_for_concept'
+        ),
+        Prefetch(
+            'groupattribute_set',  # Prefetch the through table
+            queryset=GroupAttribute.objects.filter(group__in=related_groups),
+            to_attr='positions'
+        )
+    ).distinct()
+
+    # Build the attribute fields with their values (if any)
+    attribute_fields = []
+    for attr in attributes_with_values:
+        position = (
+            attr.positions[0].position if hasattr(attr, 'positions') and attr.positions else 0
+        )
+        if position != 0: # Exclude attributes whose position is 0
+            attribute_fields.append(
+            {
+                'name': attr.name,
+                'display_name': attr.display_name,
+                'value': attr.values_for_concept[0].get_value() if attr.values_for_concept else None,
+                'position': position,
+            }
+            )
+
+    # Get Concept fields with positions
+    concept_fields = [
+        {
+            'name': field_name,
+            'display_name': meta['display_name'],
+            'value': getattr(concept, field_name, None),
+            'position': meta['position'],
+        }
+        for field_name, meta in concept.get_ordered_fields()
+    ]
+
+    # Combine and order by position
+    combined_fields = sorted(
+        chain(attribute_fields, concept_fields), key=lambda x: x['position']
+    )
+    return combined_fields
 
 def handle_file_uploads(request_files):
 
@@ -632,7 +804,7 @@ def request_new_term(request):
             if len(request.FILES) != 0:
                 file_list = handle_file_uploads(request.FILES)                
             
-            if filter_term_by_string(request.POST.get('begrepp')).exists():
+            if filter_term_by_string(request.POST.get('concept')).exists():
                     
                 return HttpResponse('''<div class="alert alert-danger text-center" id="ajax_response_message">
                             Begreppet ni önskade finns redan i systemet, var god och sök igen. :]
@@ -651,10 +823,10 @@ def request_new_term(request):
                     new_ordered.beställare_telefon = form.clean_telefon()
                     new_ordered.save()
 
-                new_term = Begrepp()
+                new_term = Concept()
                 new_term.utländsk_term = form.clean_utländsk_term()
-                new_term.term = form.clean_begrepp()
-                new_term.begrepp_kontext = form.clean_kontext()
+                new_term.term = form.clean_concept()
+                new_term.concept_kontext = form.clean_kontext()
                 new_term.beställare = new_ordered
                 new_term.save()
 
@@ -664,8 +836,8 @@ def request_new_term(request):
                 new_term.dictionaries.set([chosen_dictionary])
 
                 for filename in file_list:
-                    new_file = BegreppExternalFiles()
-                    new_file.begrepp = new_term
+                    new_file = ConceptExternalFiles()
+                    new_file.concept = new_term
                     new_file.support_file = filename
                     new_file.save()
 
@@ -684,13 +856,13 @@ def request_new_term(request):
             term = ''
         else: 
             term = request.GET.get('q')
-        form = TermRequestForm(initial={'begrepp' : term,
+        form = TermRequestForm(initial={'concept' : term,
                                         'dictionary' : request.GET.get('dictionary')
                                         })
         
         return render(request, 'request_new_term.html', {'form': form, 
                                                     'whichTemplate' : 'requestTerm',
-                                                    'header' : 'Önskemål om nytt begrepp'})
+                                                    'header' : 'Önskemål om nytt concept'})
 
     else:
         return render(request, 'term.html', {})
@@ -709,7 +881,7 @@ def kommentera_term(request):
     url_parameter = request.GET.get("q")
     
     if request.method == 'GET':
-        inkommande_term = Begrepp(term=url_parameter)
+        inkommande_term = Concept(term=url_parameter)
         form = KommenteraTermForm(initial={'term' : inkommande_term})
         return render(request, 'kommentera_term.html', {'kommentera': form})
 
@@ -725,19 +897,19 @@ def kommentera_term(request):
                     uploaded_file_url = fs.url(filename)
                     file_list.append(file.name)
 
-            kommentera_term = KommenteraBegrepp()
-            kommentera_term.begrepp_kontext = form.cleaned_data.get('resonemang')
-            kommentera_term.epost = form.cleaned_data.get('epost')
-            kommentera_term.namn = form.cleaned_data.get('namn')
+            kommentera_term = ConceptComment()
+            kommentera_term.concept_context = form.cleaned_data.get('resonemang')
+            kommentera_term.email = form.cleaned_data.get('epost')
+            kommentera_term.name = form.cleaned_data.get('namn')
             kommentera_term.status = DEFAULT_STATUS
-            kommentera_term.telefon = form.cleaned_data.get('telefon')
+            kommentera_term.telephone = form.cleaned_data.get('telefon')
             # entries with doublets cause a problem, so we take the first one
-            kommentera_term.begrepp = Begrepp.objects.filter(term=form.cleaned_data.get('term')).first()
+            kommentera_term.concept = Concept.objects.filter(term=form.cleaned_data.get('term')).first()
             kommentera_term.save()
 
             for filename in file_list:
-                new_file = BegreppExternalFiles()
-                new_file.begrepp = kommentera_term.begrepp
+                new_file = ConceptExternalFiles()
+                new_file.concept = kommentera_term.concept
                 new_file.kommentar = kommentera_term
                 new_file.support_file = filename
                 new_file.save()
@@ -759,8 +931,8 @@ def prenumera_till_epost(request):
         epost = request.GET.get('epost')
 
         send_mail(
-            'Prenumera till beslutade begrepp utskick',
-            f'Hej! {epost} vill prenumera mig till den veckovis utskicket av beslutade begrepp från Informatik och standardisering.',
+            'Prenumera till beslutade concept utskick',
+            f'Hej! {epost} vill prenumera mig till den veckovis utskicket av beslutade concept från Informatik och standardisering.',
             epost,
             ['informatik@vgregion.se'],
             fail_silently=False,
@@ -786,11 +958,11 @@ def return_number_of_comments(request):
         # Find all Dictionary IDs associated with the user's groups
         dictionary_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('dictionary_id', flat=True)
 
-        # Find all Begrepp IDs associated with these Dictionary IDs
-        begrepp_ids = Begrepp.objects.filter(dictionaries__dictionary_id__in=dictionary_ids).values_list('id', flat=True)
+        # Find all Concept IDs associated with these Dictionary IDs
+        concept_ids = Concept.objects.filter(dictionaries__dictionary_id__in=dictionary_ids).values_list('id', flat=True)
 
         # Filter KommenteraBegrepp based on the filtered Begrepp IDs
-        total_comments = KommenteraBegrepp.objects.filter(begrepp__id__in=begrepp_ids)
+        total_comments = ConceptComment.objects.filter(concept__id__in=concept_ids)
         
         # Calculate unread comments
         unread_comments_count = total_comments.exclude(status="Beslutad").count()
@@ -854,7 +1026,7 @@ def get_autocomplete_suggestions(attribute, search_term):
         return ['']
 
     custom_filter = {f"{attribute}__icontains": search_term}
-    queryset = Begrepp.objects.filter(**custom_filter)
+    queryset = Concept.objects.filter(**custom_filter)
 
     if not queryset.exists():
         return ['']
@@ -923,7 +1095,7 @@ def merge_term_and_synonym(qs, syn_qs):
                 "approved_synonyms" : []
                 }
 
-            synonyms = syn_qs.filter(begrepp_id=id)
+            synonyms = syn_qs.filter(concept_id=id)
             if synonyms and len(synonyms) > 0:
                 for synonym in synonyms:
                     if synonym.get('synonym_status') == "Tillåten":
@@ -944,7 +1116,7 @@ def all_accepted_terms(request):
     :rtype: {JsonResponse}
     """
 
-    queryset = Begrepp.objects.all().filter(
+    queryset = Concept.objects.all().filter(
         ~Q(status__icontains='publicera ej'),
         ~Q(status__icontains='ej påbörjad'),
         ~Q(status__icontains='pågår'),
@@ -955,7 +1127,7 @@ def all_accepted_terms(request):
     qs_dict = {i.get('id'): i for i in queryset}
 
     synonym_qs = Synonym.objects.filter(
-        begrepp_id__in=queryset.values_list(
+        concept_id__in=queryset.values_list(
         'id', flat=True)
         ).values()
     
@@ -971,18 +1143,18 @@ from django.core import serializers
 
 def get_term(request, id):
 
-    """ Obtain a single term from :model:`ordbok.Begrepp` and return a Queryset
+    """ Obtain a single term from :model:`ordbok.Concept` and return a Queryset
     dictionary that is presented as JSON. 
 
     :return: JSON object of a single term
     :rtype: {JsonResponse}
     """
 
-    logger.info(f'Getting begrepp {id}')
-    queryset = Begrepp.objects.filter(pk=id).values()
+    logger.info(f'Getting concept {id}')
+    queryset = Concept.objects.filter(pk=id).values()
 
     synonym_qs = Synonym.objects.filter(
-        begrepp_id__in=queryset.values_list(
+        concept_id__in=queryset.values_list(
         'id', flat=True)
         ).values()
     
@@ -1006,7 +1178,7 @@ def all_synonyms(request):
     
     for index, synonym_qs in enumerate(querylist):    
         try:
-            term = Begrepp.objects.get(Q(pk=synonym_qs.get('begrepp_id')) & Q(status__in=['Avråds','Avställd','Beslutad'])).term
+            term = Concept.objects.get(Q(pk=synonym_qs.get('concept_id')) & Q(status__in=['Avråds','Avställd','Beslutad'])).term
             querylist[index]['term'] = term
         except ObjectDoesNotExist as e:
             pass

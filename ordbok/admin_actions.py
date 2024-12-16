@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.urls import reverse
 from django.shortcuts import render, redirect
 
-from .models import Bestallare
+from .models import TaskOrderer
 
 from django.core import mail
 from django.core.mail import EmailMultiAlternatives, get_connection, message, send_mail
@@ -17,7 +17,7 @@ import pandas as pd
 import logging
 from pdb import set_trace
 
-from ordbok.models import Dictionary, Begrepp, Synonym
+from ordbok.models import Dictionary, Concept, Synonym
 from ordbok.forms import ColumnMappingForm, ExcelImportForm
 
 logger = logging.getLogger(__name__)
@@ -166,7 +166,7 @@ def skicka_epost_till_beställaren_status(queryset):
     email_list = []
 
     for enskilda_term in queryset.select_related():
-        beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
+        beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Uppdatering av term status i Olli', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''Hej!<br>Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
         <br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
@@ -195,7 +195,7 @@ def skicka_epost_till_beställaren_validate(queryset):
     email_list = []
 
     for enskilda_term in queryset.select_related():
-        beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
+        beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Begrepp för validering i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''Hej! <br>
 
@@ -229,7 +229,7 @@ def skicka_epost_till_beställaren_beslutad(queryset):
     email_list = []
 
     for enskilda_term in queryset.select_related():
-        beställare = Bestallare.objects.get(id=enskilda_term.beställare_id)
+        beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Beslutat begrepp i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''  
 

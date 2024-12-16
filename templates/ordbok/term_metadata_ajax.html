@@ -3,24 +3,24 @@
 
 {% block mitten-span %}
 
-{% if begrepp_full %}
+{% if concept %}
 
         <div id="förklaring" class="förklaring">
         <div class="searchTable">
-        <table id="term_förklaring_tabell" class="table table-bordered">
+        <table id="term_metadata_table" class="table table-bordered">
             <tbody>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{colour_status.concept}}">
                     <td>Status</td>
-                    <td>{{begrepp_full.status}}</td>
+                    <td>{{concept.status}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{colour_status.concept}}">
                     <td>Term</td>
-                    <td>{{begrepp_full.term}}</td>
+                    <td>{{concept.term}}</td>
                 </tr>
                 <tr>
                     <td>Synonym</td>
                     <td >
-                        {% for synonym in begrepp_full.synonym_set.all %}
+                        {% for synonym in concept.synonyms.all %}
                             {% if synonym.synonym is not None %}
                                 {% if synonym.synonym_status == "Avråds" %}
                                     -&nbsp;
@@ -37,34 +37,12 @@
                         {% endfor %}
                     </td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Definition</td>
-                    <td>{{begrepp_full.definition|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Källa</td>
-                    <td>{{begrepp_full.källa|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Anmärkning</td>
-                    <td>{{begrepp_full.anmärkningar|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Term på annat språk</td>
-                    <td>{{begrepp_full.term_på_annat_språk|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Annan referens</td>
-                    <td>{{begrepp_full.annan_referens|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Kod</td>
-                    <td>{{begrepp_full.kod|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.begrepp}}">
-                    <td>Term ID</td>
-                    <td>{{begrepp_full.id|default_if_none:"-"}}</td>
-                </tr>
+                {% for attribute in attributes %}
+                    <tr>
+                    <td><strong>{{ attribute.display_name }}:</strong></td>
+                    <td> {{ attribute.value|default:"Not available" }}</td>
+                    </tr>
+                {% endfor %}
                 <tfoot>
                     <tr>
                         <td>
@@ -119,6 +97,41 @@
 </div>
 
 {% endblock mitten-span %}
+
+<style>
+    #term_metadata_table {
+        width: 100%;
+        border-collapse: collapse; /* Remove double borders */
+        background-color: #fff; /* White background */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Drop shadow */
+        border-radius: 8px; /* Rounded corners */
+        overflow: hidden; /* Clip overflowing content for rounded corners */
+    }
+    
+    #term_metadata_table th,
+    #term_metadata_table td {
+        padding: 12px 15px; /* Add padding for better spacing */
+        text-align: left; /* Align text to the left */
+        border-bottom: 1px solid #ddd; /* Add subtle row dividers */
+    }
+    
+    #term_metadata_table th {
+        background-color: #f4f4f4; /* Light background for header */
+        font-weight: bold; /* Bold header text */
+        text-transform: uppercase; /* Capitalize header text */
+        color: #333; /* Darker text color */
+    }
+    
+    #term_metadata_table tr:hover {
+        background-color: #f9f9f9; /* Highlight row on hover */
+    }
+    
+    #term_metadata_table tr:last-child td {
+        border-bottom: none; /* Remove border for last row */
+    }
+    </style>
+
+
 <style>
 
 /* This allows us to keep the normal spacing
@@ -178,7 +191,7 @@ $(document).ready(function(){
 
     $("#kommentera_button").click(function(){
         
-        get_form_function(url="{% url 'kommentera_term' %}?q={{begrepp_full.term}}", 
+        get_form_function(url="{% url 'kommentera_term' %}?q={{concept_full.term}}", 
                           div_to_replace="#kommentera_bekräfta",
                           type_method="GET");
                     });

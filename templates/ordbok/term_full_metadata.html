@@ -7,11 +7,11 @@
 
 
 {% block header_row1_column_right %}
-<a href="{% url 'begrepp' %}"><img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}" alt="Navigera tillbaka till OLLI"></a>
+<a href="{% url 'concept' %}"><img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}" alt="Navigera tillbaka till OLLI"></a>
 {% endblock header_row1_column_right %}
 
 {% block mitten-span %}
-{% if begrepp_full %}
+{% if concept_full %}
 <div class="row mt-10" id="display-row">
 
     <div class="col-2" id="display-left-column"></div>
@@ -19,20 +19,20 @@
      
         <div id="förklaring" class="förklaring">
         <div class="searchTable">
-        <table id="term_förklaring_tabell" class="table table-bordered">
+        <table id="term_metadata_table" class="table table-bordered">
             <tbody>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Status</td>
-                    <td>{{begrepp_full.status}}</td>
+                    <td>{{concept_full.status}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Term</td>
-                    <td>{{begrepp_full.term}}</td>
+                    <td>{{concept_full.term}}</td>
                 </tr>
                 <tr>
                     <td>Synonym</td>
                     <td >
-                        {% for synonym in begrepp_full.synonym_set.all %}
+                        {% for synonym in concept_full.synonym_set.all %}
                             {% if synonym.synonym is not None %}
                                 {% if synonym.synonym_status == "Avråds" %}
                                     -&nbsp;
@@ -49,33 +49,33 @@
                         {% endfor %}
                     </td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Definition</td>
-                    <td>{{begrepp_full.definition|default_if_none:"-"}}</td>
+                    <td>{{concept_full.definition|default_if_none:"-"}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Källa</td>
-                    <td>{{begrepp_full.källa|default_if_none:"-"}}</td>
+                    <td>{{concept_full.källa|default_if_none:"-"}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Anmärkning</td>
-                    <td>{{begrepp_full.anmärkningar|default_if_none:"-"}}</td>
+                    <td>{{concept_full.anmärkningar|default_if_none:"-"}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Term på annat språk</td>
-                    <td>{{begrepp_full.term_på_annat_språk|default_if_none:"-"}}</td>
+                    <td>{{concept_full.term_på_annat_språk|default_if_none:"-"}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Annan referens</td>
-                    <td>{{begrepp_full.annan_referens|default_if_none:"-"}}</td>
+                    <td>{{concept_full.annan_referens|default_if_none:"-"}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Kod</td>
-                    <td>{{begrepp_full.kod|default_if_none:"-"}}</td>
+                    <td>{{concept_full.kod|default_if_none:"-"}}</td>
                 </tr>
-                <tr class="{{färg_status.begrepp}}">
+                <tr class="{{färg_status.concept}}">
                     <td>Term ID</td>
-                    <td>{{begrepp_full.id|default_if_none:"-"}}</td>
+                    <td>{{concept_full.id|default_if_none:"-"}}</td>
                 </tr>
                 <tfoot>
                     <tr>

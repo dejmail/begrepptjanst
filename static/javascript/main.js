@@ -1,6 +1,6 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
-const begrepp_div = $('#display-middle-column');
+const concept_div = $('#display-middle-column');
 const rootUrl =  window.location.href;
 
 function endpoint_check() {
@@ -79,12 +79,12 @@ const ajax_call = function (endpoint, requestParameters) {
         toggle_element("replaceable-content-middle-column");
         toggle_element("display-middle-column");
 
-        // fade out the begrepp_div, then:
-        begrepp_div.fadeTo('fast', 0).promise().then(() => {
+        // fade out the concept_div, then:
+        concept_div.fadeTo('fast', 0).promise().then(() => {
             // replace the HTML contents
-            begrepp_div.html(responseData);
+            concept_div.html(responseData);
             // fade-in the div with new contents
-            begrepp_div.fadeTo('fast', 1);
+            concept_div.fadeTo('fast', 1);
             // stop animating search icon
             search_icon.removeClass('blink');
             popStateHandler();
