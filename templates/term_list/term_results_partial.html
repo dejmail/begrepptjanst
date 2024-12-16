@@ -1,0 +1,204 @@
+{% load static %}
+{% spaceless %}
+
+{% block mitten-span %}
+{% if styled_results %}
+
+{% load get_item %}
+
+    <div class="d-flex flex-column justify-content-center align-items-center">
+
+      <p class="h5 text-primary font-weight-bold">
+        Visar resultat för {{chosen_dictionary}}
+      </p>
+    
+          
+      <button class="btn btn-light-blue btn-sm mt-2" onclick="populate_request_form('{{searched_for_term}}','{{chosen_dictionary}}')" aria-label="Efterfråga begrepp för {{searched_for_term}} i term_list {{chosen_dictionary}}">
+        Efterfråga begrepp
+      </button>
+    </div>
+  
+    <div class="container">
+      <div class="row">
+      <div class="col-12">
+        <div class="text-left" id="colour-explanation" data-toggle="tooltip" data-placement="top" title="Vad betyder färgerna?" onclick="toggleVisibility('colour-panel');">
+          <img src="{% static 'images/farg_panel.svg' %}" width="20px" height="20px" alt="Grön - beslutad av Informatik och Standardisering, Gul - Efterfrågat begrepp under handläggning, Röd - term ska inte användas">
+        </div>
+
+        <table class="table table-bordered top-buffer-10" id="searchResultTable">
+          <caption class="visually-hidden">Termer och dess definitioner för {{searched_for_term}} i term_list {{chosen_dictionary}}"</caption>
+          <colgroup>
+            <col class="col-3">
+            <col class="col-2">
+            <col class="col-5">
+            <col class="col-2">
+          </colgroup>
+            <thead>
+              <tr>
+                <th scope="col">Rekommenderad term</th>
+                <th scope="col">Synonym</th>
+                <th scope="col">Definition</th>
+                <th scope="col">Term på annat språk</th>
+                <!-- <th scope="col">Dict</th> -->
+
+              </tr>
+
+            </thead>
+            <tbody id="myTable">
+              {% for term in styled_results %}            
+                <tr class="{{ colour_status|get_item:term.status }}">
+                  <th scope="row"><a href="{% url 'term_metadata' %}?q={{term.id}}" id="term_{{term.id}}">{{term.term}}</a></th>
+                  <td>
+                    {% for item in search_results %}
+                      {% if item.id == term.id %}
+                        <ul class="synonym-list" aria-label="List of synonyms">
+                        {% for synonym in item.synonyms %}
+                          <li class="synonym-item">
+                              {% if synonym.synonym_status == "Avråds" %}
+                                  <div class="tooltip synonym deprecated" tabindex="0" role="button" aria-describedby="status-{{ forloop.counter }}">
+                                      <del class="text-danger">{{ synonym.synonym }}</del>
+                                      <span class="tooltiptext" style="background-color: red;">
+                                          Status: {{ synonym.synonym_status }}
+                                      </span>
+                                  </div>
+                                  <span id="status-{{ forloop.counter }}" class="visually-hidden">
+                                      Status: {{ synonym.synonym_status }}
+                                  </span>
+                              {% else %}
+                                  <div class="tooltip synonym" tabindex="0" role="button" aria-describedby="status-{{ forloop.counter }}">
+                                      {{ synonym.synonym }}
+                                      <span class="tooltiptext" style="background-color: green;">
+                                          Status: {{ synonym.synonym_status }}
+                                      </span>
+                                  </div>
+                                  <span id="status-{{ forloop.counter }}" class="visually-hidden">
+                                      Status: {{ synonym.synonym_status }}
+                                  </span>
+                              {% endif %}
+                          </li>
+                        {% endfor %}
+                  </ul>                  
+                      {% endif %}
+                    {% endfor %}
+                </td>
+                <td>{{term.definition}}</td>
+                <td>{{term.utländsk_term}}</td>
+                
+                <!-- <td>{{term.dictionaries}}</td> -->
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+      </div>
+    </div>
+  </div>
+            
+  <style>
+    /* Ensure we see intended spacing in the Definitions column */
+  /* tbody > tr > td:nth-child(3) {
+    white-space: pre-line;
+    } */
+  </style>
+
+<div id="tooltip" role="tooltip" hidden></div>
+
+
+{% else %}
+
+  <div id="nyTermForm">
+      <input type="image" src="{% static '/images/FFFFFF-0.8.png' %}" alt="">
+  <script> 
+      no_search_result("{{searched_for_term}}", "{{chosen_dictionary}}");
+
+</script>
+  </div>
+  
+{% endif %}
+
+{% endblock mitten-span %}
+
+{% endspaceless %}
+{% block extra_javascript %}
+
+<script>
+
+document.addEventListener('click', function(event) {
+  if (event.target.parentElement.classList.contains('synonym')) {
+    handleTooltipToggle(event.target);
+  }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && event.target.classList.contains('tooltip')) {
+        event.preventDefault(); // Prevent default Enter key behavior
+        handleTooltipToggle(event.target);
+    } else if (event.key === 'Escape') {
+        hideAllTooltips();
+    }
+});
+
+document.addEventListener('focusin', function(event) {
+    // Hide tooltips when focus moves away from a tooltip
+    const activeElement = document.activeElement;
+    if (!activeElement.classList.contains('tooltip') && !activeElement.closest('.tooltip')) {
+        hideAllTooltips();
+    }
+});
+
+document.addEventListener('focusout', function(event) {
+    // Hide tooltips when the tooltip itself loses focus
+    hideAllTooltips();
+});
+
+function handleTooltipToggle(target) {
+    console.log('synonym tooltips');
+    const tooltips = document.querySelectorAll('.tooltip .tooltiptext');
+    tooltips.forEach(function(tooltip) {
+        if (tooltip.parentElement.contains(target)) {
+            tooltip.style.visibility = tooltip.style.visibility === 'visible' ? 'hidden' : 'visible';
+            tooltip.style.opacity = tooltip.style.opacity === '1' ? '0' : '1';
+        } else {
+            tooltip.style.visibility = 'hidden';
+            tooltip.style.opacity = '0';
+        }
+    });
+}
+
+function hideAllTooltips() {
+    const tooltips = document.querySelectorAll('.tooltip .tooltiptext');
+    tooltips.forEach(function(tooltip) {
+        tooltip.style.visibility = 'hidden';
+        tooltip.style.opacity = '0';
+    });
+}
+
+</script>
+
+<style>
+  
+#searchResultTable {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+  }
+  
+#searchResultTable th,
+#searchResultTable td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+  }
+
+#searchResultTable tr:hover {
+    filter: brightness(90%);
+    transition: filter 0.2s ease;
+}
+  
+#searchResultTable tr:last-child td {
+      border-bottom: none;
+  }
+  </style>
+{% endblock extra_javascript %}
+

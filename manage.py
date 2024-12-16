@@ -8,13 +8,13 @@ def main():
     if socket.gethostname() == 'suijin.oderland.com':
         dir_path = os.path.dirname(os.path.realpath(__file__))
         if 'dev' in dir_path:
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.dev')
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.dev')
         if 'test' in dir_path:
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.test')
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.test')
         else:
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.production')
     else:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.local')
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.local')
         
     try:
         from django.core.management import execute_from_command_line

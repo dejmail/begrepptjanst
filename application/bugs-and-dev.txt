@@ -1,0 +1,11 @@
+Requested Features
+
+- ability to export an excel file and then reimport it.
+    - How to deal with updated data though? Only want to import that which has changed.
+
+- Searching on the site works when you click directly on a filter, and also when you unclick a filter. However if you end up in a dictionary that does not have a result, then even if you unclick it, you do not get the previous fields back.
+- Clicking on a filter dictionary before entering a search term should result in the whole dictionary being returned, and when you unclick it, should return the homepage or some other placeholder, not just nothing.
+
+- Once you search, clicking on an individual term produces no output.
+- Click backwards in the browser results in loss of formatting, must be a problem with single page saving
+- when a search is ongoing, I need a process indicator to show that the process has not hanged

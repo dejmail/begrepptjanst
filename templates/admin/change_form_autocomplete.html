@@ -1,6 +1,25 @@
 {% extends 'admin/change_form.html' %}
 {% load static %}
 
+
+{% block content %}
+    <style>
+        .highlight-row {
+            background-color: khaki; /* Highlight specific fields */
+        }
+    </style>
+
+    <div class="form-container">
+        {% for fieldset in adminform %}
+            <div class="form-row{% if fieldset.name in adminform.form.highlight_fields %} highlight-row{% endif %}">
+                {{ fieldset }}
+            </div>
+        {% endfor %}
+    </div>
+
+    {{ block.super }}
+{% endblock %}
+
 {% block responsive %}
 {{ block.super }}
 

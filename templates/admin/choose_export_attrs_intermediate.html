@@ -14,7 +14,7 @@
 
 {% block content %}
 
-{% if chosen_begrepp_terms|length > 10 %}
+{% if chosen_concept_terms|length > 10 %}
     <div class="container btn-danger p-2 my-2 border">
         Du har valt {{chosen_begrepp_terms|length}} begrepp/termer för att exportera, så termer kommer inte visas här.
     </div>
@@ -24,7 +24,7 @@
         <p class="h6">Du har valt följander begrepp eller termer för att exportera.</p></br>
 
         <ul>
-        {% for term in chosen_begrepp_terms %}  
+        {% for term in chosen_concept_terms %}  
             <li>{{term}}</li>
         {% endfor %}
         </ul>
@@ -41,7 +41,7 @@
             {% for attr in db_table_attrs %}
                 <input class="form-check-input" type="checkbox" value={{attr}} name={{attr}} id={{attr}} checked> {{attr}}</br>
             {% endfor %}
-            <input type="hidden" value="{% for term in chosen_begrepp %}{{term}}&{% endfor %}" name="selected_begrepp" id="selected_begrepp">
+            <input type="hidden" value="{% for term in chosen_begrepp %}{{term}}&{% endfor %}" name="selected_concept" id="selected_concept">
 
         </div>
         </div>

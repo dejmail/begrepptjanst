@@ -9,7 +9,7 @@
     <form method="POST" id="confirm-form">
         {% csrf_token %}
         
-        <input type="hidden" name="begrepp_data_list" id="begrepp_data_list" value="{{ begrepp_data_list_json }}">
+        <input type="hidden" name="concept_data_list" id="concept_data_list" value="{{ concept_data_list_json }}">
 
 
         <table class="table table-striped">
@@ -22,19 +22,19 @@
                 </tr>
             </thead>
             <tbody>
-                {% for begrepp in begrepp_data_list %}
+                {% for concept in concept_data_list %}
                 <tr>
                     <td>
-                        {% if begrepp.is_changed %}
+                        {% if concept.is_changed %}
                             <span class="tag tag-warning">Uppdatera</span>
-                        {% elif begrepp.is_new %}
+                        {% elif concept.is_new %}
                             <span class="tag tag-success">Ny</span>
                         {% endif %}
                     </td>
                     
                     <!-- Render the dynamic data fields corresponding to the headers -->
                     {% for header in column_headers %}
-                        <td>{{ begrepp|get_item:header }}</td>
+                        <td>{{ concept|get_item:header }}</td>
                     {% endfor %}
                 </tr>
                 {% endfor %}
@@ -43,7 +43,7 @@
 
         <div class="submit-row">
             <input type="submit" name="confirm_import" value="Confirm and Import" class="default">
-            <a href="{% url 'admin:ordbok_begrepp_changelist' %}" class="button">Cancel</a>
+            <a href="{% url 'admin:term_list_concept_changelist' %}" class="button">Cancel</a>
         </div>
     </form>
 
