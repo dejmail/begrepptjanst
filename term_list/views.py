@@ -646,45 +646,6 @@ def term_metadata_view(request):
 
     return render(request, "base.html", context={})
 
-# def concept_detail_view(concept_id):
-#     # Get the Concept instance
-#     concept = Concept.objects.get(id=concept_id)
-
-#     # Prefetch Attributes and their corresponding AttributeValues for the Concept
-#     attributes_with_values = Attribute.objects.prefetch_related(
-#         Prefetch(
-#             'attributevalue_set',
-#             queryset=AttributeValue.objects.filter(term=concept_id),
-#             to_attr='values_for_concept'
-#         )
-#     )
-
-#     # Build the attribute fields with their values (if any)
-#     attribute_fields = [
-#         {
-#             'name': attr.name,
-#             'display_name': attr.display_name,
-#             'value' : attr.values_for_concept[0].get_value() if attr.values_for_concept else None,
-#             # 'position': attr.position,
-#         }
-#         for attr in attributes_with_values
-#     ]
-
-#     # Get Concept fields with positions
-#     concept_fields = [
-#         {
-#             'name': field_name,
-#             'display_name': meta['display_name'],
-#             'value': getattr(concept, field_name, None),
-#             'position': meta['position'],
-#         }
-#         for field_name, meta in concept.get_ordered_fields()
-#     ]
-
-#     # Combine and order by position
-#     combined_fields = chain(attribute_fields, concept_fields)
-        
-#     return combined_fields
 def concept_detail_view(concept_id):
     """
     Fetch concept details along with its attributes and their values, including position
@@ -695,10 +656,11 @@ def concept_detail_view(concept_id):
 
     # Get Groups associated with the Concept's Dictionaries
     related_groups = Group.objects.filter(dictionaries__in=concept.dictionaries.all())
+
     
-    print(f"Dictionaries for Concept {concept_id}: {concept.dictionaries.all()}")
-    print(f"Related Groups Query: {related_groups.query}")
-    print(f"Related Groups for Concept {concept_id}: {related_groups}")
+    logger.info(f"Dictionaries for Concept {concept_id}: {concept.dictionaries.all()}")
+    logger.info(f"Related Groups Query: {related_groups.query}")
+    logger.info(f"Related Groups for Concept {concept_id}: {related_groups}")
 
     # Fetch Attributes linked to these Groups and include position from GroupAttribute
     attributes_with_values = Attribute.objects.filter(
