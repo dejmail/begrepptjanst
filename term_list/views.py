@@ -404,7 +404,7 @@ def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instanc
         try:
            search_results[index][key] = resplit_altered_strings[index]
         except (re.error, KeyError) as e:
-           print(e) 
+           logger.error(e) 
     
     return search_results
 

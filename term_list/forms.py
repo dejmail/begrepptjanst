@@ -10,7 +10,11 @@ from crispy_forms.layout import Field
 from django.core.exceptions import ValidationError
 from pdb import set_trace
 
+import logging
 from .models import STATUS_CHOICES
+
+logger = logging.getLogger(__name__)
+
 
 class CustomDateInput(forms.DateInput):
     input_type = 'date'
@@ -158,7 +162,7 @@ class AttributeValueInlineForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for name, field in self.fields.items():
-            print(f"Field {name}: {field.widget}")
+            logger.debug(f"Field {name}: {field.widget}")
         # Skip processing for new instances
         if not self.instance or not self.instance.pk:
             return
@@ -167,12 +171,7 @@ class AttributeValueInlineForm(forms.ModelForm):
         if not self.instance.attribute:
             return
 
-        print(f"Initialising form for AttributeValue: {self.instance}")
-
-        if self.instance and self.instance.attribute:
-            pass
-            # print(f"Attribute: {self.instance.attribute.display_name}")
-            # print(f"Data Type: {self.instance.attribute.data_type}")
+        logger.debug(f"Initialising form for AttributeValue: {self.instance}")
 
         # Dynamically add the appropriate input field for the value
         data_type = self.instance.attribute.data_type
@@ -200,7 +199,7 @@ class AttributeValueInlineForm(forms.ModelForm):
             self.fields['value'] = forms.BooleanField(
                 initial=self.instance.value_boolean, required=False, label="Value"
             )
-        print(f"self.fields: {self.fields}")
+        logger.debug(f"self.fields: {self.fields}")
 
 
     def clean(self):
