@@ -25,6 +25,4 @@ if socket.gethostname() == 'suijin.oderland.com':
 else:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.local')
 
-#os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.base')
-
 application = get_wsgi_application()
