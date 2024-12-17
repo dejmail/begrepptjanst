@@ -198,7 +198,8 @@ class MetadataSearchTrack(models.Model):
     """
 
     class Meta:
-        verbose_name = ('Sök Förklaring')
+        verbose_name = ('Sök Metadata')
+        verbose_name_plural = ('Sök Metadata')
         app_label = 'term_list'
 
     sök_term = models.CharField(max_length=255)
@@ -225,6 +226,12 @@ class ConfigurationOptions(models.Model):
     
 # Word Model (Core Entity)
 class Concept(models.Model):
+
+    class Meta:
+        verbose_name = "Begrepp"
+        verbose_name_plural = "Begrepp"
+        app_label = 'term_list'
+
     term = models.CharField(max_length=255)  # The word itself
     definition = models.TextField()  # Primary definition
     status = models.CharField(choices=CONCEPT_STATUS, max_length=15, null=True)
@@ -247,16 +254,23 @@ class Concept(models.Model):
         return sorted(default_fields.items(), key=lambda x: x[1]['position'])
 
 class GroupAttribute(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    attribute = models.ForeignKey('Attribute', on_delete=models.CASCADE)
-    position = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ('group', 'attribute')
-    
+        verbose_name = "Attribut Grupp"
+        verbose_name_plural = "Attribut Grupper"
+
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    attribute = models.ForeignKey('Attribute', on_delete=models.CASCADE)
+    position = models.PositiveIntegerField(default=0)    
 
 # Attribute Model
 class Attribute(models.Model):
+
+    class Meta:
+        verbose_name = "Attribut"
+        verbose_name_plural = "Attribut"    
+
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
     data_type = models.CharField(max_length=50, choices=[
@@ -275,6 +289,11 @@ class Attribute(models.Model):
 
 # Attribute Value Model
 class AttributeValue(models.Model):
+
+    class Meta:
+        verbose_name = "Attribut Värde"
+        verbose_name_plural = "Attribut Värden"
+
     term = models.ForeignKey(Concept, on_delete=models.CASCADE, related_name='attributes')
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
     value_string = models.CharField(max_length=255, null=True, blank=True)
@@ -323,6 +342,11 @@ class AttributeValue(models.Model):
 
 
 class GroupHierarchy(models.Model):
+
+    class Meta:
+        verbose_name = "Grupp Hierarki"
+        verbose_name_plural = "Grupp Hierarki"
+
     parent = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='subgroups')
     child = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='parent_groups')
 
