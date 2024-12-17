@@ -230,11 +230,9 @@ class Concept(models.Model):
     status = models.CharField(choices=CONCEPT_STATUS, max_length=15, null=True)
     changed_at = models.DateTimeField(null=True, auto_now=True, verbose_name='Senaste ändring')
     created_at = models.DateTimeField(null=True, auto_now_add=True, verbose_name='Datum skapat')
-    field_positions = models.JSONField(default=dict, null=True, blank=True)
     history = HistoricalRecords(['changed_at', 'definition'])
 
     dictionaries = models.ManyToManyField(Dictionary, related_name='concept')
-
 
     def __str__(self):
         return self.term
@@ -245,11 +243,7 @@ class Concept(models.Model):
             'status': {'display_name': 'Status', 'position': 0},
             'definition': {'display_name': 'Definition', 'position': 1},
         }
-        # Merge defaults with custom positions
-        for field, meta in self.field_positions.items():
-            if field in default_fields:
-                default_fields[field]['position'] = meta.get('position', default_fields[field]['position'])
-        # Return sorted fields
+
         return sorted(default_fields.items(), key=lambda x: x[1]['position'])
 
 class GroupAttribute(models.Model):
@@ -260,8 +254,6 @@ class GroupAttribute(models.Model):
     class Meta:
         unique_together = ('group', 'attribute')
     
-    # def __str__(self):
-    #     return 
 
 # Attribute Model
 class Attribute(models.Model):
