@@ -441,6 +441,45 @@ class AttributeValueInline(admin.TabularInline):
     template = 'admin/attribute_value_inline_tabular.html'
     extra = 0
 
+    def get_queryset(self, request):
+        
+        """
+        Filter the AttributeValue inline queryset to only include relevant attributes.
+        """
+        qs = super().get_queryset(request)
+
+        # Get the Concept object being edited (from the URL)
+        concept_id = request.resolver_match.kwargs.get('object_id')
+
+        if concept_id:
+            # Filter AttributeValue objects where term matches the concept being edited
+            concept = Concept.objects.get(pk=concept_id)
+            group_ids = concept.dictionaries.values_list('groups__id', flat=True)
+            qs = qs.filter(
+                term_id=concept_id,
+                attribute__groups__id__in=group_ids
+            ).distinct()
+
+        return qs
+
+    def get_formset(self, request, obj=None, **kwargs):
+        # Pass the Concept instance to the form
+
+        formset = super().get_formset(request, obj, **kwargs)
+    
+    # Inject concept instance into the formset
+        class CustomFormset(formset):
+            def __init__(self, *args, **kwargs):
+                kwargs['form_kwargs'] = {'concept': obj}
+                super().__init__(*args, **kwargs)
+
+        return CustomFormset
+        # formset = super().get_formset(request, obj, **kwargs)
+        # formset.form = AttributeValueInlineForm
+        # formset.form_kwargs = {'concept': obj}  # Pass the concept instance
+        
+        # return formset
+
     def get_fieldsets(self, request, obj=None):
         # Define the fields to display, including the dynamically added `value`
         fieldsets = [
@@ -460,7 +499,7 @@ class AttributeValueInline(admin.TabularInline):
             return obj.attribute.display_name
         return "No attribute"
 
-    attribute_display_name.short_description = "Attribute"
+    attribute_display_name.short_description = "Attribut"
 
 
 class ConceptAdmin(DictionaryRestrictAdminMixin,
@@ -506,6 +545,19 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
 
     status_button.short_description = 'Status'
 
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        concept = self.get_object(request, object_id)
+        
+        if concept:
+            # Filter attributes based on the Concept's dictionary
+            
+            extra_context['filtered_attributes'] = Attribute.objects.filter(
+                groups__dictionaries__dictionary_long_name=concept.dictionaries
+                )
+        
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
+    
     def get_queryset(self, request):
 
         queryset = super().get_queryset(request)

@@ -3,7 +3,8 @@ from .models import (
     Dictionary, 
     Concept, 
     ConceptExternalFiles, 
-    AttributeValue)
+    AttributeValue,
+    Attribute)
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
@@ -157,10 +158,25 @@ class ColumnMappingForm(forms.Form):
 class AttributeValueInlineForm(forms.ModelForm):
     class Meta:
         model = AttributeValue
-        fields = []  # Dynamically add fields in __init__
+        fields = [] 
 
     def __init__(self, *args, **kwargs):
+        
+        self.concept = kwargs.pop('concept', None)
         super().__init__(*args, **kwargs)
+
+        if not self.concept:
+            logger.warning("Concept instance is missing. No attributes will be loaded.")
+            return
+        
+        if self.concept:
+            logger.debug(f"Filtering attributes for concept {self.concept}")
+            group_ids = self.concept.dictionaries.values_list('groups', flat=True)
+        
+         # Get attributes related to the Concept's Dictionary and Group
+        group_attributes = relevant_attributes = Attribute.objects.filter(groups__id__in=group_ids).distinct()
+        logger.debug(f"Filtered attributes for concept {self.concept}: {group_attributes}")
+
         for name, field in self.fields.items():
             logger.debug(f"Field {name}: {field.widget}")
         # Skip processing for new instances
@@ -173,8 +189,13 @@ class AttributeValueInlineForm(forms.ModelForm):
 
         logger.debug(f"Initialising form for AttributeValue: {self.instance}")
 
+        for attribute in group_attributes:
+            field_name = f"attribute_{attribute.id}"
+            data_type = attribute.data_type            
+            initial_value = self._get_initial_value(attribute)
+
         # Dynamically add the appropriate input field for the value
-        data_type = self.instance.attribute.data_type
+        # data_type = self.instance.attribute.data_type
         if data_type == 'string':
             self.fields['value'] = forms.CharField(
                 initial=self.instance.value_string, required=False, label="Value"
@@ -201,6 +222,17 @@ class AttributeValueInlineForm(forms.ModelForm):
             )
         logger.debug(f"self.fields: {self.fields}")
 
+    def _get_initial_value(self, attribute):
+
+        """Fetch the initial value for an attribute."""
+        try:
+            attr_value = AttributeValue.objects.get(
+                attribute=attribute, 
+                term_id=self.concept.id
+            )
+            return attr_value.value_string  # Adjust based on the field type
+        except AttributeValue.DoesNotExist:
+            return None
 
     def clean(self):
         cleaned_data = super().clean()
