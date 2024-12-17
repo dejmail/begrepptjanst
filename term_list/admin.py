@@ -232,9 +232,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
     def get_actions(self, request):
         actions = super().get_actions(request)
         actions['change_dictionaries'] = (change_dictionaries, 'change_dictionaries', "Change Dictionary of selected Begrepp")
-        return actions
-
-  
+        return actions 
 
     def export_chosen_attrs_view(request):
 
@@ -318,10 +316,6 @@ class DictionaryAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
                     'dictionary_id',
                     'dictionary_context',
                     'order')
-
-    #list_select_related = (
-    #    'begrepp',
-    #)
 
     list_filter = ("dictionary_name",)
     #search_fields = ('begrepp__term',)
@@ -486,7 +480,7 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
     change_form_template = 'begrepp_change_form.html'
     change_list_template = "begrepp_changelist.html"
 
-    list_display = ['id','term', 'definition', 'status_button', 'list_dictionaries']
+    list_display = ['term', 'definition', 'status_button', 'list_dictionaries']
     search_fields = ('term',
                     'definition',
                     'synonyms__synonym',
@@ -575,8 +569,6 @@ class AttributeValueAdmin(admin.ModelAdmin):
     'value_boolean',
     'value_url',
     ]
-
-
     
     def get_queryset(self, request):
 
