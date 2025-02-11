@@ -209,7 +209,7 @@ function populate_request_form(requested_term,chosen_dictionary)
           popStateHandler();
         },
         error: function() {
-        $('#display-middle-column').html("There has been an error loading this form");
+        $('#display-middle-column').html('<div id="error-message" class="alert alert-danger d-none" role="alert"><strong>Error:</strong>Har skett ett fel, vänligen försök igen.</div>');
         },
         });
     };
