@@ -123,7 +123,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
 
     search_fields = ('term',
                     'definition',
-                    'utländsk_term',
+                    'non_swedish_terrm',
                     'synonym__synonym',
                     )
 
@@ -143,7 +143,7 @@ class BegreppAdmin(DictionaryRestrictAdminMixin,
                     When(Q(term__istartswith=search_term), then=Value(2)),
                     When(Q(term__icontains=search_term), then=Value(3)), 
                     When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
-                    When(Q(utländsk_term__icontains=search_term), then=Value(5)),
+                    When(Q(non_swedish_terrm__icontains=search_term), then=Value(5)),
                     When(Q(definition__icontains=search_term), then=Value(6)), 
                     default=Value(0),
                     output_field=IntegerField()
@@ -525,6 +525,12 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
                     'synonyms__synonym',
                     )
     
+    list_filter = (StatusListFilter,
+                   ('changed_at', DateRangeFilter),
+                   'dictionaries',
+                   DuplicateTermFilter
+    )
+    
     inlines = [AttributeValueInline]
 
     def status_button(self, obj):
@@ -545,6 +551,14 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
 
     status_button.short_description = 'Status'
 
+    def get_inlines(self, request, obj=None):
+        """
+        Conditionally return inlines only when editing an existing Concept.
+        """
+        if obj:  # Only show inlines when editing an existing instance
+            return [AttributeValueInline]
+        return []
+    
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         concept = self.get_object(request, object_id)
@@ -560,9 +574,12 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
     
     def get_queryset(self, request):
 
-        queryset = super().get_queryset(request)
+        """
+        Annotate the search where the search string is found in different connected
+        models. Done so that the search results are more relevant.
+        """
 
-        # queryset = queryset.prefetch_related('synonym').distinct()
+        queryset = super().get_queryset(request)
 
         if request.GET.get('q'):
             search_term = request.GET.get('q')
@@ -580,17 +597,51 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
         return queryset
     
     def get_form(self, request, obj=None, **kwargs):
+
+        """
+        Filter the available dictionaries to those the user has access to
+        """
         form = super().get_form(request, obj, **kwargs)
                 
         # Only show dictionaries the user has permission to edit
         if not request.user.is_superuser:
             
-            # Assuming you have a relation like 'dictionary' in Begrepp model
+            # Assuming you have a relation like 'dictionary' in Concept model
             form.base_fields['dictionaries'].queryset = form.base_fields['dictionaries'].queryset.filter(
                 groups__in=request.user.groups.all()
             )
 
         return form
+    
+    def save_model(self, request, obj, form, change):
+        """
+        Save the Concept instance first.
+        """
+        super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        """
+        After saving the Concept and its ManyToMany relationships,
+        create the appropriate AttributeValue instances.
+        """
+        super().save_related(request, form, formsets, change)
+
+        # Now that ManyToMany relationships are saved, proceed with AttributeValues
+        concept = form.instance  # Get the current Concept instance
+        
+        if concept.dictionaries.exists():
+            # Step 1: Get all related Group IDs from the selected Dictionaries
+            group_ids = concept.dictionaries.values_list('groups__id', flat=True)
+            
+            # Step 2: Fetch all Attributes linked to those Groups
+            relevant_attributes = Attribute.objects.filter(groups__id__in=group_ids).distinct()
+            
+            # Step 3: Create AttributeValue objects for each Attribute
+            for attribute in relevant_attributes:
+                AttributeValue.objects.get_or_create(
+                    term=concept,  # Link to the current Concept instance
+                    attribute=attribute
+                )
     
     def list_dictionaries(self, obj):
         return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
@@ -623,6 +674,11 @@ class AttributeValueAdmin(admin.ModelAdmin):
     ]
     
     def get_queryset(self, request):
+
+        """
+        Assign a rank to the search so that the most relevant are presented 
+        first
+        """
 
         queryset = super().get_queryset(request)
 
