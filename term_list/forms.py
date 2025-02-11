@@ -71,7 +71,7 @@ class TermRequestForm(forms.Form):
         namn =  self.cleaned_data.get('namn')
         return namn
 
-    def clean_epost(self):
+    def clean_email(self):
         epost = self.cleaned_data.get('epost')
         return epost
     
@@ -84,29 +84,24 @@ class TermRequestForm(forms.Form):
 
         return dictionary
 
-    def clean_telefon(self):
-        telefon = self.cleaned_data.get('telefon')
-        return telefon
-
-    def clean_kontext(self):
+    def clean_context(self):
         kontext = self.cleaned_data.get('kontext')
         return kontext
 
-    def clean_utländsk_term(self):
-        utländsk_term = self.cleaned_data.get('utländsk_term')
-        return utländsk_term
+    def clean_non_swedish_term(self):
+        non_swedish_terrm = self.cleaned_data.get('non_swedish_terrm')
+        return non_swedish_terrm
 
-    def clean_begrepp(self):
+    def clean_concept(self):
         begrepp = self.cleaned_data.get('begrepp')
         return begrepp
 
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
-    dictionary = forms.CharField(max_length=64, label="term_list")
-    utländsk_term = forms.CharField(max_length=254, required=False, label="Engelsk term")
+    dictionary = forms.CharField(max_length=64, label="Ordlista")
+    non_swedish_terrm = forms.CharField(max_length=254, required=False, label="Engelsk term")
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:") 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
-    telefon = forms.CharField(max_length=30, label="Kontakt",  widget=forms.TextInput(attrs={'placeholder': "Telefon"})) 
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
 
 
@@ -114,7 +109,6 @@ class KommenteraTermForm(forms.Form):
 
     namn = forms.CharField()
     epost = forms.EmailField()
-    telefon = forms.CharField(max_length=30, label="Kontakt", widget=forms.TextInput(attrs={'placeholder': "Telefon"}))
     resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
     term = forms.CharField(widget=forms.HiddenInput())
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
@@ -235,6 +229,7 @@ class AttributeValueInlineForm(forms.ModelForm):
             return None
 
     def clean(self):
+        
         cleaned_data = super().clean()
         value = cleaned_data.get('value')
 
