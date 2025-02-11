@@ -82,7 +82,7 @@
                     {% endfor %}
                 </td>
                 <td>{{term.definition}}</td>
-                <td>{{term.utländsk_term}}</td>
+                <td>{{term.non_swedish_term|default:""}}</td>
                 
                 <!-- <td>{{term.dictionaries}}</td> -->
                 </tr>

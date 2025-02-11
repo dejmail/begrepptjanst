@@ -40,7 +40,7 @@
                 {% for attribute in attributes %}
                     <tr>
                     <td><strong>{{ attribute.display_name }}:</strong></td>
-                    <td> {{ attribute.value|default:"Not available" }}</td>
+                    <td> {{ attribute.value|default:"-" }}</td>
                     </tr>
                 {% endfor %}
                 <tfoot>
