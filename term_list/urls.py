@@ -15,7 +15,7 @@ urlpatterns = [
     path('autocomplete-suggestions/<str:attribute>/<search_term>/', views.autocomplete_suggestions, name='autocomplete_suggestions'),
     path('get-dictionary-content/<str:dictionary>', views.get_dictionary_data, name="get_dictionary_details"),
 
-    path('json/begrepp/', views.redirect_to_all_beslutade_terms, name='get_json_terms'),
+    path('json/begrepp/', views.redirect_to_all_approved_terms, name='get_json_terms'),
     path('json/begrepp/<int:id>', views.get_term, name='get_terms'),
     path('json/begrepp/all/', views.all_accepted_terms, name='get_all_accepted_terms_as_json'),
     path('json/synonymer/', views.all_synonyms, name='all_synonyms'),
