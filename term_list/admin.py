@@ -237,6 +237,9 @@ class AttributeValueInline(admin.StackedInline):
     can_delete = False
     template = "admin/edit_inline/stacked.html" 
 
+    def has_add_permission(self, request, obj=None):
+        return False  # ✅ Prevents the 'Add another' button from appearing
+
 class ConceptAdmin(DictionaryRestrictAdminMixin,
                    ConceptFileImportMixin,
                    SimpleHistoryAdmin):
