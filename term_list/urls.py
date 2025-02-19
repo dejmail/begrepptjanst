@@ -21,7 +21,7 @@ urlpatterns = [
     path('json/synonymer/', views.all_synonyms, name='all_synonyms'),
 
     
-    path('export/attrs/', admin_views.BegreppAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
+    #path('export/attrs/', admin_views.BegreppAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
     path('fetch-attributes/', admin_functions.fetch_attributes, name='fetch_attributes'),
 
 ]

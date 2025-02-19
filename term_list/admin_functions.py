@@ -23,19 +23,22 @@ import html
 import logging
 logger = logging.getLogger(__name__)
 
+from django.http import JsonResponse
+
 
 from pdb import set_trace
 
 def add_non_breaking_space_to_status(status_item):
 
-    length = len(status_item)
-    length_to_add = 12 - length
-    for x in range(length_to_add):
-        if x % 2 == 0:
-            status_item += '&nbsp;'
-        else:
-            status_item = '&nbsp;' + status_item
-    return mark_safe(status_item)
+    if status_item:
+        length = len(status_item)
+        length_to_add = 12 - length
+        for x in range(length_to_add):
+            if x % 2 == 0:
+                status_item += '&nbsp;'
+            else:
+                status_item = '&nbsp;' + status_item
+        return mark_safe(status_item)
 
 def conditional_lowercase(cell):
     words = cell.split(' ')
@@ -168,7 +171,8 @@ class ConceptFileImportMixin:
                 mapping_form = ColumnMappingForm(
                     columns=columns,
                     model_fields=model_fields,
-                    available_dictionaries=[(dict.dictionary_id, dict.dictionary_name) for dict in available_dictionaries],
+                    available_dictionaries=[(dict.dictionary_id, 
+                                             dict.dictionary_name) for dict in available_dictionaries],
                     initial=initial_data,
                 )
 
@@ -187,7 +191,7 @@ class ConceptFileImportMixin:
             available_dictionaries = self.get_accessible_dictionaries(request)
     
             updated_records = []
-            begrepp_data_list = []
+            concept_data_list = []
             
             for _, row in df.iterrows():
                 data = {column_mapping[col]: row[col] for col in df.columns if column_mapping.get(col)}
@@ -209,18 +213,18 @@ class ConceptFileImportMixin:
                     
                     data['is_changed'] = is_changed        
                     data['is_new'] = True
-                    begrepp_data_list.append(data)
+                    concept_data_list.append(data)
 
                 except Concept.DoesNotExist:
                     # Create a new Concept if it doesn't exist
                     data['is_changed'] = False 
                     data['is_new'] = True   
-                    begrepp_data_list.append(data)
+                    concept_data_list.append(data)
             
             #Render the confirmation page
             return render(request, 'admin/confirm_mapping.html', {
-                'begrepp_data_list': begrepp_data_list,
-                'begrepp_data_list_json': json.dumps(begrepp_data_list, ensure_ascii=False),
+                'begrepp_data_list': concept_data_list,
+                'begrepp_data_list_json': json.dumps(concept_data_list, ensure_ascii=False),
                 'column_headers': column_headers,
             })
 
@@ -230,12 +234,12 @@ class ConceptFileImportMixin:
             unescaped_data = html.unescape(request.POST.get('begrepp_data_list'))
 
             try:
-                begrepp_data_list = json.loads(unescaped_data)
+                concept_data_list = json.loads(unescaped_data)
             except json.JSONDecodeError as e:
                 messages.error(request, f"Error decoding JSON: {e}")
                 return redirect("admin:term_list_begrepp_changelist")
 
-            for data in begrepp_data_list:
+            for data in concept_data_list:
                 # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create, 
                 # additionally is_update is not part of the Concept model.
                 
@@ -258,9 +262,6 @@ class ConceptFileImportMixin:
         return render(request, 'admin/excel_upload.html', {
             'form': form
         })
-
-from django.http import JsonResponse
-
 
 #@csrf_exempt
 def fetch_attributes(request):

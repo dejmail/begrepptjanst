@@ -26,6 +26,12 @@ logging_schema = {
             "datefmt": "%d %b %y %H:%M:%S"
         }
     },
+    'filters': {
+        'ignore_http_logs': {
+            '()': 'django.utils.log.CallbackFilter',
+            'callback': lambda record: record.name not in ('django.server', 'django.request'),
+        },
+    },
     # Handlers use the formatter names declared above
     "handlers": {
         # Name of handler
@@ -36,6 +42,7 @@ logging_schema = {
             # This is the formatter name declared above
             "formatter": "standard",
             "level": "DEBUG",
+            "filters": ["ignore_http_logs"],  # ✅ Ignore HTTP logs
             # The default is stderr
             "stream": "ext://sys.stdout"
         },
@@ -59,7 +66,17 @@ logging_schema = {
             "handlers": ["console"],
             "level": "DEBUG",
             "propagate": False
-        }
+        },
+        'django.server': {  # ✅ Disable Django's default HTTP logging
+            'handlers': ['console'],
+            'level': 'CRITICAL',  # Logs only critical errors
+            'propagate': False,
+        },
+        'django.request': {  # ✅ Disable detailed HTTP request logs
+            'handlers': ['console'],
+            'level': 'CRITICAL',
+            'propagate': False,
+        },
     },
     # Just a standalone kwarg for the root logger
     "root" : {

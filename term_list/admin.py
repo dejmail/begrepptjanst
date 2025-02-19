@@ -17,7 +17,11 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 from simple_history.admin import SimpleHistoryAdmin
 from django.http import HttpResponse
 
-from term_list.forms import ConceptForm, AttributeValueInlineForm
+from term_list.forms import (
+    ConceptForm, 
+    AttributeValueInlineForm
+    # AttributeValueInlineFormSet
+    )
 from term_list.models import *
 from django.conf import settings
 
@@ -81,215 +85,6 @@ class StatusListFilter(MultipleChoiceListFilter):
 
 class ExcelImportForm(forms.Form):
     excel_file = forms.FileField()
-
-class BegreppAdmin(DictionaryRestrictAdminMixin,
-                   ConceptFileImportMixin,
-                   SimpleHistoryAdmin):
-
-    class Media:
-        css = {
-        'all': (
-            f'{settings.STATIC_URL}css/main.css',
-            f'{settings.STATIC_URL}css/begrepp_custom.css',
-           )
-         }
-    
-    inlines = [ConceptExternalFilesInline, SynonymInline]
-
-    change_form_template = 'begrepp_change_form.html'
-    change_list_template = "begrepp_changelist.html"
-
-    form = ConceptForm
-
-    readonly_fields = ['senaste_ändring','datum_skapat']
-    history_list_display = ['changed_fields']
-
-    save_on_top = True
-
-    list_display = ('term',
-                    'synonym',
-                    'definition',
-                    'status_button',
-                    'senaste_ändring',
-                    'list_dictionaries')
-
-    list_filter = (StatusListFilter,
-                   ('senaste_ändring', DateRangeFilter),
-                   DictionaryFilter,
-                   DuplicateTermFilter
-    )
-
-    filter_horizontal = ('dictionaries',)
-
-    search_fields = ('term',
-                    'definition',
-                    'non_swedish_terrm',
-                    'synonym__synonym',
-                    )
-
-    date_hierarchy = 'senaste_ändring'
-
-    actions = [change_dictionaries, export_chosen_begrepp_attrs_action]
-
-    def get_queryset(self, request):
-
-        queryset = super().get_queryset(request)
-        
-        if request.GET.get('q'):
-            search_term = request.GET.get('q')
-            queryset = queryset.annotate(
-                position=Case(
-                    When(Q(term__iexact=search_term), then=Value(1)),
-                    When(Q(term__istartswith=search_term), then=Value(2)),
-                    When(Q(term__icontains=search_term), then=Value(3)), 
-                    When(Q(synonym__synonym__icontains=search_term), then=Value(4)), 
-                    When(Q(non_swedish_terrm__icontains=search_term), then=Value(5)),
-                    When(Q(definition__icontains=search_term), then=Value(6)), 
-                    default=Value(0),
-                    output_field=IntegerField()
-                )
-            ).order_by('position')
-        
-        if not request.user.is_superuser:
-            accessible_dictionaries = self.get_accessible_dictionaries(request)
-            return queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
-        else:
-            return queryset
-    
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-                
-        # Only show dictionaries the user has permission to edit
-        if not request.user.is_superuser:
-            
-            # Assuming you have a relation like 'dictionary' in Begrepp model
-            form.base_fields['dictionaries'].queryset = form.base_fields['dictionaries'].queryset.filter(
-                groups__in=request.user.groups.all()
-            )
-
-        return form
-    
-    # def changelist_view(self, request, extra_context=None):
-    #     extra_context = extra_context or {}
-    #     extra_context['available_dictionaries'] = Dictionary.objects.all()
-    #     return super(BegreppAdmin, self).changelist_view(request, extra_context=extra_context)
-    
-    def get_fieldsets(self, request, obj=None):
-        # Get visible config in the required order
-        config = ConfigurationOptions.objects.get(name='visibleOnFrontPage').config
-
-        # Combine regular fields and ManyToManyFields
-        all_fields = list(self.model._meta.fields) + list(self.model._meta.many_to_many)
-
-        # Initialize dictionaries to hold the ordered fields
-        visible_fields = []
-        other_fields = []
-
-        # Loop through the config to ensure the correct order of visible fields
-        for field_name in config:
-            if any(field.name == field_name for field in all_fields):
-                visible_fields.append(field_name)
-
-        # Add remaining fields to 'other_fields' in any order
-        for field in all_fields:
-            if field.name != 'id' and field.name not in visible_fields:
-                other_fields.append(field.name)
-
-            # Define the fieldsets based on the lists of fields
-        fieldsets = (
-            ('Synliga attribut på framsida', {'fields': visible_fields}),
-            ('Övriga attribut', {'fields': other_fields}),
-        )
-        return fieldsets
-
-    
-    def position(self, obj):
-        return obj.position
-    position.short_description = 'Position'
-    
-    def has_link(self, obj):
-        if (obj.link != None) and (obj.link != ''):
-            return format_html(
-            f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-yes.svg" alt="Har länk ikon">'
-            )
-        else:
-            return format_html(
-                f'<img src="{settings.SUBDOMAIN}/static/admin/img/icon-no.svg" alt="Har ingen länk ikon">'
-                )
-
-    has_link.short_description = "URL Länk"
-
-    def changed_fields(self, obj):
-        if obj.prev_record:
-            delta = obj.diff_against(obj.prev_record)
-            return_text = ""
-            for field in delta.changed_fields:
-                return_text += f"""<p><strong>{field}</strong> ändrad från --> <span class="text_highlight_yellow">{getattr(delta.old_record, field)}</span></br></br>
-                till --> <span class="text_highlight_green">{getattr(delta.new_record, field)}</span></p>"""
-            return mark_safe(return_text)
-        return None
-    
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        actions['change_dictionaries'] = (change_dictionaries, 'change_dictionaries', "Change Dictionary of selected Begrepp")
-        return actions 
-
-    def export_chosen_attrs_view(request):
-
-        if request.method == 'POST':
-            chosen_begrepp = [int(i) for i in request.POST.get('selected_begrepp').split("&")[:-1]]
-            queryset = Concept.objects.filter(id__in=chosen_begrepp)
-            model_fields = [field.name for field in queryset.first()._meta.get_fields()]
-            chosen_table_attrs = [i for i in model_fields if i in request.POST.keys()]
-
-            form = ChooseExportAttributes(request.POST)
-            if form.is_valid():
-                response = admin_actions.export_chosen_begrepp_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
-            return response
-
-    def önskad_slutdatum(self, obj):
-        
-        return obj.beställare.önskad_slutdatum
-
-    def synonym(self, obj):
-        
-        display_text = ", ".join([
-            "<a href={}>{}</a>".format(
-                    reverse('admin:{}_{}_change'.format(obj._meta.app_label,  obj._meta.related_objects[2].name),
-                    args=(synonym.id,)),
-                synonym.synonym)
-             for synonym in obj.synonym_set.all()
-        ])
-        if display_text:
-            return mark_safe(display_text)
-        return "-"
-
-    synonym.admin_order_field = 'synonym'
-
-    def list_dictionaries(self, obj):
-        return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
-
-    list_dictionaries.short_description = 'term_list'
-    list_dictionaries.verbose = 'Ordböcker'
-    
-    
-    def status_button(self, obj):
-        status_classes = {
-        'Avråds': 'tag tag-avrådd text-monospace',
-        'Avrådd': 'tag tag-avrådd text-monospace',
-        'Avställd': 'tag tag-avrådd text-monospace',
-        'Publicera ej': 'tag tag-light-blue text-monospace dark-text',
-        'Pågår': 'tag tag-oklart light-text text-monospace',
-        'Ej Påbörjad': 'tag tag-oklart light-text text-monospace',
-        'Beslutad': 'tag tag-grön light-text text-monospace'
-        }
-
-        css_class = status_classes.get(obj.status, 'tag btn-white dark-text text-monospace')
-        
-        display_text = f'<span class="{css_class}">{add_non_breaking_space_to_status(obj.status)}</span>'
-        return mark_safe(display_text)
-
-    status_button.short_description = 'Status'
 
 class TaskOrdererAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
@@ -435,72 +230,12 @@ class ConfigurationOptionsAdmin(admin.ModelAdmin):
     
     model = ConfigurationOptions
 
-class AttributeValueInline(admin.TabularInline):
+class AttributeValueInline(admin.StackedInline):
     model = AttributeValue
     form = AttributeValueInlineForm
-    template = 'admin/attribute_value_inline_tabular.html'
     extra = 0
-
-    def get_queryset(self, request):
-        
-        """
-        Filter the AttributeValue inline queryset to only include relevant attributes.
-        """
-        qs = super().get_queryset(request)
-
-        # Get the Concept object being edited (from the URL)
-        concept_id = request.resolver_match.kwargs.get('object_id')
-
-        if concept_id:
-            # Filter AttributeValue objects where term matches the concept being edited
-            concept = Concept.objects.get(pk=concept_id)
-            group_ids = concept.dictionaries.values_list('groups__id', flat=True)
-            qs = qs.filter(
-                term_id=concept_id,
-                attribute__groups__id__in=group_ids
-            ).distinct()
-
-        return qs
-
-    def get_formset(self, request, obj=None, **kwargs):
-        # Pass the Concept instance to the form
-
-        formset = super().get_formset(request, obj, **kwargs)
-    
-    # Inject concept instance into the formset
-        class CustomFormset(formset):
-            def __init__(self, *args, **kwargs):
-                kwargs['form_kwargs'] = {'concept': obj}
-                super().__init__(*args, **kwargs)
-
-        return CustomFormset
-        # formset = super().get_formset(request, obj, **kwargs)
-        # formset.form = AttributeValueInlineForm
-        # formset.form_kwargs = {'concept': obj}  # Pass the concept instance
-        
-        # return formset
-
-    def get_fieldsets(self, request, obj=None):
-        # Define the fields to display, including the dynamically added `value`
-        fieldsets = [
-            (None, {
-                'fields': ['attribute_display_name']
-            }),
-        ]
-        return fieldsets
-
-    def get_readonly_fields(self, request, obj=None):
-        # Make attribute_display_name read-only
-        return ['attribute_display_name']
-
-    def attribute_display_name(self, obj):
-        # Display the attribute's display_name
-        if obj and obj.attribute:
-            return obj.attribute.display_name
-        return "No attribute"
-
-    attribute_display_name.short_description = "Attribut"
-
+    can_delete = False
+    template = "admin/edit_inline/stacked.html" 
 
 class ConceptAdmin(DictionaryRestrictAdminMixin,
                    ConceptFileImportMixin,
@@ -566,9 +301,13 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
         if concept:
             # Filter attributes based on the Concept's dictionary
             
+            # extra_context['filtered_attributes'] = Attribute.objects.filter(
+            #     groups__dictionaries__dictionary_long_name=concept.dictionaries
+            #     )
+            
             extra_context['filtered_attributes'] = Attribute.objects.filter(
-                groups__dictionaries__dictionary_long_name=concept.dictionaries
-                )
+            groups__dictionaries__in=concept.dictionaries.all()
+            )
         
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
     
@@ -596,28 +335,57 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
             ).order_by('position')
         return queryset
     
-    def get_form(self, request, obj=None, **kwargs):
+    # def get_form(self, request, obj=None, **kwargs):
+    #     """
+    #     Dynamically modify the admin form to include attribute fields BEFORE calling super().
+    #     """
+    #     # ✅ Retrieve default form class but do not initialize it yet
+    #     form_class = super().get_form(request, obj, **kwargs)
 
-        """
-        Filter the available dictionaries to those the user has access to
-        """
-        form = super().get_form(request, obj, **kwargs)
-                
-        # Only show dictionaries the user has permission to edit
-        if not request.user.is_superuser:
-            
-            # Assuming you have a relation like 'dictionary' in Concept model
-            form.base_fields['dictionaries'].queryset = form.base_fields['dictionaries'].queryset.filter(
-                groups__in=request.user.groups.all()
-            )
+    #     if obj:  # ✅ Only modify the form if editing an existing Concept
+    #         logger.debug(f"Generating dynamic fields for Concept: {obj}")
 
-        return form
+    #         # ✅ Retrieve dynamically added attributes
+    #         dynamic_fields = {
+    #             f"attribute_{attr.id}": forms.CharField(label=attr.display_name, required=False)
+    #             for attr in Attribute.objects.all()
+    #         }
+
+    #         # ✅ Create a new form class dynamically by adding fields
+    #         class DynamicConceptForm(form_class):
+    #             pass
+
+    #         for field_name, field in dynamic_fields.items():
+    #             setattr(DynamicConceptForm, field_name, field)  # ✅ Add each field dynamically
+
+    #         return DynamicConceptForm  # ✅ Return the dynamically created form class
+
+    #     return form_class
+    
+    # def get_fieldsets(self, request, obj=None):
+    #     """
+    #     Dynamically generate fieldsets based on available attributes.
+    #     """
+    #     fieldsets = super().get_fieldsets(request, obj)  # ✅ Get default fieldsets
+
+    #     if obj:
+    #         logger.debug(f"Generating dynamic fieldsets for Concept: {obj}")
+
+    #         # ✅ Retrieve dynamically added attributes
+    #         dynamic_fields = [f"attribute_{attr.id}" for attr in Attribute.objects.all()]
+    #         if dynamic_fields:
+    #             fieldsets += (("Dynamic Attributes", {"fields": dynamic_fields}),)  # ✅ Append dynamically generated fields
+
+    #     return fieldsets
+    
     
     def save_model(self, request, obj, form, change):
         """
         Save the Concept instance first.
         """
+        logger.debug(f"POST data received: {request.POST}")
         super().save_model(request, obj, form, change)
+
 
     def save_related(self, request, form, formsets, change):
         """

@@ -4,7 +4,12 @@ from .models import (
     Concept, 
     ConceptExternalFiles, 
     AttributeValue,
-    Attribute)
+    GroupAttribute,
+    Attribute
+)
+
+from django.db import models
+
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
 from crispy_forms.layout import Field
@@ -148,119 +153,40 @@ class ColumnMappingForm(forms.Form):
         if available_dictionaries:
             self.fields['dictionary'].choices = [(None, '---')] + [(dict_id, dict_name) for dict_id, dict_name in available_dictionaries]
 
+from django import forms
+from .models import AttributeValue
+from django.forms.widgets import HiddenInput
+
 
 class AttributeValueInlineForm(forms.ModelForm):
     class Meta:
         model = AttributeValue
-        fields = [] 
+        fields = ['value_string', 'value_text', 'value_integer', 'value_decimal', 'value_boolean', 'value_url']
 
     def __init__(self, *args, **kwargs):
-        
-        self.concept = kwargs.pop('concept', None)
         super().__init__(*args, **kwargs)
 
-        if not self.concept:
-            logger.warning("Concept instance is missing. No attributes will be loaded.")
-            return
-        
-        if self.concept:
-            logger.debug(f"Filtering attributes for concept {self.concept}")
-            group_ids = self.concept.dictionaries.values_list('groups', flat=True)
-        
-         # Get attributes related to the Concept's Dictionary and Group
-        group_attributes = relevant_attributes = Attribute.objects.filter(groups__id__in=group_ids).distinct()
-        logger.debug(f"Filtered attributes for concept {self.concept}: {group_attributes}")
+        if self.instance and self.instance.attribute_id:
+            attribute = self.instance.attribute
+            data_type = attribute.data_type
+            display_name = attribute.display_name  # ✅ Get the attribute's display name
 
-        for name, field in self.fields.items():
-            logger.debug(f"Field {name}: {field.widget}")
-        # Skip processing for new instances
-        if not self.instance or not self.instance.pk:
-            return
+            # ✅ Map attribute data type to the correct field name
+            field_map = {
+                'string': 'value_string',
+                'text': 'value_text',
+                'integer': 'value_integer',
+                'decimal': 'value_decimal',
+                'boolean': 'value_boolean',
+                'url': 'value_url'
+            }
 
-        # Ensure the instance has a valid attribute
-        if not self.instance.attribute:
-            return
+            for field_name, field in self.fields.items():
+                if field_name != field_map.get(data_type, ''):
+                    self.fields[field_name].widget = HiddenInput()  # ✅ Hide irrelevant fields
+                else:
+                    self.fields[field_name].label = ''
 
-        logger.debug(f"Initialising form for AttributeValue: {self.instance}")
-
-        for attribute in group_attributes:
-            field_name = f"attribute_{attribute.id}"
-            data_type = attribute.data_type            
-            initial_value = self._get_initial_value(attribute)
-
-        # Dynamically add the appropriate input field for the value
-        # data_type = self.instance.attribute.data_type
-        if data_type == 'string':
-            self.fields['value'] = forms.CharField(
-                initial=self.instance.value_string, required=False, label="Value"
-            )
-        elif data_type == 'text':
-            self.fields['value'] = forms.CharField(
-                widget=forms.Textarea, initial=self.instance.value_text, required=False, label="Value"
-            )
-        elif data_type == 'url':
-            self.fields['value'] = forms.URLField(
-                initial=self.instance.value_url, required=False, label="Value"
-            )
-        elif data_type == 'integer':
-            self.fields['value'] = forms.IntegerField(
-                initial=self.instance.value_integer, required=False, label="Value"
-            )
-        elif data_type == 'decimal':
-            self.fields['value'] = forms.DecimalField(
-                initial=self.instance.value_decimal, required=False, label="Value"
-            )
-        elif data_type == 'boolean':
-            self.fields['value'] = forms.BooleanField(
-                initial=self.instance.value_boolean, required=False, label="Value"
-            )
-        logger.debug(f"self.fields: {self.fields}")
-
-    def _get_initial_value(self, attribute):
-
-        """Fetch the initial value for an attribute."""
-        try:
-            attr_value = AttributeValue.objects.get(
-                attribute=attribute, 
-                term_id=self.concept.id
-            )
-            return attr_value.value_string  # Adjust based on the field type
-        except AttributeValue.DoesNotExist:
-            return None
-
-    def clean(self):
-        
-        cleaned_data = super().clean()
-        value = cleaned_data.get('value')
-
-        # Ensure the value field corresponds to the attribute's data type
-        if not self.instance.attribute:
-            raise ValidationError("Attribute is missing.")
-        return cleaned_data
-
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        value = self.cleaned_data.get('value')
-
-        # Map the value to the correct field in the model
-        data_type = self.instance.attribute.data_type
-        if data_type == 'string':
-            instance.value_string = value
-        elif data_type == 'text':
-            instance.value_text = value
-        elif data_type == 'url':
-            instance.value_url = value
-        elif data_type == 'integer':
-            instance.value_integer = value
-        elif data_type == 'decimal':
-            instance.value_decimal = value
-        elif data_type == 'boolean':
-            instance.value_boolean = value
-
-        if commit:
-            instance.save()
-        return instance
-    
 class ConceptForm(GroupFilteredModelForm):
     
     class Meta:
