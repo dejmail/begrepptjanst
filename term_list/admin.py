@@ -90,7 +90,6 @@ class TaskOrdererAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
 
     list_display = ('name',
                     'email',
-                    'telephone',
                     'create_date',
                     'finished_by_date',
                     'term')
@@ -129,13 +128,21 @@ class SynonymAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin):
     list_filter = ("synonym_status",)
     search_fields = ("concept__term", "synonym")
 
+class ConceptExternalFileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.label_suffix = ""  # Removes the ":" after the label
+
+
+
 class ContextFilesInline(admin.StackedInline):
 
     model = ConceptExternalFiles
+    form = ConceptExternalFileForm
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
-    exclude = ('concpt',)
+    readonly_fields = ['concept',]
 
 
 class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin, 
@@ -157,8 +164,7 @@ class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin,
                     'date',
                     'email',
                     'name',
-                    'status',
-                    'telephone',
+                    'status'
                     )
 
     list_filter = ('status',)
@@ -169,13 +175,13 @@ class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin,
         ['Main', {
         'fields': [('concept', 'date'), 
         ('usage_context',), 
-        ('email','name','status','telephone'),]},
+        ('email','name','status'),]},
         ]]
 
     def attached_files(self, obj):
 
-        if (obj.begreppexternalfiles_set.exists()) and (obj.begreppexternalfiles_set.name != ''):
-            return format_html(f'''<a href={obj.begreppexternalfiles_set}>
+        if (obj.conceptexternalfiles_set.exists()) and (obj.conceptexternalfiles_set.name != ''):
+            return format_html(f'''<a href={obj.conceptexternalfiles_set}>
                                     <i class="fas fa-file-download">
                                     </i>
                                     </a>''')

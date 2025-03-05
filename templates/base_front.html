@@ -83,10 +83,10 @@
                   </div>
                   <div class="modal-body">
                     <form class="form-group" action="{% url 'email_subscribe' %}" method="get">
-                      <label for="epost"></label>
-                      <input type="email" class="form-control" id="prenumera" name="epost" placeholder="E-postadress"><br><br>
-                      <input type="submit" value="Prenumera" type="button" class="btn btn-primary">
-                    </form>
+                      <label for="prenumera" class="sr-only">E-postadress:</label>
+                      <input type="email" class="form-control" id="prenumera" name="epost" placeholder="E-postadress" aria-label="E-postadress" required>
+                      <button type="submit" class="btn btn-primary mt-2">Prenumerera</button>
+                  </form>                  
                   </div>
                   
                 </div>

@@ -6,7 +6,7 @@ from term_list import admin as admin_views
 
 urlpatterns = [
     path('', views.main_search_view, name="concept"),
-    path('kommentera/', views.kommentera_term, name="kommentera_term"),
+    path('kommentera/', views.comment_term, name="comment_term"),
     path('begrepp-forklaring/', views.term_metadata_view, name="term_metadata"),
     path('requesttermform/', views.request_new_term, name='request_new_term'),
     path('unread-comments/', views.return_number_of_comments, name='unread_comments'),

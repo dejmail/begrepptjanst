@@ -118,7 +118,6 @@ class TaskOrderer(models.Model):
     create_date = models.DateTimeField(auto_now_add=True)
     finished_by_date = models.DateTimeField(null=True, blank=True)
     email = models.EmailField()
-    telephone = models.CharField(max_length=30, blank=True)
 
     def __str__(self):
         
@@ -167,7 +166,6 @@ class ConceptComment(models.Model):
     email = models.EmailField()
     name = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=DEFAULT_STATUS)
-    telephone = models.CharField(max_length=30)
     
     def __str__(self):
 
@@ -338,7 +336,7 @@ class AttributeValue(models.Model):
     get_attribute_name.short_description = "Attribute"
 
     def __str__(self):
-        return str(self.attribute)
+        return str(self.attribute_id)
 
 
 class GroupHierarchy(models.Model):

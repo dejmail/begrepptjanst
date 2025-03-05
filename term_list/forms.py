@@ -8,7 +8,7 @@ from .models import (
     Attribute
 )
 
-from django.db import models
+from django import forms
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, Row, Column
@@ -27,6 +27,17 @@ class CustomDateInput(forms.DateInput):
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            "multiple": True,
+            "aria-label": "Ladda upp filer som kan hjälpa oss",
+            "aria-describedby": "file-upload-help",
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
+
 
 class MultipleFileField(forms.FileField):
     def __init__(self, *args, **kwargs):
@@ -110,13 +121,45 @@ class TermRequestForm(forms.Form):
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
 
 
-class KommenteraTermForm(forms.Form):
 
-    namn = forms.CharField()
-    epost = forms.EmailField()
-    resonemang = forms.CharField(widget=forms.Textarea, max_length=2000, label='Kommentar')
-    term = forms.CharField(widget=forms.HiddenInput())
-    file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+
+class CommentTermForm(forms.Form):
+
+    name = forms.CharField(
+        widget=forms.TextInput(attrs={
+            "class": "form-control",
+            "aria-label": "Ange ditt namn"  # ARIA label added
+        }),
+        label="Namn",  # Ensures proper label in crispy forms
+        max_length=255
+    )
+    epost = forms.EmailField(label="E-postadress", widget=forms.EmailInput(attrs={
+            "class": "form-control",
+            "id": "prenumera",
+            "placeholder": "E-postadress",
+            "aria-label": "E-postadress"
+        }),
+        required=True
+        )
+    comment = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "class": "form-control",
+            "aria-label": "Skriv din kommentar här",  # ARIA label added
+        }),
+        max_length=2000,
+        label="Kommentar"
+    )
+    
+    term = forms.CharField(
+        widget=forms.HiddenInput(attrs={
+            "aria-hidden": "true"  # Hidden input does not need a visible label
+        })
+    )
+
+    file_field = MultipleFileField(
+        label="Bifogar en/flera skärmklipp eller filer som kan hjälpa oss",
+        required=False
+    )
 
 class ExternalFilesForm(forms.ModelForm):
 

@@ -35,7 +35,7 @@ from itertools import chain
 from django.db.models import Prefetch
 from django.contrib.auth.models import Group
 
-from term_list.forms import KommenteraTermForm, TermRequestForm
+from term_list.forms import TermRequestForm, CommentTermForm
 from term_list.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, replace_nbs_with_normal_space)
 from term_list.models import (Concept, ConceptExternalFiles, Dictionary, Synonym, 
@@ -899,7 +899,7 @@ def request_new_term(request: HttpRequest):
     else:
         return render(request, 'term.html', {})
 
-def kommentera_term(request):
+def comment_term(request):
 
     """ Send back either the form to allow the submission of comments or
     process the submitted form and save the data to db.
@@ -911,44 +911,49 @@ def kommentera_term(request):
     :rtype: {HttpResponse}
     """
     url_parameter = request.GET.get("q")
-    
+
     if request.method == 'GET':
-        inkommande_term = Concept(term=url_parameter)
-        form = KommenteraTermForm(initial={'term' : inkommande_term})
-        return render(request, 'kommentera_term.html', {'kommentera': form})
+        # set_trace()
+        inkommande_term = Concept.objects.get(term=url_parameter)
+        form = CommentTermForm(initial={'term' : inkommande_term})
+        return render(request, 'comment_term.html', {'comment': form})
 
     elif request.method == 'POST':
-    
-        form = KommenteraTermForm(request.POST)
+        
+        # set_trace()
+        form = CommentTermForm(request.POST)
         if form.is_valid():
             file_list = []
             if len(request.FILES) != 0:
                 for file in request.FILES.getlist('file_field'):
                     fs = FileSystemStorage()
-                    filename = fs.save(content=file, name=file.name)
+                    filename = fs.save(name=file.name, content=file)
                     uploaded_file_url = fs.url(filename)
-                    file_list.append(file.name)
+                    file_list.append(uploaded_file_url)
+                                     #file.name)
 
-            kommentera_term = ConceptComment()
-            kommentera_term.concept_context = form.cleaned_data.get('resonemang')
-            kommentera_term.email = form.cleaned_data.get('epost')
-            kommentera_term.name = form.cleaned_data.get('namn')
-            kommentera_term.status = DEFAULT_STATUS
-            kommentera_term.telephone = form.cleaned_data.get('telefon')
+            new_comment = ConceptComment()
+            new_comment.usage_context = form.cleaned_data.get('comment')
+            new_comment.email = form.cleaned_data.get('epost')
+            new_comment.name = form.cleaned_data.get('name')
+            new_comment.status = DEFAULT_STATUS
+            
             # entries with doublets cause a problem, so we take the first one
-            kommentera_term.concept = Concept.objects.filter(term=form.cleaned_data.get('term')).first()
-            kommentera_term.save()
+            new_comment.concept = Concept.objects.filter(term=form.cleaned_data.get('term')).first()
+            new_comment.save()
 
             for filename in file_list:
                 new_file = ConceptExternalFiles()
-                new_file.concept = kommentera_term.concept
-                new_file.kommentar = kommentera_term
+                new_file.concept = new_comment.concept
+                new_file.comment = new_comment
                 new_file.support_file = filename
                 new_file.save()
 
             return HttpResponse('''<div class="alert alert-success">
                                    Tack för dina synpunkter.
                                    </div>''')
+        
+    return render(request, "comment_term.html", {"comment": form})
 
 def prenumera_till_epost(request):
 
