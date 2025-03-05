@@ -949,7 +949,7 @@ def comment_term(request):
                 new_file.support_file = filename
                 new_file.save()
 
-            return HttpResponse('''<div class="alert alert-success">
+            return HttpResponse('''<div class="alert alert-success text-center">
                                    Tack för dina synpunkter.
                                    </div>''')
         
