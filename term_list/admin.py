@@ -27,8 +27,8 @@ from django.conf import settings
 
 from term_list import admin_actions
 from term_list.forms import ConceptExternalFilesForm, ChooseExportAttributes
-from term_list.admin_actions import (change_dictionaries,
-                                  export_chosen_begrepp_attrs_action)
+from term_list.admin_actions import (change_dictionaries, 
+                                     export_chosen_concepts_action)
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
@@ -344,50 +344,6 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
             ).order_by('position')
         return queryset
     
-    # def get_form(self, request, obj=None, **kwargs):
-    #     """
-    #     Dynamically modify the admin form to include attribute fields BEFORE calling super().
-    #     """
-    #     # ✅ Retrieve default form class but do not initialize it yet
-    #     form_class = super().get_form(request, obj, **kwargs)
-
-    #     if obj:  # ✅ Only modify the form if editing an existing Concept
-    #         logger.debug(f"Generating dynamic fields for Concept: {obj}")
-
-    #         # ✅ Retrieve dynamically added attributes
-    #         dynamic_fields = {
-    #             f"attribute_{attr.id}": forms.CharField(label=attr.display_name, required=False)
-    #             for attr in Attribute.objects.all()
-    #         }
-
-    #         # ✅ Create a new form class dynamically by adding fields
-    #         class DynamicConceptForm(form_class):
-    #             pass
-
-    #         for field_name, field in dynamic_fields.items():
-    #             setattr(DynamicConceptForm, field_name, field)  # ✅ Add each field dynamically
-
-    #         return DynamicConceptForm  # ✅ Return the dynamically created form class
-
-    #     return form_class
-    
-    # def get_fieldsets(self, request, obj=None):
-    #     """
-    #     Dynamically generate fieldsets based on available attributes.
-    #     """
-    #     fieldsets = super().get_fieldsets(request, obj)  # ✅ Get default fieldsets
-
-    #     if obj:
-    #         logger.debug(f"Generating dynamic fieldsets for Concept: {obj}")
-
-    #         # ✅ Retrieve dynamically added attributes
-    #         dynamic_fields = [f"attribute_{attr.id}" for attr in Attribute.objects.all()]
-    #         if dynamic_fields:
-    #             fieldsets += (("Dynamic Attributes", {"fields": dynamic_fields}),)  # ✅ Append dynamically generated fields
-
-    #     return fieldsets
-    
-    
     def save_model(self, request, obj, form, change):
         """
         Save the Concept instance first.
@@ -425,6 +381,59 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
 
     list_dictionaries.short_description = 'term_list'
     list_dictionaries.verbose = 'Ordböcker'
+
+    def export_chosen_attrs_view(request):
+
+        # Required default fields
+        default_fields = ["Id", "Term", "Definition", "Status"]
+
+        if request.method == 'GET':   
+            chosen_concepts = [int(i) for i in request.GET.get('selected_concepts').split("&")]
+            logger.debug(f"Exporting the following - {chosen_concepts}")
+            queryset = Concept.objects.filter(id__in=chosen_concepts)
+        # Step 1: Create a mapping from verbose_name to actual field names
+        field_mapping = {
+            field.verbose_name: field.name
+            for field in queryset.first()._meta.get_fields()
+            if hasattr(field, "verbose_name") and field.verbose_name
+        }
+
+        # Step 2: Get user-selected attributes from request
+        selected_attributes_verbose = request.GET.getlist("attributes")  # User selects verbose_name
+
+        # Separate the default fields from the rest
+        other_fields = sorted([f for f in selected_attributes_verbose if f not in default_fields], key=str.lower)
+
+        # Combine: First four in order, rest alphabetically
+        sorted_fields = default_fields + other_fields
+        # selected_attributes = [field_mapping.get(attr, attr) for attr in selected_attributes_verbose]
+        
+        form = ChooseExportAttributes(request.GET)
+        if form.is_valid():
+            response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, selected_fields=sorted_fields, field_mapping=field_mapping)
+        return response
+        
+        # if request.method == 'GET':
+        #     chosen_concepts = [int(i) for i in request.GET.get('selected_concepts').split("&")]
+        #     logger.debug(f"Exporting the following - {chosen_concepts}")
+        #     queryset = Concept.objects.filter(id__in=chosen_concepts)
+
+        #     #model_fields = [field.name for field in queryset.first()._meta.get_fields()]
+        #     #set_trace()
+        #     #chosen_table_attrs = [i for i in model_fields if i in request.GET.get('attributes')]
+            
+        #     chosen_table_attrs = request.GET.getlist('attributes')
+        #     logger.debug(f"Exporting the following attributes - {chosen_table_attrs}")
+
+        #     form = ChooseExportAttributes(request.GET)
+        #     if form.is_valid():
+        #         response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
+        #     return response
+    
+    export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
+    actions = [export_chosen_concepts_action,]
+
+
 
 class AttributeAdmin(admin.ModelAdmin):
 

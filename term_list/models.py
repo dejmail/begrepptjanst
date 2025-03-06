@@ -136,6 +136,7 @@ class Synonym(models.Model):
 
     class Meta:
         verbose_name_plural = "Synonymer"
+        verbose_name = "Synonym"
         app_label = 'term_list'
 
     #begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name="legacy_synonyms")

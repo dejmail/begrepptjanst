@@ -16,8 +16,11 @@ import pandas as pd
 
 import logging
 from pdb import set_trace
+from typing import List
+from django.db.models import QuerySet
+from django.http import HttpRequest
 
-from term_list.models import Dictionary, Concept, Synonym
+from term_list.models import Dictionary, Attribute
 from term_list.forms import ColumnMappingForm, ExcelImportForm
 
 logger = logging.getLogger(__name__)
@@ -44,7 +47,7 @@ predetermined_column_order =  ['id_vgr',
 
 def get_synonym_set(obj):
     
-    query = getattr(obj, 'synonym_set')
+    query = getattr(obj, 'synonyms')
     return_list = []
     for synonym in query.values_list('synonym','synonym_status'):
         return_list.append(f'{synonym[0]} - {synonym[1]}')
@@ -53,65 +56,56 @@ def get_synonym_set(obj):
     else:
         return ''
 
-def export_chosen_begrepp_as_csv(request, queryset, field_names='all'):
+def export_chosen_concept_as_csv(request: HttpRequest, 
+                                 queryset : QuerySet,
+                                 selected_fields : List[str],
+                                 field_mapping: Dictionary):
 
-    
     output = io.BytesIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
+    date_format = workbook.add_format({'num_format': 'YYYY-MM-DD HH:MM:SS'})
+
+    # Formatting
     bold = workbook.add_format({'bold': True})
-    date_format = workbook.add_format({'num_format': 'YYYY-MM-DD H:M:S'})
 
-    chosen_columns = [i for i in predetermined_column_order if i in field_names]
-    zipped_list = zip(chosen_columns, field_names)
-    field_names = [x[0] for x in zipped_list]
-    logger.debug(f"column order of export file --> {field_names}")
-    row_index=0
-    col_index=0
-    worksheet.write_row(row_index,col_index,field_names, bold)
-    length=40
+    # set_trace()
+    # Write Header Row
+    worksheet.write_row(0, 0, selected_fields, bold)
 
-    for obj in queryset:
-        row_index += 1
-        worksheet.set_row(row_index, 15)
-        for col_index, field in enumerate(field_names):
-            worksheet.set_column(row_index, col_index, length)
-            if field == 'synonym':
-                field_value = get_synonym_set(obj)
-                worksheet.write(row_index, col_index, field_value)
-                logger.debug(f'writing {field} - {field_value}')
-            elif field == 'term':
-                field_value = getattr(obj, field)
+    # Write Data Rows
+    for row_idx, obj in enumerate(queryset, start=1):
+        for col_index, field in enumerate(selected_fields):
+            if field.lower() == 'synonyms':
+                row_data = get_synonym_set(obj)
+                worksheet.write(row_idx, col_index, row_data)
+            elif field.lower() == 'term':
+                row_data = getattr(obj, field.lower(), "")
                 link = request.build_absolute_uri(reverse('term_metadata'))  + f'?q={obj.pk}'
-                worksheet.write_url(row=row_index, col=col_index, url=link, string=field_value)
-                logger.debug(f'writing {field} - {field_value}')
-            elif field == 'beställare':
-                field_value = getattr(obj, field).beställare_namn
-                worksheet.write(row_index, col_index, field_value)
-                logger.debug(f'writing {field} - {field_value}')
-            elif field in ['datum_skapat', 'begrepp_version_nummer']:
-                field_value = getattr(obj, field)
-                worksheet.write(row_index, col_index, field_value, date_format)
+                worksheet.write_url(row=row_idx, col=col_index, url=link, string=row_data)
+            elif (field in field_mapping.keys()) and (field in ['Senaste ändring', 'Datum skapat']):
+                logger.debug('Found date, fixing format')
+                row_data = getattr(obj, field_mapping.get(field))
+                worksheet.write(row_idx, col_index, row_data, date_format)
+            elif field.lower() == 'dictionaries':
+                row_data = ', '.join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
+                worksheet.write(row_idx, col_index, row_data)
             else:
-                field_value = getattr(obj, field)
-                if (type(field_value) == str) and (len(field_value) > 80):
-                    worksheet.set_column(col_index, col_index, length)
-                    worksheet.write(row_index, col_index, field_value)
+                if hasattr(obj, field.lower()):
+                    row_data = getattr(obj, field.lower(), "")                
                 else:
-                    worksheet.write(row_index, col_index, field_value)
-                logger.debug(f'writing {field} - {field_value}')
+                    matching_attr = next((attr for attr in obj.attributes.all() if attr.attribute.display_name == field), None)
+                    row_data = matching_attr.get_value() if matching_attr else ""
+
+                worksheet.write(row_idx, col_index, row_data)
+
     workbook.close()
     output.seek(0)
 
-    filename = f"{queryset.first()._meta.object_name.lower()}_export_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.xlsx"
-    logger.debug(f"field_names for ACTION begrepp_export - {field_names}")
-    response = HttpResponse(
-        output, 
-        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    )
-
-    response['Content-Disposition'] = f'attachment; filename={filename}'
-
+    # Prepare Response
+    response = HttpResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = f'attachment; filename="exporterad_begrepp_{datetime.datetime.now().strftime('%Y_%m_%d-%H:%M:%S')}.xlsx"'
+    
     return response
 
 def change_dictionaries(modeladmin, request, queryset):
@@ -141,20 +135,25 @@ def change_dictionaries(modeladmin, request, queryset):
 change_dictionaries.short_description = "Change Dictionaries of selected Begrepp"
 
 
-def export_chosen_begrepp_attrs_action(self, request, queryset):
+def export_chosen_concepts_action(modeladmin, request, queryset):
 
-    db_table_attrs = (field.name for field in queryset.first()._meta.get_fields() if field.name not in ['begrepp_fk', 
-                                                                                                        'kommenterabegrepp',
-                                                                                                        'begreppexternalfiles'])
-    chosen_begrepp_ids = queryset.values_list('pk', flat=True)
-    chosen_begrepp_terms = [i[0] for i in queryset.values_list('term')]
+    db_table_attrs = [
+    field.verbose_name.capitalize() if hasattr(field, "verbose_name") and field.verbose_name else field.name.capitalize()
+    for field in queryset.first()._meta.get_fields()
+    if field.name not in ['concept_fk', 'conceptcomment', 'conceptexternalfiles', 'attributes']
+    ]
+    
+    attribute_names = Attribute.objects.filter(
+        attributevalue__term__in=queryset
+    ).values_list('display_name', flat=True).distinct()
 
+    db_table_attrs.extend(attribute_names)
+    chosen_concepts = [{'pk': i[0], 'term': i[1]} for i in queryset.values_list('pk', 'term')]
     
     return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
-                                                                                "chosen_begrepp" : chosen_begrepp_ids,
-                                                                                "chosen_begrepp_terms" : chosen_begrepp_terms})
+                                                                            "chosen_concepts" : chosen_concepts})
 
-export_chosen_begrepp_attrs_action.short_description = "Exportera valde begrepp"
+export_chosen_concepts_action.short_description = "Exportera valde begrepp"
 
 def ändra_status_till_översättning(queryset):
     

@@ -237,7 +237,7 @@ class ConceptFileImportMixin:
                 concept_data_list = json.loads(unescaped_data)
             except json.JSONDecodeError as e:
                 messages.error(request, f"Error decoding JSON: {e}")
-                return redirect("admin:term_list_begrepp_changelist")
+                return redirect("admin:term_list_concept_changelist")
 
             for data in concept_data_list:
                 # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create, 
@@ -263,8 +263,9 @@ class ConceptFileImportMixin:
             'form': form
         })
 
-#@csrf_exempt
+
 def fetch_attributes(request):
+
     dictionary_id = request.GET.get('dictionary_id')
     if not dictionary_id:
         return JsonResponse({'error': 'No dictionary ID provided'}, status=400)

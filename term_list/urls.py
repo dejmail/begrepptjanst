@@ -3,7 +3,6 @@ from django.urls import include, path
 from term_list import views, admin_functions
 from term_list import admin as admin_views
 
-
 urlpatterns = [
     path('', views.main_search_view, name="concept"),
     path('kommentera/', views.comment_term, name="comment_term"),
@@ -21,7 +20,7 @@ urlpatterns = [
     path('json/synonymer/', views.all_synonyms, name='all_synonyms'),
 
     
-    #path('export/attrs/', admin_views.BegreppAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
+    path('export/attrs/', admin_views.ConceptAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
     path('fetch-attributes/', admin_functions.fetch_attributes, name='fetch_attributes'),
 
 ]

@@ -14,49 +14,51 @@
 
 {% block content %}
 
-{% if chosen_concept_terms|length > 10 %}
-    <div class="container btn-danger p-2 my-2 border">
-        Du har valt {{chosen_begrepp_terms|length}} begrepp/termer för att exportera, så termer kommer inte visas här.
+{% if chosen_concepts|length > 10 %}
+    <div class="container btn-danger p-2 my-2 border rounded shadow">
+        Du har valt {{chosen_concepts|length}} begrepp/termer för att exportera, så termer kommer inte visas här.
     </div>
 
 {% else %}
-    <div class="container bg-pale-yellow p-2 my-2 border">
+    <div class="container bg-pale-yellow p-2 my-2 border rounded shadow">
         <p class="h6">Du har valt följander begrepp eller termer för att exportera.</p></br>
 
         <ul>
-        {% for term in chosen_concept_terms %}  
-            <li>{{term}}</li>
+        {% for concept in chosen_concepts %}  
+            <li>{{concept.term}}</li>
         {% endfor %}
         </ul>
     </div>
 {% endif %}
 
-    <div class="container bg-pale-yellow p-2 my-2 border">
+    <div class="container bg-pale-yellow p-2 my-2 border rounded shadow">
 
         <p class="h6">Välja attribut som du vill inkludera i exportfilen</p></br>
 
-        <form method="post" name="attr_export" action="{% url 'export_chosen_attrs'%}">{% csrf_token %}
+        <form method="get" name="attr_export" action="{% url 'export_chosen_attrs'%}">{% csrf_token %}
         <div class="results">
 
             {% for attr in db_table_attrs %}
-                <input class="form-check-input" type="checkbox" value={{attr}} name={{attr}} id={{attr}} checked> {{attr}}</br>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="{{attr}}" name="attributes" id="{{attr}}" checked>
+                <label class="form-check-label" for="{{attr}}">{{attr}}</label>
+            </div>                
             {% endfor %}
-            <input type="hidden" value="{% for term in chosen_begrepp %}{{term}}&{% endfor %}" name="selected_concept" id="selected_concept">
+            <input type="hidden" name="selected_concepts" id="selected_concepts" value="
+            {% for concept in chosen_concepts %}{{ concept.pk }}{% if not forloop.last %}&{% endif %}{% endfor %}">
 
-        </div>
-        </div>
-    
 
-    <div class="container p-2 my-2">
-        <div class="submit-row">
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                
-                <button id="tillbaka" class="btn btn-danger btn-sm me-md-2">Tillbaka</button>
-                <button type="submit" name="submit" class="btn btn-primary btn-sm me-md-2">Exportera</button>
-
-            </div>
         </div>
     </div>
+    
+
+    <div class="colM d-flex justify-content-center">
+        <div class="submit-row p-2 my-2 text-center justify-content-center" style="max-width: 300px;">
+            <button id="tillbaka" class="btn btn-danger btn-sm me-2">Tillbaka</button>
+            <button type="submit" name="submit" class="btn btn-primary btn-sm">Exportera</button>
+        </div>
+    </div>
+    
 </form>
 
 <script>
