@@ -378,6 +378,11 @@ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
   hyphens: auto; /* Automatic hyphenation */
 }
 
+.form-check {
+  display: flex;
+  align-items: center; /* Aligns checkbox vertically */
+  gap: 8px; /* Adds spacing between checkbox and label */
+}
 
 
 
