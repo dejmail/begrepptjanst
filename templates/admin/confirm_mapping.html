@@ -3,9 +3,8 @@
 {% load get_item %}
 
 {% block content %}
-    <h1>Confirm Begrepp Creation or Update</h1>
-    <p>Please review the following Begrepp objects:</p>
-
+    <h1>Bekräfta begrepp som ska importeras eller uppdateras</h1>
+    
     <form method="POST" id="confirm-form">
         {% csrf_token %}
         
@@ -42,12 +41,12 @@
         </table>
 
         <div class="submit-row">
-            <input type="submit" name="confirm_import" value="Confirm and Import" class="default">
-            <a href="{% url 'admin:term_list_concept_changelist' %}" class="button">Cancel</a>
+            <input type="submit" name="confirm_import" value="Bekräfta och importera" class="default">
+            <a href="{% url 'admin:term_list_concept_changelist' %}" class="button">Avbryt</a>
         </div>
     </form>
 
-|<style>
+<style>
 
 
 .tag-warning {

@@ -2,7 +2,11 @@ from django.contrib import admin, messages
 from django.db.models import Q, Count
 from django.utils.safestring import mark_safe
 from django.contrib.auth.models import Group
-from term_list.models import (Dictionary, Concept, Attribute)
+from term_list.models import (Dictionary, 
+                              Concept, 
+                              Attribute, 
+                              Synonym, 
+                              AttributeValue)
 from django.core.exceptions import ObjectDoesNotExist
 
 from term_list.forms import (ExcelImportForm,
@@ -117,36 +121,64 @@ class ConceptFileImportMixin:
         extra_context['import_excel_url'] = reverse('admin:import_excel_view')  # Dynamically add the URL to the context
         return super().changelist_view(request, extra_context=extra_context)
     
-    def get_draft_mappings(self, excel_columns, model_fields):
+    def get_draft_mappings(self, excel_columns, dictionary_ids):
 
         """
         Function to get draft mappings by matching Excel columns to model fields.
         """
         draft_mapping = {}
+        
+        groups = Group.objects.filter(dictionaries__dictionary_id__in=dictionary_ids).distinct()
+
+
+        # Get the static fields from the Concept model
+        concept_fields = [f.name for f in Concept._meta.get_fields() if f.name not in ['id', 'concept_fk']]
+        
+        # Get the dynamic fields from the Attribute model for the selected dictionary
+        attributes = Attribute.objects.filter(groups__in=groups).distinct()
+        
+        attribute_names = [attr.display_name for attr in attributes]
+
+        # Combine the model fields with the attribute names
+        available_fields = concept_fields + attribute_names
+        logger.debug(f"Available fields to import: {available_fields}")
+
         for column in excel_columns:
             # Use difflib to find the closest match for each column in the model fields
-            closest_match = difflib.get_close_matches(column, model_fields, n=1)
+            closest_match = difflib.get_close_matches(column, available_fields, n=1)
             if closest_match:
                 draft_mapping[column] = closest_match[0]  # Take the best match
             else:
                 draft_mapping[column] = None  # No close match found
+
+        logger.debug(f'Draft mapping: {draft_mapping}')
         return draft_mapping
     
     def import_excel_view(self, request):
 
+        CONCEPT_FIELDS = {field.name.lower() for field in Concept._meta.get_fields() if not field.is_relation}
+
         if 'apply' in request.POST:
+            logger.debug("Apply button pressed, handling uploaded import file")
             # Process the uploaded file and prepare it for column mapping
             form = ExcelImportForm(request.POST, request.FILES)
             if form.is_valid():
+
                 excel_file = request.FILES['excel_file']
                 file_data = excel_file.read()
                 encoded_excel_file = base64.b64encode(file_data).decode('utf-8')
 
                 # Read the Excel file
                 df = pd.read_excel(io.BytesIO(file_data), engine='openpyxl')
+                
+                # clean up the import data
+                empty_cols = [col for col in df.columns if df[col].isnull().all()]
+                logger.warning(f"Empty columns in import file: {empty_cols}..dropping from import")
+                df.drop(empty_cols, axis=1, inplace=True)
 
                 columns = df.columns.tolist()
-                model_fields = [f.name for f in Concept._meta.get_fields()]
+                # set_trace()
+                # model_fields = [f.name for f in Concept._meta.get_fields()]
 
                 # Get available dictionaries based on user group membership
                 available_dictionaries = self.get_accessible_dictionaries(request)
@@ -155,27 +187,26 @@ class ConceptFileImportMixin:
                 dictionary_in_excel = 'dictionary' in df.columns
 
                 # Get draft mappings
-                draft_mapping = self.get_draft_mappings(columns, model_fields)
+                draft_mapping = self.get_draft_mappings(columns, available_dictionaries)
 
-                
+                                
                 # Show the mapping form
-                initial_mapping = {col: draft_mapping[col] for col in columns}
+                #initial_mapping = {col: draft_mapping[col] for col in columns}
 
                 initial_data = {
                     'excel_file': encoded_excel_file
                 }
 
                 # Merge with the initial_mapping
-                initial_data.update(initial_mapping)
+                initial_data.update(draft_mapping)
 
                 mapping_form = ColumnMappingForm(
                     columns=columns,
-                    model_fields=model_fields,
+                    model_fields=draft_mapping.values(),
                     available_dictionaries=[(dict.dictionary_id, 
                                              dict.dictionary_name) for dict in available_dictionaries],
                     initial=initial_data,
                 )
-
                 return render(request, 'admin/column_mapping.html', {
                     'mapping_form': mapping_form,
                     'dictionary_in_excel': dictionary_in_excel  # Pass whether dictionary is in the Excel file
@@ -184,20 +215,33 @@ class ConceptFileImportMixin:
         # Step 2: Handle intermediate confirmation page
         if 'apply_mapping' in request.POST:
             # Assume form contains the parsed data from the uploaded file
-
-            column_mapping = json.loads(request.POST.get('column_mapping_json'))
+            logger.debug(f"Mapping accepted, creating new terms and attributes in DB")
+            # set_trace()
+            json_column_mapping = json.loads(request.POST.get('column_mapping_json'))
+            chosen_dictionary = Dictionary.objects.get(
+                dictionary_id=json_column_mapping.get('dictionary')
+                ).dictionary_long_name
+            json_column_mapping['dictionary'] = Dictionary._meta.verbose_name_plural
+            # the mapping of this is not quite right...I want the sqwedish headers in the 
+            #json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
+            logger.debug(f'adding key - {json_column_mapping=}')
+            column_mapping = {k: v for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
+            
             df = pd.read_excel(io.BytesIO(base64.b64decode(request.POST.get('excel_file'))), engine='openpyxl')
-            column_headers = df.columns.to_list()
+
             available_dictionaries = self.get_accessible_dictionaries(request)
     
             updated_records = []
             concept_data_list = []
             
-            for _, row in df.iterrows():
+            for _, row in df.iterrows():                
                 data = {column_mapping[col]: row[col] for col in df.columns if column_mapping.get(col)}
+                data = {k: None if pd.isna(v) else v for k, v in data.items()}
                 data['term'] = conditional_lowercase(data.get('term'))
-                data['definition'] = data.get('definition').replace('\u200b','').strip()            
-                data['dictionary'] = column_mapping.get('dictionary') 
+                if data.get('definition'):
+                    data['definition'] = data.get('definition').replace('\u200b','').strip()            
+                
+                data[Dictionary._meta.verbose_name_plural] = chosen_dictionary
                 
                 try:        
                     
@@ -216,22 +260,22 @@ class ConceptFileImportMixin:
                     concept_data_list.append(data)
 
                 except Concept.DoesNotExist:
+
                     # Create a new Concept if it doesn't exist
                     data['is_changed'] = False 
                     data['is_new'] = True   
                     concept_data_list.append(data)
-            
             #Render the confirmation page
             return render(request, 'admin/confirm_mapping.html', {
-                'begrepp_data_list': concept_data_list,
-                'begrepp_data_list_json': json.dumps(concept_data_list, ensure_ascii=False),
-                'column_headers': column_headers,
+                'concept_data_list': concept_data_list,
+                'concept_data_list_json': json.dumps(concept_data_list, ensure_ascii=False),
+                'column_headers': column_mapping.values(),
             })
 
         # Step 3: Final creation or update after confirmation
         if 'confirm_import' in request.POST:
 
-            unescaped_data = html.unescape(request.POST.get('begrepp_data_list'))
+            unescaped_data = html.unescape(request.POST.get('concept_data_list'))
 
             try:
                 concept_data_list = json.loads(unescaped_data)
@@ -243,19 +287,54 @@ class ConceptFileImportMixin:
                 # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create, 
                 # additionally is_update is not part of the Concept model.
                 
-                dictionary_id = data.pop('dictionary', [])
+                dictionary_id = data.pop(Dictionary._meta.verbose_name_plural, [])
                 data.pop('is_changed', None)
                 data.pop('is_new', None)
 
-                begrepp_instance, created = Concept.objects.update_or_create(term=data.get('term'), defaults=data)
+                    # ✅ Separate Concept Fields dynamically
+                concept_data = {k.lower(): v for k, v in data.items() if k.lower() in CONCEPT_FIELDS}
+
+                synonym_data = data.get('synonyms', [])
+                data.pop('synonyms')
+                # ✅ Separate Attribute Fields (EAV fields)
+                attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS}
+
+                concept_instance, created = Concept.objects.update_or_create(term=data.get('term'), defaults=concept_data)
                 
+                if synonym_data:
+                    synonyms = [Synonym(synonym=synonym, concept=concept_instance) for synonym in synonym_data]
+                    Synonym.objects.bulk_create(synonyms)  # Efficiently create all synonyms at once for a particular concept
+
                 # Handle the M2M relation (dictionaries)
                 if dictionary_id:
-                    dictionaries_to_add = Dictionary.objects.filter(dictionary_id__in=[dictionary_id])
-                    begrepp_instance.dictionaries.set(dictionaries_to_add)
+                    dictionaries_to_add = Dictionary.objects.filter(dictionary_long_name__in=[dictionary_id])
+                    concept_instance.dictionaries.set(dictionaries_to_add)
+
+                value_field_map = {
+                    "string": "value_string",
+                    "text": "value_text",
+                    "integer": "value_integer",
+                    "decimal": "value_decimal",
+                    "boolean": "value_boolean",
+                    "url": "value_url"
+                }
+
+                for attr_name, attr_value in attribute_data.items():
+                    # set_trace()
+                    attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
+                    # Get the correct field to update
+                    value_field = value_field_map.get(attribute_obj.data_type, "value_string")
+                    # Prepare the data dynamically
+                    defaults = {value_field: attr_value}
+
+                    attribute_value, _ = AttributeValue.objects.update_or_create(
+                    term=concept_instance, 
+                    attribute=attribute_obj,
+                    defaults=defaults
+                )
 
             messages.success(request, "Data från filen importerad!")
-            return redirect("admin:term_list_begrepp_changelist")
+            return redirect("admin:term_list_concept_changelist")
 
         # If no valid form submission, render the upload page again
         form = ExcelImportForm()

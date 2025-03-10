@@ -54,8 +54,14 @@ COLOUR_STATUS_DICT = {'Avråds' : 'table-danger',
                     'Ej Påbörjad': 'table-warning',
                     'Publiceras ej' : 'table-light-blue'}
 
-from django.db.models import CharField, Value
-from django.db.models.functions import Concat
+ATTRIBUTE_VALUE_FIELDS = {
+    'string': 'value_string',
+    'text': 'value_text',
+    'integer': 'value_integer',
+    'decimal': 'value_decimal',
+    'boolean': 'value_boolean',
+    'url': 'value_url',
+}
 
 def get_prefetched_queryset(queryset: QuerySet[Concept], dictionary: Optional[str] = None) -> QuerySet[Concept]:
 
@@ -79,7 +85,6 @@ def build_results(queryset: QuerySet[Concept],
     logger.debug('Building list of results, including synonyms')
     
     # Step 1: Group attributes by concept ID
-    # set_trace()
     attribute_map = defaultdict(dict)
     for attr_value in matched_attribute_values:
             attribute_map[attr_value.term_id
@@ -743,25 +748,6 @@ def concept_detail_view(concept_id: str) -> Dictionary:
 
     return attribute_fields
 
-    # # Get Concept fields with positions
-    # concept_fields = [
-    #     {
-    #         'name': field_name,
-    #         'display_name': meta['display_name'],
-    #         'value': getattr(concept, field_name, None),
-    #         'position': meta['position'],
-    #     }
-    #     for field_name, meta in concept.get_ordered_fields()
-    # ]
-
-    # set_trace()
-
-    # # Combine and order by position
-    # combined_fields = sorted(
-    #     chain(attribute_fields, concept_fields), key=lambda x: x['position']
-    # )
-    # return combined_fields
-
 def handle_file_uploads(request_files: HttpRequest) -> List[str]:
 
     """ Generic function for handling file uploads
@@ -793,6 +779,52 @@ def get_orderer(name: str, email: str) -> QuerySet:
                 ).first()
 
 
+def create_attribute_value(term, attribute, raw_value):
+    """
+    Dynamically assigns `raw_value` to the correct field in `AttributeValue`
+    based on `attribute.data_type`.
+    """
+    field_name = ATTRIBUTE_VALUE_FIELDS.get(attribute.data_type)
+
+    if not field_name:
+        raise ValueError(f"Unsupported attribute data type: {attribute.data_type}")
+
+    # Convert raw_value to the correct Python type before saving
+    converted_value = convert_value(attribute.data_type, raw_value)
+
+    # Ensure only one value field is populated
+    value_data = {field_name: converted_value}
+
+    # Create the AttributeValue instance
+    attribute_value = AttributeValue.objects.create(
+        term=term,
+        attribute=attribute,
+        **value_data
+    )
+    return attribute_value
+
+def convert_value(data_type, value):
+    """
+    Convert `value` to the correct Python type before saving.
+    """
+    if value is None:
+        return None
+
+    try:
+        if data_type == 'integer':
+            return int(value)
+        elif data_type == 'decimal':
+            return float(value)
+        elif data_type == 'boolean':
+            return str(value).strip().lower() in ["true", "1", "yes"]
+        elif data_type in ['string', 'text', 'url']:
+            return str(value).strip()
+    except (ValueError, TypeError):
+        raise ValueError(f"Invalid value '{value}' for data type '{data_type}'")
+
+    return value  # Default case (should not happen)
+
+
 def request_new_term(request: HttpRequest):
 
     """ Send the form data when a user wants to request a new term or 
@@ -811,7 +843,6 @@ def request_new_term(request: HttpRequest):
 
         form = TermRequestForm(request.POST, request.FILES)
         file_list = []
-    
         if form.is_valid():
 
             if len(request.FILES) != 0:
@@ -836,10 +867,8 @@ def request_new_term(request: HttpRequest):
                     new_ordered.save()
 
                 new_term = Concept()
-                # new_term.utländsk_term = form.clean_non_swedish_term()
                 new_term.term = form.clean_concept()
-                # new_term.concept_kontext = form.clean_context()
-                new_term.beställare = new_ordered
+
                 new_term.status = 'Pågår'
                 new_term.save()
 
@@ -854,24 +883,18 @@ def request_new_term(request: HttpRequest):
                     new_file.support_file = filename
                     new_file.save()
 
+                attributes = Attribute.objects.filter(
+                    groups__in=chosen_dictionary.groups.all()
+                    ).distinct()
+
                 # Assigning attributes to the Concept instance
                 attribute_mappings = {
-                    "non_swedish_terrm": form.clean_non_swedish_term(),
                     "concept_context": form.clean_context(),
                 }
-               
-                for attr_name, value in attribute_mappings.items():
-                    if value:  # Ensure value exists before saving
-                        attribute, created = Attribute.objects.get_or_create(name=attr_name)
-                        AttributeValue.objects.create(
-                            term=new_term,
-                            attribute=attribute,
-                            value_string=value  # Assuming both are string fields
-                        )
-
-                if created and not attribute.groups.exists():
-                    default_group, _ = Group.objects.get_or_create(name="Default Group")  # Ensure a default group exists
-                    attribute.groups.add(default_group)
+                for attr_name in attributes:
+                    value = attribute_mappings.get(attr_name.name, None)  
+                    attribute = Attribute.objects.get(name=attr_name.name)
+                    create_attribute_value(term=new_term, attribute=attribute, raw_value=value)
 
                 return HttpResponse('''<div class="alert alert-success text-center" id="ajax_response_message">
                                 Tack! Begrepp skickades in för granskning.
@@ -913,14 +936,12 @@ def comment_term(request):
     url_parameter = request.GET.get("q")
 
     if request.method == 'GET':
-        # set_trace()
         inkommande_term = Concept.objects.get(term=url_parameter)
         form = CommentTermForm(initial={'term' : inkommande_term})
         return render(request, 'comment_term.html', {'comment': form})
 
     elif request.method == 'POST':
         
-        # set_trace()
         form = CommentTermForm(request.POST)
         if form.is_valid():
             file_list = []
