@@ -104,17 +104,12 @@ class TermRequestForm(forms.Form):
         kontext = self.cleaned_data.get('kontext')
         return kontext
 
-    def clean_non_swedish_term(self):
-        non_swedish_terrm = self.cleaned_data.get('non_swedish_terrm')
-        return non_swedish_terrm
-
     def clean_concept(self):
         begrepp = self.cleaned_data.get('begrepp')
         return begrepp
 
     begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
     dictionary = forms.CharField(max_length=64, label="Ordlista")
-    non_swedish_terrm = forms.CharField(max_length=254, required=False, label="Engelsk term")
     kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:") 
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
@@ -175,6 +170,7 @@ class ExcelImportForm(forms.Form):
     excel_file = forms.FileField(label='Excel fil')
 
 class ColumnMappingForm(forms.Form):
+
     excel_file = forms.CharField(widget=forms.HiddenInput())
     dictionary = forms.ChoiceField(label="Select Dictionary", required=False)  # Add dictionary field here
 
@@ -185,6 +181,7 @@ class ColumnMappingForm(forms.Form):
         super().__init__(*args, **kwargs)
         
         # Dynamically create form fields for mapping columns to model fields
+        
         for col in columns:
             self.fields[col] = forms.ChoiceField(
                 choices=[(None, '---')] + [(field, field) for field in model_fields],

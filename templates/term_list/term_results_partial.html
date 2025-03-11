@@ -26,21 +26,17 @@
         </div>
 
         <table class="table table-bordered top-buffer-10" id="searchResultTable">
-          <caption class="visually-hidden">Termer och dess definitioner för {{searched_for_term}} i term_list {{chosen_dictionary}}"</caption>
+          <caption class="visually-hidden">Termer och dess definitioner som skickas efter söket av {{searched_for_term}} i term_list {{chosen_dictionary}}"</caption>
           <colgroup>
             <col class="col-3">
             <col class="col-2">
-            <col class="col-5">
-            <col class="col-2">
+            <col class="col-7">
           </colgroup>
             <thead>
               <tr>
                 <th scope="col">Rekommenderad term</th>
                 <th scope="col">Synonym</th>
                 <th scope="col">Definition</th>
-                <th scope="col">Term på annat språk</th>
-                <!-- <th scope="col">Dict</th> -->
-
               </tr>
 
             </thead>
@@ -82,9 +78,7 @@
                     {% endfor %}
                 </td>
                 <td>{{term.definition}}</td>
-                <td>{{term.non_swedish_term|default:""}}</td>
-                
-                <!-- <td>{{term.dictionaries}}</td> -->
+
                 </tr>
               {% endfor %}
             </tbody>

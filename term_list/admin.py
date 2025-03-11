@@ -246,6 +246,40 @@ class AttributeValueInline(admin.StackedInline):
     def has_add_permission(self, request, obj=None):
         return False  # ✅ Prevents the 'Add another' button from appearing
 
+    def get_fields(self, request, obj=None):
+        """
+        Retrieves the fields dynamically and sorts them based on GroupAttribute.position.
+        """
+        if not obj:
+            return ["attribute"]  # Default when no instance is selected
+
+        # Get the term's groups (or another relevant relation)
+        term_groups = obj.dictionaries.all()  # Adjust this if needed
+        attributes = Attribute.objects.filter(groups__in=term_groups).distinct()
+
+        # Get sorted attributes based on GroupAttribute position
+        group_attributes = GroupAttribute.objects.filter(attribute__in=attributes).order_by("position")
+
+        # Extract the sorted attributes
+        sorted_attributes = [ga.attribute for ga in group_attributes]
+
+        # Field mapping for each attribute type
+        field_map = {
+            'string': 'value_string',
+            'text': 'value_text',
+            'integer': 'value_integer',
+            'decimal': 'value_decimal',
+            'boolean': 'value_boolean',
+            'url': 'value_url'
+        }
+
+        # Get the ordered fields (ensuring only one value field per attribute)
+        sorted_fields = ["attribute"] + [
+            field_map[attr.data_type] for attr in sorted_attributes if attr.data_type in field_map
+        ]
+        return sorted_fields
+    
+
 class ConceptAdmin(DictionaryRestrictAdminMixin,
                    ConceptFileImportMixin,
                    SimpleHistoryAdmin):
@@ -263,7 +297,7 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
     change_form_template = 'begrepp_change_form.html'
     change_list_template = "begrepp_changelist.html"
 
-    list_display = ['term', 'definition', 'status_button', 'list_dictionaries']
+    list_display = ['term', 'definition', 'status_button', 'changed_at', 'list_dictionaries']
     search_fields = ('term',
                     'definition',
                     'synonyms__synonym',
@@ -379,8 +413,9 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
     def list_dictionaries(self, obj):
         return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
 
-    list_dictionaries.short_description = 'term_list'
-    list_dictionaries.verbose = 'Ordböcker'
+    list_dictionaries.short_description = 'Ordbok'
+    list_dictionaries.verbose_name_plural = 'Ordböcker'
+    list_dictionaries.verbose_name = 'Ordbok'
 
     def export_chosen_attrs_view(request):
 
@@ -412,28 +447,9 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
         if form.is_valid():
             response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, selected_fields=sorted_fields, field_mapping=field_mapping)
         return response
-        
-        # if request.method == 'GET':
-        #     chosen_concepts = [int(i) for i in request.GET.get('selected_concepts').split("&")]
-        #     logger.debug(f"Exporting the following - {chosen_concepts}")
-        #     queryset = Concept.objects.filter(id__in=chosen_concepts)
-
-        #     #model_fields = [field.name for field in queryset.first()._meta.get_fields()]
-        #     #set_trace()
-        #     #chosen_table_attrs = [i for i in model_fields if i in request.GET.get('attributes')]
-            
-        #     chosen_table_attrs = request.GET.getlist('attributes')
-        #     logger.debug(f"Exporting the following attributes - {chosen_table_attrs}")
-
-        #     form = ChooseExportAttributes(request.GET)
-        #     if form.is_valid():
-        #         response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, field_names=chosen_table_attrs)
-        #     return response
     
     export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
     actions = [export_chosen_concepts_action,]
-
-
 
 class AttributeAdmin(admin.ModelAdmin):
 
