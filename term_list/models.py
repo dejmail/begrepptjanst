@@ -20,10 +20,6 @@ STATUS_CHOICES = (('Avråds', "Avråds"),
               ('Pågår', 'Pågår'), 
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
-SYSTEM_VAL = (('Millennium', "Millennium"),
-              ('Annat system', "Annat system"),
-              ('VGR Begreppsystem',"VGR Begreppsystem"))
-
 class Dictionary(models.Model):
 
     """The dictionary that a term belongs to. The same term can belong
