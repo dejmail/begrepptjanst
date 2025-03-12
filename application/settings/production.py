@@ -1,4 +1,9 @@
 from application.settings.base import *
+import locale
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')  # Ensure stdout is UTF-8
+locale.setlocale(locale.LC_ALL, "sv_SE.UTF-8")  # Set Swedish locale
 
 DEBUG=False
 
