@@ -18,6 +18,9 @@ DATABASES = {
         'PORT': '3306',
         'OPTIONS': {
             'sql_mode' : 'traditional',
+            'charset': 'utf8mb4', 
+            'init_command': "SET NAMES 'utf8mb4' COLLATE 'utf8mb4_swedish_ci'"
+
         },
          'TEST': {
             'NAME': 'vgrinfor_concept_test',
