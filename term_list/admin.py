@@ -254,7 +254,10 @@ class AttributeValueInline(admin.StackedInline):
             return ["attribute"]  # Default when no instance is selected
 
         # Get the term's groups (or another relevant relation)
-        term_groups = obj.dictionaries.all()  # Adjust this if needed
+        term_groups = obj.dictionaries.values_list("groups", flat=True)
+        # attributes = Attribute.objects.filter(groups__id__in=term_groups).distinct()
+
+        # term_groups = obj.dictionaries.all()  # Adjust this if needed
         attributes = Attribute.objects.filter(groups__in=term_groups).distinct()
 
         # Get sorted attributes based on GroupAttribute position
@@ -343,10 +346,6 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
         
         if concept:
             # Filter attributes based on the Concept's dictionary
-            
-            # extra_context['filtered_attributes'] = Attribute.objects.filter(
-            #     groups__dictionaries__dictionary_long_name=concept.dictionaries
-            #     )
             
             extra_context['filtered_attributes'] = Attribute.objects.filter(
             groups__dictionaries__in=concept.dictionaries.all()
@@ -465,6 +464,7 @@ class AttributeValueAdmin(admin.ModelAdmin):
     list_display = ['term', 'attribute__display_name', 'get_value']
 
     search_fields = [
+    'term__id',
     'term__term',
     'attribute__display_name',
     'value_string',

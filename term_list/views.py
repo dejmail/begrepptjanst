@@ -81,6 +81,7 @@ def build_results(queryset: QuerySet[Concept],
     dictionaries with additional data.
     """
     
+    
     logger.debug('Building list of results, including synonyms')
     
     # Step 1: Group attributes by concept ID
@@ -104,9 +105,10 @@ def build_results(queryset: QuerySet[Concept],
 
         attributes = attribute_map.get(concept.id)
         logger.debug(f'Attaching Attributes and AttributeValues to Concept {concept.id}')
-        for attr_key, value in attributes.items():
-            concept_data[attr_key] = value
-        results.append(concept_data)
+        if attributes:
+            for attr_key, value in attributes.items():
+                concept_data[attr_key] = value
+            results.append(concept_data)
 
     return results
 
@@ -115,7 +117,6 @@ def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) 
     """
     Search for concepts based on attributes or related data.
     """
-
     logger.debug(f'Searching for {url_parameter} within Concepts')
     
     # Step 1: Get Concepts that match `term` or `definition`
@@ -557,7 +558,6 @@ def is_ajax(request: HttpRequest) -> HttpResponse:
     return request.headers.get('X-Custom-Requested-With')
         
 def determine_search_strategy(url_parameter, dictionary):
-
     if len(url_parameter) == 1 and url_parameter.isupper():
         return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
     else:
