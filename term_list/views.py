@@ -6,7 +6,6 @@ from pdb import set_trace
 from urllib.parse import unquote
 
 from application.logs import setup_logging
-from application.settings.production import EMAIL_HOST_PASSWORD
 from term_list.models import DEFAULT_STATUS
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
