@@ -2,7 +2,7 @@ from application.settings.base import *
 
 DEBUG=False
 
-SUBDOMAIN = 'application'
+SUBDOMAIN = 'begreppstjanst'
 
 DB_NAME = os.getenv('DB_NAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
@@ -20,7 +20,7 @@ DATABASES = {
             'sql_mode' : 'traditional',
         },
          'TEST': {
-            'NAME': 'vgrinfor_begrepp_test',
+            'NAME': 'vgrinfor_concept_test',
         },
     }
 }
@@ -40,8 +40,3 @@ MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
 # Email settings
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
-EMAIL_HOST = 'mail.vgrinformatik.se'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'info@vgrinformatik.se'
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = True
