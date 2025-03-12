@@ -104,9 +104,7 @@ def export_chosen_concept_as_csv(request: HttpRequest,
 
     # Prepare Response
     response = HttpResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    response["Content-Disposition"] = f'attachment; filename="exporterad_begrepp_{
-        datetime.datetime.now().strftime("%Y_%m_%d-%H:%M:%S")
-        }.xlsx"'
+    response["Content-Disposition"] = f'attachment; filename="exporterad_begrepp_{datetime.datetime.now().strftime("%Y_%m_%d-%H:%M:%S")}.xlsx"'
     
     return response
 
