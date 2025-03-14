@@ -190,7 +190,7 @@ class Concept(models.Model):
         app_label = 'term_list'
 
     term = models.CharField(max_length=255)  # The word itself
-    definition = models.TextField(null=True)  # Primary definition
+    definition = models.TextField(null=True, blank=True)  # Primary definition
     status = models.CharField(choices=CONCEPT_STATUS, max_length=15, null=True)
     changed_at = models.DateTimeField(null=True, auto_now=True, verbose_name='Senaste ändring')
     created_at = models.DateTimeField(null=True, auto_now_add=True, verbose_name='Datum skapat')
