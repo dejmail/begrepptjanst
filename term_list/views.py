@@ -80,7 +80,6 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
     Convert a queryset of Concept and AttributeValue objects into a list of 
     dictionaries with additional data.
     """
-    
     logger.debug('Building list of results, including synonyms')
     
     # Step 1: Group attributes by concept ID
@@ -89,14 +88,13 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
             attribute_map[attr_value.term_id
                           ][attr_value.attribute.name
                             ] = attr_value.get_value()
-
+    
     # Step 2: Build result list with attributes
     results = []
     if not attribute_map:
         logger.debug(f'No Attributes present or needed')
     else:
-        logger.debug(f'Attaching Attributes and AttributeValues to Concept {concept.id}')
-
+        logger.debug(f'Attaching Attributes and AttributeValues to Concept')
     for concept in queryset:
         concept_data = concept.__dict__.copy()  # Include all fields dynamically
 
@@ -114,7 +112,6 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
             results.append(concept_data)
         else:
             results.append(concept_data)
-
     return results
 
 def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) -> List[dict]:
@@ -123,7 +120,6 @@ def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) 
     Search for concepts based on attributes or related data.
     """
     logger.debug(f'Searching for {url_parameter} within Concepts')
-    
     # Step 1: Get Concepts that match `term` or `definition`
     queryset = Concept.objects.exclude(status='Publicera ej').filter(
         Q(term__icontains=url_parameter) | Q(definition__icontains=url_parameter)
@@ -1275,10 +1271,7 @@ def all_accepted_terms(request):
     # Converting merged results to a list    
     merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
     
-    # merged_result = list(merged_result.values())
-    # set_trace()
     merged_result_with_related = add_related_terms(list(merged_result.values()), queryset)
-
 
     return JsonResponse(merged_result_with_related, json_dumps_params={'ensure_ascii':False}, safe=False)
 
