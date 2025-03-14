@@ -73,14 +73,13 @@ def get_prefetched_queryset(queryset: QuerySet[Concept], dictionary: Optional[st
     return queryset.prefetch_related('dictionaries', 'synonyms')
 
 
-def build_results(queryset: QuerySet[Concept], 
+def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept], 
                   matched_attribute_values: QuerySet[AttributeValue]) -> List[dict]:
 
     """
     Convert a queryset of Concept and AttributeValue objects into a list of 
     dictionaries with additional data.
     """
-    
     
     logger.debug('Building list of results, including synonyms')
     
@@ -93,6 +92,9 @@ def build_results(queryset: QuerySet[Concept],
 
     # Step 2: Build result list with attributes
     results = []
+    if not attribute_map:
+        logger.debug(f'No Attributes present or needed')
+
     for concept in queryset:
         concept_data = concept.__dict__.copy()  # Include all fields dynamically
 
@@ -104,10 +106,12 @@ def build_results(queryset: QuerySet[Concept],
         concept_data['synonyms'] = list(concept.synonyms.all())
 
         attributes = attribute_map.get(concept.id)
-        logger.debug(f'Attaching Attributes and AttributeValues to Concept {concept.id}')
         if attributes:
+            logger.debug(f'Attaching Attributes and AttributeValues to Concept {concept.id}')
             for attr_key, value in attributes.items():
                 concept_data[attr_key] = value
+            results.append(concept_data)
+        else:
             results.append(concept_data)
 
     return results
@@ -152,7 +156,7 @@ def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) 
     
     queryset = get_prefetched_queryset(queryset, dictionary)
     
-    return build_results(queryset, matched_attribute_values)
+    return enrich_serialised_concepts_with_attributes(queryset, matched_attribute_values)
 
 
 def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
@@ -160,7 +164,6 @@ def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
     """
     Filter concepts where the term starts with a specific letter.
     """
-    # Base queryset
     queryset = Concept.objects.exclude(status="Publicera ej").filter(
         term__istartswith=letter
     ).distinct()
@@ -168,7 +171,7 @@ def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
     # Apply dictionary filtering and prefetch related fields
     queryset = get_prefetched_queryset(queryset, dictionary)
 
-    return build_results(queryset)
+    return enrich_serialised_concepts_with_attributes(queryset, AttributeValue.objects.none())
 
 
 def filter_by_dictionary(queryset: QuerySet, dictionary: List) -> QuerySet:
@@ -203,7 +206,6 @@ def determine_search_strategy(url_parameter: str, dictionary: str) -> QuerySet[C
         QuerySet[Concept]: 
             - A queryset of Concept objects matching the search criteria.
     """
-
     if len(url_parameter) == 1 and url_parameter.isupper():
         logger.info(f'Searching by single letter - {url_parameter}')
         return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
@@ -558,6 +560,7 @@ def is_ajax(request: HttpRequest) -> HttpResponse:
     return request.headers.get('X-Custom-Requested-With')
         
 def determine_search_strategy(url_parameter, dictionary):
+
     if len(url_parameter) == 1 and url_parameter.isupper():
         return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
     else:
@@ -1126,6 +1129,65 @@ def redirect_to_all_approved_terms(request):
 
     return HttpResponseRedirect(reverse('get_all_accepted_terms_as_json'))
 
+class FindTerms(dict):
+    """ All-in-one multiple-string-matching class
+        with flexible word boundaries for suffixes like plurals.
+        Instead of substitution, it returns matched terms.
+    """
+
+    def escape_keys(self):
+        """ Escape the keys in the dictionary for use in a regex pattern """
+        return [re.escape(i) for i in self.keys()]
+
+    def _make_regex(self):
+        """ Build the regex pattern to match base words with suffix flexibility """
+        # Define common suffixes for pluralization or word forms
+        suffixes = r"(en|ens|er|ar|et|s)?\b"
+        
+        # Escape the keys and join them with word boundaries and suffix flexibility
+        escaped_keys = self.escape_keys()
+        joined_keys = r'\b(' + r'|'.join(escaped_keys) + r')' + suffixes
+        
+        # Compile the regular expression with case insensitivity
+        compiled_re = re.compile(joined_keys, re.IGNORECASE)
+        
+        return compiled_re
+
+    def find_matches(self, text):
+        """ Find and return all unique matches of base words in the text """
+        regex = self._make_regex()
+        matches = regex.findall(text)
+        
+        # Extract and return only the base words, without suffixes
+        base_words = [match[0].lower() for match in matches]  # match[0] is the base word
+        return list(set(base_words))  # Return unique base words
+
+def add_related_terms(terms_with_definitions, all_terms_dict):
+    """
+    Add related terms to each term in terms_with_definitions based on the occurrence 
+    of other terms in the definition.
+    
+    :param terms_with_definitions: List of terms with definitions
+    :param all_terms_dict: Dictionary of all terms where key is the term and value is its definition
+    :return: List of terms with related terms added
+    """
+    # Create a term list from the all_terms_dict keys (which are the terms)
+    
+    term_list = {i.get('term'):i.get('definition') for i in terms_with_definitions}
+    #term_list = list(all_terms_dict.keys())
+    # Initialize Xlator for matching terms in definitions
+    xlator = FindTerms(term_list)
+
+    # Iterate over all terms and add related terms
+    for term in terms_with_definitions:
+        definition = term.get('definition', '')
+        # Find related terms using the Xlator
+        related_terms = xlator.find_matches(definition)
+        # Add related terms to the current term
+        term['related_terms'] = related_terms
+    
+    return terms_with_definitions
+
 def merge_term_and_synonym(qs, syn_qs):
 
     synonym_list = {
@@ -1167,7 +1229,7 @@ def merge_term_and_synonym(qs, syn_qs):
 
 def all_accepted_terms(request):
 
-    """ Returns a JSON list of all terms with status 'Publicera ej'
+    """ Returns a JSON list of all terms without status 'Publicera ej'
 
     :return: JSON list of term dictionaries
     :rtype: {JsonResponse}
@@ -1195,7 +1257,7 @@ def all_accepted_terms(request):
 
     # Merging synonyms with concepts
     merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
-
+    
     # Adding attributes and their values
     for attr_val in attribute_qs:
         concept_id = attr_val.term_id
@@ -1211,9 +1273,12 @@ def all_accepted_terms(request):
     # Converting merged results to a list    
     merged_result = merge_term_and_synonym(qs_dict, synonym_qs)
     
-    merged_result = list(merged_result.values())
+    # merged_result = list(merged_result.values())
+    # set_trace()
+    merged_result_with_related = add_related_terms(list(merged_result.values()), queryset)
 
-    return JsonResponse(merged_result, json_dumps_params={'ensure_ascii':False}, safe=False)
+
+    return JsonResponse(merged_result_with_related, json_dumps_params={'ensure_ascii':False}, safe=False)
 
 def get_term(request, id):
 
