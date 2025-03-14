@@ -94,6 +94,8 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
     results = []
     if not attribute_map:
         logger.debug(f'No Attributes present or needed')
+    else:
+        logger.debug(f'Attaching Attributes and AttributeValues to Concept {concept.id}')
 
     for concept in queryset:
         concept_data = concept.__dict__.copy()  # Include all fields dynamically
@@ -107,7 +109,6 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
 
         attributes = attribute_map.get(concept.id)
         if attributes:
-            logger.debug(f'Attaching Attributes and AttributeValues to Concept {concept.id}')
             for attr_key, value in attributes.items():
                 concept_data[attr_key] = value
             results.append(concept_data)
@@ -678,8 +679,9 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse:
         
         combined_fields = concept_detail_view(concept_id=url_parameter)
 
+        combined_fields = sorted(combined_fields, key=lambda x: (x['position']))
+
         template_context = {'concept': single_term.get('concept'),
-                            #'attributes' : single_term.get('attributes'),
                             'attributes' : combined_fields,
                             'colour_status' : status_colour_dict}
         

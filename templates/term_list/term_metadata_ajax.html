@@ -17,24 +17,28 @@
                     <td>Term</td>
                     <td>{{concept.term}}</td>
                 </tr>
+                <tr class="{{colour_status.concept}}">
+                    <td>Definition</td>
+                    <td>{{concept.definition}}</td>
+                </tr>
                 <tr>
                     <td>Synonym</td>
-                    <td >
+                    <td>
+                        <ul class="synonym-list">
                         {% for synonym in concept.synonyms.all %}
                             {% if synonym.synonym is not None %}
+                            <li>
                                 {% if synonym.synonym_status == "Avråds" %}
-                                    -&nbsp;
-                                    <span class="btn-sm btn-avrådd strike" aria-label="Synonym avråds: {{synonym.synonym}}">
+                                    <span class="text-danger" aria-label="Synonym avråds: {{synonym.synonym}}">
                                         <s class="strike">{{synonym.synonym}}</s>
-                                    </span><br>
+                                    </span>
                                 {% else %}
-                                    -&nbsp;
-                                    {{synonym.synonym}}<br>
+                                    {{synonym.synonym}}
                                 {% endif %}
-                            {% else %}
-                                -
+                            </li>
                             {% endif %}
                         {% endfor %}
+                        </ul>
                     </td>
                 </tr>
                 {% for attribute in attributes %}
@@ -46,10 +50,10 @@
                 <tfoot>
                     <tr>
                         <td>
-                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="comment_button">Kommentera</button>
+                            <button class="btn btn-warning" type="button" style="font-size:14px; background-color: #f2a900;" id="open-comment-button">Kommentera</button>
                         </td>
                         <td>
-                            <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
+                            <button type="button" style="float:right; font-size:14px; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
                         </td>
                     </tr>
                 </tfoot>
@@ -66,7 +70,7 @@
                   <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
                 </div>
                 <div class="modal-body">
-                  <h4 style="font-family: frutiger;">Kommentera begrepp</h4>
+                  <h4>Kommentera begrepp</h4>
                   <p style="font-family: Calibri;">
                     Funktionen Kommentera är tänkt att vara en möjlighet att framföra synpunkter om ett begrepp, 
                     hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma termer 
@@ -137,7 +141,7 @@
 /* This allows us to keep the normal spacing
 in the certain cells without having to use <br> */
 
-tbody > tr:nth-child(4) > td:nth-child(2) {
+tbody > tr:nth-child(3) > td:nth-child(2) {
     white-space: pre-line;
     }
 
