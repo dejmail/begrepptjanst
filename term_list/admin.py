@@ -13,7 +13,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
-from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
+from rangefilter.filters import DateRangeFilterBuilder
 from simple_history.admin import SimpleHistoryAdmin
 from django.http import HttpResponse
 
@@ -196,7 +196,6 @@ class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin,
         if request.method == 'POST':
             instances = formset.save(commit=False)
             for instance in instances:
-                set_trace()
                 if not instance.begrepp_id:
                     instance.begrepp_id = form.cleaned_data.get('concept').pk
                 instance.save()
@@ -224,7 +223,6 @@ class ConceptExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin,
     list_display = ('concept', 'comment', 'support_file')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        set_trace()
         if db_field.name == "kommentar":
             # Filter the queryset for the ForeignKey field based on the user's group
             user_groups = request.user.groups.all()
@@ -309,7 +307,7 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
                     )
     
     list_filter = (StatusListFilter,
-                   ('changed_at', DateRangeFilter),
+                   ('changed_at', DateRangeFilterBuilder()),
                    'dictionaries',
                    DuplicateTermFilter
     )
