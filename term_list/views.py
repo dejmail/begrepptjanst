@@ -372,10 +372,11 @@ def concatenate_all_dictionary_values_to_single_string(dictionary: Dict,
 
     definitions_list = []
 
-    for entry in dictionary:        
-        if not entry.get('definition').strip():  # Check if the value is empty or contains only whitespace
-            logger.debug(f"Warning: The definition for key '{key}' is empty or contains only whitespace.")
-        definitions_list.append(entry.get('definition', 'Ingen definition'))
+    for entry in dictionary:
+        if entry.get('definition'):
+            if not entry.get('definition').strip():  # Check if the value is empty or contains only whitespace
+                logger.debug(f"Warning: The definition for key '{key}' is empty or contains only whitespace.")
+        definitions_list.append(entry.get("definition") or "Ingen definition")
 
     concatenated_text = ' ½ '.join(definitions_list)
     

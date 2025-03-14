@@ -152,8 +152,8 @@ class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin,
         css = {
 
             'all': ('https://use.fontawesome.com/releases/v5.8.2/css/all.css',
-                   f'{settings.STATIC_URL}css/admin_kommentarmodel_custom.css',
-                   f'{settings.STATIC_URL}css/custom_icon.css')
+                   f'{settings.STATIC_URL}css/admin_kommentarmodel_custom.css'
+            )
             }
 
     inlines = [ContextFilesInline,]
@@ -224,11 +224,12 @@ class ConceptExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin,
     list_display = ('concept', 'comment', 'support_file')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        set_trace()
         if db_field.name == "kommentar":
             # Filter the queryset for the ForeignKey field based on the user's group
             user_groups = request.user.groups.all()
             kwargs["queryset"] = ConceptComment.objects.filter(
-            begrepp__begrepp_fk__groups__in=user_groups
+            concept__concept_fk__groups__in=user_groups
             ).distinct()
 
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
