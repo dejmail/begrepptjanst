@@ -48,9 +48,16 @@
 			$("#display-middle-column").html(response);
             history.pushState(post_url, '', post_url)
             setTimeout(function(){
-            $("#display-middle-column").html('<div id="display-middle-column"></div>')}, 2500);
+            	$("#display-middle-column").html('<div id="display-middle-column"></div>')
+			}, 2500);
             document.getElementById('user-input').value = '';
             history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', endpoint);
+			
+			// Move focus back to the button
+			let openButton = document.getElementById('open-comment-button');
+        if (openButton) {
+            openButton.focus();
+        }
 		});
 	});
 </script>
