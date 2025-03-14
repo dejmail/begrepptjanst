@@ -196,6 +196,7 @@ class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin,
         if request.method == 'POST':
             instances = formset.save(commit=False)
             for instance in instances:
+                set_trace()
                 if not instance.begrepp_id:
                     instance.begrepp_id = form.cleaned_data.get('concept').pk
                 instance.save()

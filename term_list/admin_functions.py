@@ -95,7 +95,7 @@ class DictionaryRestrictedOtherModelAdminMixin:
         ).distinct()
 
         # Filter the queryset based on the accessible dictionaries
-        return qs.filter(begrepp__dictionaries__in=accessible_dictionaries)
+        return qs.filter(concept__dictionaries__in=accessible_dictionaries)
 
 class ConceptFileImportMixin:
 
