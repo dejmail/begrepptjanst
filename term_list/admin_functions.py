@@ -177,19 +177,28 @@ class ConceptFileImportMixin:
                 df.drop(empty_cols, axis=1, inplace=True)
 
                 columns = df.columns.tolist()
-                # set_trace()
-                # model_fields = [f.name for f in Concept._meta.get_fields()]
-
-                # Get available dictionaries based on user group membership
-                available_dictionaries = self.get_accessible_dictionaries(request)
 
                 # Check if the dictionary column is present in the Excel file
-                dictionary_in_excel = 'dictionary' in df.columns
+                available_dictionaries = self.get_accessible_dictionaries(request)
+                dictionary_in_excel = False
+                chosen_dictionary = None
+                if 'dictionary' in df.columns:
+                    unique_dicts = df['dictionary'].dropna().unique()
+                    if len(unique_dicts) == 1:
+                        dictionary_in_excel = True
+                        chosen_dictionary = unique_dicts[0]
+                        try:
+                            Dictionary.objects.get(dictionary_long_name=chosen_dictionary)                        
+                        except Dictionary.DoesNotExist as e:
+                            messages.error(request, f"Ordbok {chosen_dictionary} från filen finns inte i DB, vänligen dubbelkolla stavningen.")
+                            return redirect("admin:import_excel_view")            
+                    else:
+                        messages.error(request, "Flera ordböcker hittades i Excel-filen. Vänligen välj en från listan istället.")
+                        return redirect("admin:import_excel_view")
 
                 # Get draft mappings
                 draft_mapping = self.get_draft_mappings(columns, available_dictionaries)
 
-                                
                 # Show the mapping form
                 #initial_mapping = {col: draft_mapping[col] for col in columns}
 
@@ -198,7 +207,7 @@ class ConceptFileImportMixin:
                 }
 
                 # Merge with the initial_mapping
-                initial_data.update(draft_mapping)
+                initial_data.update(draft_mapping)               
 
                 mapping_form = ColumnMappingForm(
                     columns=columns,
@@ -206,24 +215,28 @@ class ConceptFileImportMixin:
                     available_dictionaries=[(dict.dictionary_id, 
                                              dict.dictionary_name) for dict in available_dictionaries],
                     initial=initial_data,
-                )
-                return render(request, 'admin/column_mapping.html', {
-                    'mapping_form': mapping_form,
-                    'dictionary_in_excel': dictionary_in_excel  # Pass whether dictionary is in the Excel file
+              )
+            return render(request, 'admin/column_mapping.html', {
+                'mapping_form': mapping_form,
+                'dictionary_in_excel': dictionary_in_excel,
+                'chosen_dictionary': chosen_dictionary if dictionary_in_excel else None
                 })
-
         # Step 2: Handle intermediate confirmation page
         if 'apply_mapping' in request.POST:
             # Assume form contains the parsed data from the uploaded file
             logger.debug(f"Mapping accepted, creating new terms and attributes in DB")
-            # set_trace()
             json_column_mapping = json.loads(request.POST.get('column_mapping_json'))
-            chosen_dictionary = Dictionary.objects.get(
-                dictionary_id=json_column_mapping.get('dictionary')
-                ).dictionary_long_name
-            json_column_mapping['dictionary'] = Dictionary._meta.verbose_name_plural
+
+            if request.POST.get('dictionary-in-file'):
+                chosen_dictionary = Dictionary.objects.get(
+                    dictionary_long_name=request.POST.get('dictionary-in-file')
+                    ).dictionary_long_name
+                json_column_mapping['dictionary'] = chosen_dictionary
+            elif request.POST.get('dictionary') is not None:
+                chosen_dictionary = request.POST.get('dictionary')
+
             # the mapping of this is not quite right...I want the sqwedish headers in the 
-            #json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
+            # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
             logger.debug(f'adding key - {json_column_mapping=}')
             column_mapping = {k: v for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
             
@@ -295,15 +308,17 @@ class ConceptFileImportMixin:
                 concept_data = {k.lower(): v for k, v in data.items() if k.lower() in CONCEPT_FIELDS}
 
                 synonym_data = data.get('synonyms', [])
-                data.pop('synonyms')
+                if data.get('synonyms'):
+                    data.pop('synonyms')
                 # ✅ Separate Attribute Fields (EAV fields)
                 attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS}
 
                 concept_instance, created = Concept.objects.update_or_create(term=data.get('term'), defaults=concept_data)
                 
                 if synonym_data:
-                    synonyms = [Synonym(synonym=synonym, concept=concept_instance) for synonym in synonym_data]
-                    Synonym.objects.bulk_create(synonyms)  # Efficiently create all synonyms at once for a particular concept
+                    split_synonyms = [synonym for synonym in synonym_data.split(',') if synonym not in ['', None]]
+                    synonyms = [Synonym(synonym=synonym, concept=concept_instance) for synonym in split_synonyms]
+                    Synonym.objects.bulk_create(synonyms)  
 
                 # Handle the M2M relation (dictionaries)
                 if dictionary_id:
@@ -320,7 +335,6 @@ class ConceptFileImportMixin:
                 }
 
                 for attr_name, attr_value in attribute_data.items():
-                    # set_trace()
                     attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
                     # Get the correct field to update
                     value_field = value_field_map.get(attribute_obj.data_type, "value_string")

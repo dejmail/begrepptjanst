@@ -1,7 +1,7 @@
 {% block endbody %}
 {% load static %}
 
-<div id="helpInfo" style="display: none;"> 
+<div id="helpInfo" class="hidden"> 
   <div class="container-fluid">
   
     <div class="row" style="text-align: center;">
@@ -132,4 +132,10 @@
 </div>
 </body>
 </html>
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
 {% endblock endbody %}

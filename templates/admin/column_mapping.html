@@ -6,36 +6,51 @@
 
 <h4>Anpassa där förslag är fel</h4>
 
-<h4>Om du INTE ange ett motsvarande fält, så importeras inte fältet.</h4>
+<h4>
+    <ul>
+        <li>Om du INTE ange ett motsvarande fält, så importeras inte fältet.</li>
+        <li>Kolumnar utan värden ignoreras.</li>
+    </ul></h4>
 
 <form method="POST" id="column-mapping-form" class="admin-form">
     <div class="form-container">
     
         {% csrf_token %}
-        
-        {{ mapping_form.excel_file }}
+        <!-- <div class="form-row">
+            <label class="label" for="ignore-blank-columns">Ignorera kolumnar som är tomma</label>
+            <input class="field" type="checkbox" id="ignore-blank-columns" name="ignore-blank-columns" value="False">        
+        </div> -->
+        <!-- {{ mapping_form.excel_file }} -->
 
         <!-- Loop through the form fields, except the dictionary field -->
-        {% for field in mapping_form %}
-            {% if field.name != 'dictionary' %}
-            <div class="form-row">
+        <fieldset class="module aligned">
+            {% for field in mapping_form %}
+                {% if field.name != 'dictionary' %}
+                <div class="form-row">
                     <div class="label">{{ field.label_tag }}</div>
                     <div class="field">{{ field }}</div>
-            </div>
-            {% endif %}
-        {% endfor %}
+                </div>
+                {% endif %}
+            {% endfor %}
+        </fieldset>
 
         <!-- Render the dictionary field only if it's not present in the Excel file -->
         {% if not dictionary_in_excel %}
             <div class="form-row">
                     <div class="label">
-                        <div for="{{ mapping_form.dictionary.id_for_label }}" class="required">Välja en term_list:</div>
+                        <label for="{{ mapping_form.dictionary.id_for_label }}" class="required">Välj ordbok:</label>
                     </div>
                     <div class="field">
                         {{ mapping_form.dictionary }}
                     </div>
                 </div>
-            </div>  
+            </div>
+
+        {% else %}
+        <p class="form-info">
+            <strong>Vald ordbok:</strong> {{ chosen_dictionary }}
+          </p>
+          <input type="hidden" id="dictionary-in-file" name="dictionary-in-file" value="{{chosen_dictionary}}">
         {% endif %}        
 
         <input type="hidden" id="column_mapping_json" name="column_mapping_json">
@@ -89,6 +104,28 @@
         padding-right: 20px;
         font-weight: bold;
     }
+
+    .form-info {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border-left: 4px solid #ccc;
+}
+
+.submit-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.form-container {
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  margin-top: 1rem;
+}
 
 </style>
 {% endblock %}

@@ -15,6 +15,8 @@ function endpoint_check() {
 
 }
 
+
+
 const endpoint = endpoint_check();
 
 const delay_by_in_ms = 1000
@@ -25,6 +27,10 @@ function toggle_element(element_id) {
 	while(div.firstChild) {
 		div.removeChild(div.firstChild);
 	}
+}
+
+function toggleHelp() {
+    document.getElementById("helpInfo").classList.toggle("hidden");
 }
 
 function toggleVisibility(elementId, status='toggle') {
@@ -78,7 +84,8 @@ const ajax_call = function (endpoint, requestParameters) {
         changeBrowserURL(responseData, endpoint);
         toggle_element("replaceable-content-middle-column");
         toggle_element("display-middle-column");
-
+        clear_mittenspanrow();
+        
         // fade out the concept_div, then:
         concept_div.fadeTo('fast', 0).promise().then(() => {
             // replace the HTML contents
