@@ -13,6 +13,8 @@ import io
 import xlsxwriter
 import datetime
 import pandas as pd
+from django.db import transaction
+
 
 import logging
 from pdb import set_trace
@@ -107,6 +109,38 @@ def export_chosen_concept_as_csv(request: HttpRequest,
     response["Content-Disposition"] = f'attachment; filename="exporterad_begrepp_{datetime.datetime.now().strftime("%Y_%m_%d-%H:%M:%S")}.xlsx"'
     
     return response
+
+def delete_allowed_concepts(modeladmin, request, queryset):
+    accessible_dictionaries = modeladmin.get_accessible_dictionaries(request)
+    deletable = queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
+
+    if not deletable:
+        modeladmin.message_user(
+            request,
+                "Inga av de valda begreppen kan raderas baserat på dina gruppbehörigheter.",
+            level=messages.WARNING
+        )
+        return
+
+    try:
+        with transaction.atomic():
+            count = deletable.count()
+            deletable.delete()
+            modeladmin.message_user(
+                request,
+                f"Raderade {count} begrepp.",
+                level=messages.SUCCESS
+            )
+    except Exception as e:
+        modeladmin.message_user(
+            request,
+            f"Ett fel uppstod under radering: {str(e)}",
+            level=messages.ERROR
+        )
+
+delete_allowed_concepts.short_description = "Radera valda begrepp (om tillåtet)"
+
+
 
 def change_dictionaries(modeladmin, request, queryset):
     logger = logging.getLogger(__name__)

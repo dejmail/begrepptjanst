@@ -27,8 +27,11 @@ from django.conf import settings
 
 from term_list import admin_actions
 from term_list.forms import ConceptExternalFilesForm, ChooseExportAttributes
-from term_list.admin_actions import (change_dictionaries, 
-                                     export_chosen_concepts_action)
+from term_list.admin_actions import (
+    change_dictionaries, 
+    export_chosen_concepts_action,
+    delete_allowed_concepts
+)
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
@@ -302,6 +305,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
                    admin.ModelAdmin):
 
     model = Concept
+
     class Media:
         css = {
         'all': (
@@ -310,7 +314,6 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
            )
          }
         
-    # Below is not working
     change_form_template = 'begrepp_change_form.html'
     change_list_template = "begrepp_changelist.html"
 
@@ -328,12 +331,20 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     
     inlines = [AttributeValueInline]
 
+
+
     def _get_dictionary_from_obj(self, obj):
         # For Concept, it has ManyToMany so pick one (simplified logic)
         return obj.dictionaries
 
     def _get_dictionary_lookup(self):
         return 'dictionaries__in'
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
 
     def status_button(self, obj):
         status_classes = {
@@ -469,7 +480,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         return response
     
     export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
-    actions = [export_chosen_concepts_action,]
+    actions = [export_chosen_concepts_action, delete_allowed_concepts]
 
 class AttributeAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 

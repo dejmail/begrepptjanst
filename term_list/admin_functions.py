@@ -17,6 +17,7 @@ from django.urls import path, reverse
 from django.shortcuts import render, redirect
 from django.utils.html import format_html
 
+
 import pandas as pd
 import io
 import base64
@@ -88,18 +89,16 @@ class DictionaryRestrictedAdminMixin:
         return Dictionary.objects.filter(groups__in=request.user.groups.all()).distinct()
 
     def has_change_permission(self, request, obj=None):
-        #set_trace()
         if obj is None or request.user.is_superuser:
             return True
-        # return self._get_dictionary_from_obj(obj) in self.get_accessible_dictionaries(request)
         return obj.dictionaries.filter(dictionary_id__in=self.get_accessible_dictionaries(request)).exists()
 
     def has_delete_permission(self, request, obj=None):
         if obj is None or request.user.is_superuser:
             return True
-        # return self._get_dictionary_from_obj(obj) in self.get_accessible_dictionaries(request)
+        
         return obj.dictionaries.filter(dictionary_id__in=self.get_accessible_dictionaries(request)).exists()
-
+        
     def has_add_permission(self, request):
         if request.user.is_superuser:
             return True
