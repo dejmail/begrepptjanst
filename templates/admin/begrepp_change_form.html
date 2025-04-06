@@ -22,35 +22,47 @@
                 suggestPreviousValues('id_term');
                 })
             };           
-
-            källa_elem = document.getElementById("id_källa")
+            
+            källa_elem = document.getElementById("id_attributes-1-value_string")
             if(källa_elem){
                 källa_elem.addEventListener('input', function() { 
-                suggestPreviousValues('id_källa');
+                suggestPreviousValues('id_attributes-1-value_string');
                 })
             };            
 
             function suggestPreviousValues(id_attr) {
-            
-            $(`#${id_attr}`).autocomplete({source: function (request, response) {
+                $(`#${id_attr}`).autocomplete({
+                    source: function (request, response) {
+                    // 👇 Extract the attribute directly from the known input ID
+                    var parts = id_attr.split('_'); // e.g., ["id", "attributes-1", "value_string"]
+                    var attribute = parts.length > 1 ? parts[1] : null;
 
-                var attribute = this.bindings[0].id.split('_')[1];
-                var field_id = this.bindings[0].id;
-                var url_parts = window.location.pathname.split('/');
-                var sub_url = url_parts[1];
-                var url = "{% url 'autocomplete_suggestions' "<attribute>" "<search_term>" %}".replace("%3Cattribute%3E", attribute);
-                var url = url.replace('%3Csearch_term%3E', request.term);
-                console.log('getting suggestions from - ' + url);
-                var req = new XMLHttpRequest();
-                req.responseType = 'json';                                         
-                req.open('GET', url, true);
-                // req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-                req.send(null);
-                req.onload  = function() {
-                    response(req.response);                      
-                }                                             
-            }});
-        };        
+                    if (!attribute) {
+                        console.warn("Could not extract attribute from:", id_attr);
+                        return;
+                    }
+
+                    var url_parts = window.location.pathname.split('/');
+                    var sub_url = url_parts[1];
+
+                    // Build the URL manually using template context + JS
+                    let url_template = "{% url 'autocomplete_suggestions' 'REPLACE_ATTR' 'REPLACE_TERM' %}";
+                    let url = url_template
+                        .replace("REPLACE_ATTR", encodeURIComponent(attribute))
+                        .replace("REPLACE_TERM", encodeURIComponent(request.term));
+
+                    console.log('getting suggestions from - ' + url);
+
+                    fetch(url)
+                        .then(res => res.json())
+                        .then(data => response(data))
+                        .catch(err => {
+                            console.error("Error fetching autocomplete suggestions:", err);
+                        });
+        }
+    });
+}
+
         
         });
         
