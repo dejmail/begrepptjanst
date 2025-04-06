@@ -37,12 +37,14 @@ admin.site.site_header = """OLLI Begreppstjänst Admin
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
-from term_list.admin_functions import (DictionaryRestrictAdminMixin,
-                                    DictionaryRestrictedOtherModelAdminMixin,
-                                    ConceptFileImportMixin,
-                                    DictionaryFilter,
-                                    DuplicateTermFilter,
-                                    add_non_breaking_space_to_status)                             
+from term_list.admin_functions import (
+    DictionaryRestrictedAdminMixin,
+    DictionaryRestrictedInlineMixin,
+    ConceptFileImportMixin,
+    DictionaryFilter,
+    DuplicateTermFilter,
+    add_non_breaking_space_to_status
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +88,7 @@ class StatusListFilter(MultipleChoiceListFilter):
 class ExcelImportForm(forms.Form):
     excel_file = forms.FileField()
 
-class TaskOrdererAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
+class TaskOrdererAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     list_display = ('name',
                     'email',
@@ -104,7 +106,7 @@ class TaskOrdererAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
         if display_text:
             return mark_safe(", ".join(display_text))   
 
-class DictionaryAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
+class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     list_display = ('dictionary_name',
                     'dictionary_id',
@@ -114,7 +116,7 @@ class DictionaryAdmin(DictionaryRestrictAdminMixin, admin.ModelAdmin):
     list_filter = ("dictionary_name",)
     #search_fields = ('begrepp__term',)
 
-class SynonymAdmin(DictionaryRestrictedOtherModelAdminMixin, admin.ModelAdmin):
+class SynonymAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
     
     ordering = ['concept__term']
     list_display = ('concept',
@@ -145,7 +147,7 @@ class ContextFilesInline(admin.StackedInline):
     readonly_fields = ['concept',]
 
 
-class ConceptCommentsAdmin(DictionaryRestrictedOtherModelAdminMixin, 
+class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, 
                              admin.ModelAdmin):
 
     class Media:
@@ -214,7 +216,7 @@ class SearchTrackAdmin(admin.ModelAdmin):
                     'sök_timestamp',
                     'records_returned')
 
-class ConceptExternalFilesAdmin(DictionaryRestrictedOtherModelAdminMixin, 
+class ConceptExternalFilesAdmin(DictionaryRestrictedAdminMixin, 
                                 admin.ModelAdmin):
 
     model = ConceptExternalFiles
@@ -236,12 +238,23 @@ class ConfigurationOptionsAdmin(admin.ModelAdmin):
     
     model = ConfigurationOptions
 
-class AttributeValueInline(admin.StackedInline):
+class AttributeValueInline(DictionaryRestrictedInlineMixin, admin.StackedInline):
     model = AttributeValue
     form = AttributeValueInlineForm
     extra = 0
     can_delete = False
     template = "admin/edit_inline/stacked.html" 
+
+    def _get_dictionary_from_obj(self, obj):
+
+        return obj.dictionaries.first()
+
+    def get_parent_object(self, request):
+        return getattr(request, '_admin_form_parent_instance', None)
+
+    def get_formset(self, request, obj=None, **kwargs):
+        self.parent_model_admin = self.admin_site._registry.get(obj.__class__)
+        return super().get_formset(request, obj, **kwargs)
 
     def has_add_permission(self, request, obj=None):
         return False  # ✅ Prevents the 'Add another' button from appearing
@@ -283,9 +296,10 @@ class AttributeValueInline(admin.StackedInline):
         return sorted_fields
     
 
-class ConceptAdmin(DictionaryRestrictAdminMixin,
+class ConceptAdmin(DictionaryRestrictedAdminMixin,
                    ConceptFileImportMixin,
-                   SimpleHistoryAdmin):
+                   SimpleHistoryAdmin,
+                   admin.ModelAdmin):
 
     model = Concept
     class Media:
@@ -313,6 +327,13 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
     )
     
     inlines = [AttributeValueInline]
+
+    def _get_dictionary_from_obj(self, obj):
+        # For Concept, it has ManyToMany so pick one (simplified logic)
+        return obj.dictionaries
+
+    def _get_dictionary_lookup(self):
+        return 'dictionaries__in'
 
     def status_button(self, obj):
         status_classes = {
@@ -450,18 +471,24 @@ class ConceptAdmin(DictionaryRestrictAdminMixin,
     export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
     actions = [export_chosen_concepts_action,]
 
-class AttributeAdmin(admin.ModelAdmin):
+class AttributeAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     list_display = ['display_name', 'data_type', 'description', 'list_groups']
+
+    def _get_dictionary_from_obj(self, obj):
+        return obj.term.dictionaries.first()
+
+    def _get_dictionary_lookup(self):
+        return 'term__dictionaries__in'
 
     def list_groups(self, obj):
         return ", ".join([group.name for group in obj.groups.all()])
 
-class AttributeValueAdmin(admin.ModelAdmin):
+class AttributeValueAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     model = AttributeValue
 
-    list_display = ['term', 'attribute__display_name', 'get_value']
+    list_display = ['term', 'attribute__display_name', 'get_value', 'term__dictionaries__dictionary_long_name']
 
     search_fields = [
     'term__id',
@@ -472,8 +499,14 @@ class AttributeValueAdmin(admin.ModelAdmin):
     'value_integer',
     'value_decimal',
     'value_boolean',
-    'value_url',
+    'value_url'
     ]
+
+    def _get_dictionary_from_obj(self, obj):
+        return obj.term.dictionaries.first()
+
+    def _get_dictionary_lookup(self):
+        return 'term__dictionaries__in'
     
     def get_queryset(self, request):
 

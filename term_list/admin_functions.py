@@ -54,48 +54,72 @@ def conditional_lowercase(cell):
             new_word.append(word.strip().lower())
     return ' '.join(new_word)
 
-class DictionaryRestrictAdminMixin:
+class DictionaryRestrictedInlineMixin:
+    def has_change_permission(self, request, obj=None):
+        if obj is None or request.user.is_superuser:
+            return True
+        return self._get_dictionary_from_obj(obj) in self.parent_model_admin.get_accessible_dictionaries(request)
+
+    def has_delete_permission(self, request, obj=None):
+        if obj is None or request.user.is_superuser:
+            return True
+        return self._get_dictionary_from_obj(obj) in self.parent_model_admin.get_accessible_dictionaries(request)
+
+    def has_add_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        return self.parent_model_admin.get_accessible_dictionaries(request).exists()
+
+    def get_readonly_fields(self, request, obj=None):
+        if obj and not self.has_change_permission(request, obj):
+            return [f.name for f in self.model._meta.fields]
+        return super().get_readonly_fields(request, obj)
+
+
+class DictionaryRestrictedAdminMixin:
     """
-    A mixin that restricts access to objects based on the user's group
-    memberships and their relation to dictionaries.
+    Mixin for Django Admin to restrict change/delete/add access based on
+    the dictionaries linked to the user's groups.
     """
 
     def get_accessible_dictionaries(self, request):
-        """
-        Returns the dictionaries accessible to the user's groups.
-        """
         if request.user.is_superuser:
-            return Dictionary.objects.all()  # Superusers can access all dictionaries
+            return Dictionary.objects.all()
+        return Dictionary.objects.filter(groups__in=request.user.groups.all()).distinct()
 
-        user_groups = request.user.groups.all()
+    def has_change_permission(self, request, obj=None):
+        #set_trace()
+        if obj is None or request.user.is_superuser:
+            return True
+        # return self._get_dictionary_from_obj(obj) in self.get_accessible_dictionaries(request)
+        return obj.dictionaries.filter(dictionary_id__in=self.get_accessible_dictionaries(request)).exists()
 
-        # Filter dictionaries that are accessible to the user's groups
-        accessible_dictionaries = Dictionary.objects.filter(
-            groups__in=user_groups
-        ).distinct()
+    def has_delete_permission(self, request, obj=None):
+        if obj is None or request.user.is_superuser:
+            return True
+        # return self._get_dictionary_from_obj(obj) in self.get_accessible_dictionaries(request)
+        return obj.dictionaries.filter(dictionary_id__in=self.get_accessible_dictionaries(request)).exists()
 
-        return accessible_dictionaries
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        return self.get_accessible_dictionaries(request).exists()
 
-class DictionaryRestrictedOtherModelAdminMixin:
-    """
-    A mixin that restricts access to objects based on the user's group
-    memberships and their relation to dictionaries.
-    """
+    def get_readonly_fields(self, request, obj=None):
+        if obj and not self.has_change_permission(request, obj):
+            return [f.name for f in self.model._meta.fields]
+        return super().get_readonly_fields(request, obj)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
+        """We want all the dictionaries and terms to be visible to the user"""
+        return super().get_queryset(request)
+    
+    def _get_dictionary_from_obj(self, obj):
+        raise NotImplementedError("Subclasses must implement _get_dictionary_from_obj")
 
-        user_groups = request.user.groups.all()
+    def _get_dictionary_lookup(self):
+        raise NotImplementedError("Subclasses must implement _get_dictionary_lookup")
 
-        # Filter dictionaries that are accessible to the user's groups
-        accessible_dictionaries = Dictionary.objects.filter(
-            groups__in=user_groups
-        ).distinct()
-
-        # Filter the queryset based on the accessible dictionaries
-        return qs.filter(concept__dictionaries__in=accessible_dictionaries)
 
 class ConceptFileImportMixin:
 
@@ -190,7 +214,7 @@ class ConceptFileImportMixin:
                         try:
                             Dictionary.objects.get(dictionary_long_name=chosen_dictionary)                        
                         except Dictionary.DoesNotExist as e:
-                            messages.error(request, f"Ordbok {chosen_dictionary} från filen finns inte i DB, vänligen dubbelkolla stavningen.")
+                            messages.error(request, f"Ordbok '{chosen_dictionary}' från filen finns inte i DB, vänligen dubbelkolla stavningen.")
                             return redirect("admin:import_excel_view")            
                     else:
                         messages.error(request, "Flera ordböcker hittades i Excel-filen. Vänligen välj en från listan istället.")
