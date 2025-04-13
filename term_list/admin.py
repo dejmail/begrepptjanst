@@ -19,7 +19,8 @@ from django.http import HttpResponse
 
 from term_list.forms import (
     ConceptForm, 
-    AttributeValueInlineForm
+    AttributeValueInlineForm,
+    ConfigurationOptionsForm
     # AttributeValueInlineFormSet
     )
 from term_list.models import *
@@ -35,7 +36,7 @@ from term_list.admin_actions import (
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-admin.site.site_header = """OLLI Begreppstjänst Admin
+admin.site.site_header = """OLLI Begreppstjänst Admin - 
  För fakta i livet"""
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
@@ -240,6 +241,17 @@ class ConceptExternalFilesAdmin(DictionaryRestrictedAdminMixin,
 class ConfigurationOptionsAdmin(admin.ModelAdmin):
     
     model = ConfigurationOptions
+    form = ConfigurationOptionsForm
+
+    list_display = ['name', 'description', 'pretty_json']
+
+    def pretty_json(self, obj):
+        # value = json.loads(obj.config)
+        pretty = json.dumps(obj.config, indent=2, ensure_ascii=False)
+        # pretty = json.dumps(obj.config, indent=2, ensure_ascii=False)
+        # Wrap in <pre> for formatting
+        return mark_safe(f'<pre>{pretty}</pre>')
+    pretty_json.short_description = "Config"
 
 class AttributeValueInline(DictionaryRestrictedInlineMixin, admin.StackedInline):
     model = AttributeValue
@@ -305,6 +317,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
                    admin.ModelAdmin):
 
     model = Concept
+    form = ConceptForm
 
     class Media:
         css = {
@@ -330,8 +343,6 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     )
     
     inlines = [AttributeValueInline]
-
-
 
     def _get_dictionary_from_obj(self, obj):
         # For Concept, it has ManyToMany so pick one (simplified logic)
@@ -482,15 +493,15 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
     actions = [export_chosen_concepts_action, delete_allowed_concepts]
 
-class AttributeAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
+class AttributeAdmin(admin.ModelAdmin):
 
     list_display = ['display_name', 'data_type', 'description', 'list_groups']
 
-    def _get_dictionary_from_obj(self, obj):
-        return obj.term.dictionaries.first()
+    # def _get_dictionary_from_obj(self, obj):
+    #     return obj.term.dictionaries.first()
 
-    def _get_dictionary_lookup(self):
-        return 'term__dictionaries__in'
+    # def _get_dictionary_lookup(self):
+    #     return 'term__dictionaries__in'
 
     def list_groups(self, obj):
         return ", ".join([group.name for group in obj.groups.all()])

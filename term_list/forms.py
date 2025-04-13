@@ -4,23 +4,18 @@ from .models import (
     Concept, 
     ConceptExternalFiles, 
     AttributeValue,
-    GroupAttribute,
-    Attribute
+    ConfigurationOptions
 )
 
 from django import forms
-
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, Row, Column
-from crispy_forms.layout import Field
 from django.core.exceptions import ValidationError
 from pdb import set_trace
 
 import logging
-from .models import STATUS_CHOICES
+import json
+from .models import ConfigurationOptions
 
 logger = logging.getLogger(__name__)
-
 
 class CustomDateInput(forms.DateInput):
     input_type = 'date'
@@ -114,9 +109,24 @@ class TermRequestForm(forms.Form):
     namn = forms.CharField(max_length=100)
     epost =  forms.EmailField(max_length=254, label="E-post")
     file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
-
-
-
+      
+class PrettyDecodedJSONWidget(forms.Textarea):
+    def format_value(self, value):
+        try:
+            # Handle stringified JSON
+            if isinstance(value, str):
+                value = json.loads(value)
+            return json.dumps(value, indent=2, ensure_ascii=False)
+        except Exception:
+            return value
+        
+class ConfigurationOptionsForm(forms.ModelForm):
+    class Meta:
+        model = ConfigurationOptions
+        fields = '__all__'
+        widgets = {
+            'config': PrettyDecodedJSONWidget(attrs={'cols': 80, 'rows': 20}),
+        }
 
 class CommentTermForm(forms.Form):
 
@@ -239,6 +249,10 @@ class ConceptForm(GroupFilteredModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['status'].choices = forms.ChoiceField(
+                choices=ConfigurationOptions.get_status_choices(),
+                required=True
+        )
 
     def clean(self):
         
@@ -248,7 +262,7 @@ class ConceptForm(GroupFilteredModelForm):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
         
         return self.cleaned_data
-
+        
 class ConceptExternalFilesForm(forms.ModelForm):
 
     support_file = forms.FileField(label='Bifogad fil')

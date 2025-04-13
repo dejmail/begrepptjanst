@@ -7,6 +7,9 @@ from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
 
 
+import json
+from django.utils.safestring import mark_safe
+
 DEFAULT_STATUS = "Ej Påbörjad"
 
 CONCEPT_STATUS = (('Avråds', "Avråds"),
@@ -181,6 +184,15 @@ class ConfigurationOptions(models.Model):
     def __str__(self):
         return self.name
     
+    @classmethod
+    def get_status_choices(cls, name="concept-status-and-colour"):
+        try:
+            config = cls.objects.get(name=name).config or {}
+            return ((s["label"], s["label"]) for s in config.get("statuses", []))
+        except cls.DoesNotExist:
+            return []
+
+    
 # Word Model (Core Entity)
 class Concept(models.Model):
 
@@ -191,7 +203,7 @@ class Concept(models.Model):
 
     term = models.CharField(max_length=255)  # The word itself
     definition = models.TextField(null=True, blank=True)  # Primary definition
-    status = models.CharField(choices=CONCEPT_STATUS, max_length=15, null=True)
+    status = models.CharField(max_length=15, null=True)
     changed_at = models.DateTimeField(null=True, auto_now=True, verbose_name='Senaste ändring')
     created_at = models.DateTimeField(null=True, auto_now_add=True, verbose_name='Datum skapat')
     history = HistoricalRecords(['changed_at', 'definition'])
@@ -299,7 +311,7 @@ class AttributeValue(models.Model):
     get_attribute_name.short_description = "Attribute"
 
     def __str__(self):
-        return str(self.attribute_id)
+        return str(self.get_value())
 
 
 class GroupHierarchy(models.Model):
