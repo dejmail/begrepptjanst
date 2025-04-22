@@ -185,7 +185,7 @@ class ConfigurationOptions(models.Model):
         return self.name
     
     @classmethod
-    def get_status_choices(cls, name="concept-status-and-colour"):
+    def get_status_choices(cls, name="status-and-colour"):
         try:
             config = cls.objects.get(name=name).config or {}
             return ((s["label"], s["label"]) for s in config.get("statuses", []))
@@ -311,7 +311,9 @@ class AttributeValue(models.Model):
     get_attribute_name.short_description = "Attribute"
 
     def __str__(self):
-        return str(self.get_value())
+        value = self.get_value()
+        return f"{self.attribute.name}: {value}"
+        #if value is not None else f"{self.attribute.name}: <inget värde>"
 
 
 class GroupHierarchy(models.Model):

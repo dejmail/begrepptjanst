@@ -45,9 +45,3 @@ STATIC_URL = '/begreppstjanst-eav/static/'
 # media files 
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst-eav/media'
-EMAIL_HOST = 'mail.vgrinformatik.se'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'info@vgrinformatik.se'
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-EMAIL_USE_TLS = True
-

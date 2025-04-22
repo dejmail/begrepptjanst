@@ -1,5 +1,7 @@
 {% load static %}
 {% load crispy_forms_filters %}
+{% load status_tags %}
+
 
 {% block mitten-span %}
 
@@ -9,15 +11,15 @@
         <div class="searchTable">
         <table id="term_metadata_table" class="table table-bordered">
             <tbody>
-                <tr class="{{colour_status.concept}}">
+                <tr class="{{ concept.status|status_colour:status_config }}">
                     <td>Status</td>
                     <td>{{concept.status}}</td>
                 </tr>
-                <tr class="{{colour_status.concept}}">
+                <tr class="{{ concept.status|status_colour:status_config }}">
                     <td>Term</td>
                     <td>{{concept.term}}</td>
                 </tr>
-                <tr class="{{colour_status.concept}}">
+                <tr class="{{ concept.status|status_colour:status_config }}">
                     <td>Definition</td>
                     <td>{{concept.definition}}</td>
                 </tr>
@@ -29,7 +31,7 @@
                             {% if synonym.synonym is not None %}
                             <li>
                                 {% if synonym.synonym_status == "Avråds" %}
-                                    <span class="text-danger" aria-label="Synonym avråds: {{synonym.synonym}}">
+                                    <span class="{{ synonym.synonym_status|status_colour:status_config }}" aria-label="Synonym avråds: {{synonym.synonym}}">
                                         <s class="strike">{{synonym.synonym}}</s>
                                     </span>
                                 {% else %}

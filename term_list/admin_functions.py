@@ -16,6 +16,8 @@ from django.core.exceptions import ValidationError
 from django.urls import path, reverse
 from django.shortcuts import render, redirect
 from django.utils.html import format_html
+from django.contrib.admin.actions import delete_selected
+from django.contrib.admin.utils import model_ngettext
 
 
 import pandas as pd
@@ -91,14 +93,32 @@ class DictionaryRestrictedAdminMixin:
     def has_change_permission(self, request, obj=None):
         if obj is None or request.user.is_superuser:
             return True
-        return obj.dictionaries.filter(dictionary_id__in=self.get_accessible_dictionaries(request)).exists()
+        
+        try:
+            # If it's an AttributeValue object with a linked Concept via `.term`
+            concept = obj.term if hasattr(obj, 'term') and hasattr(obj.term, 'dictionaries') else obj
+            return concept.dictionaries.filter(
+                dictionary_id__in=self.get_accessible_dictionaries(request)
+            ).exists()
+        except Exception as e:
+            print(f"DEBUG >>> has_change_permission failed: {e}")
+            return False
 
     def has_delete_permission(self, request, obj=None):
+
         if obj is None or request.user.is_superuser:
             return True
+
+        return self._user_has_dictionary_access(request, obj)
+
+    def _user_has_dictionary_access(self, request, obj):
         
-        return obj.dictionaries.filter(dictionary_id__in=self.get_accessible_dictionaries(request)).exists()
+        dictionary = self._get_dictionary_from_obj(obj)
+        if dictionary is None:
+            return False
         
+        return dictionary.pk in self.get_accessible_dictionaries(request).values_list("pk", flat=True)
+
     def has_add_permission(self, request):
         if request.user.is_superuser:
             return True
@@ -113,8 +133,23 @@ class DictionaryRestrictedAdminMixin:
         """We want all the dictionaries and terms to be visible to the user"""
         return super().get_queryset(request)
     
-    def _get_dictionary_from_obj(self, obj):
+    def get_actions(self, request):
+        """Ensure delete_selected is available unless explicitly overridden"""
+        actions = super().get_actions(request)
+        if 'delete_selected' not in actions:
+            actions['delete_selected'] = (
+                delete_selected,
+                'delete_selected',
+                f"Delete selected {model_ngettext(self.opts, 2)}"
+            )
+        return actions
+
+    def _get_dictionary_from_obj(self, request, obj):
         raise NotImplementedError("Subclasses must implement _get_dictionary_from_obj")
+
+        # dictionary = self._get_dictionary_from_obj(obj)
+
+        # return dictionary in self.get_accessible_dictionaries(request)
 
     def _get_dictionary_lookup(self):
         raise NotImplementedError("Subclasses must implement _get_dictionary_lookup")

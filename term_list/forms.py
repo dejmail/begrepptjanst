@@ -247,21 +247,43 @@ class ConceptForm(GroupFilteredModelForm):
                       'definition': 'Visas som HTML på framsidan',
                       'källa': 'Rullistan visar termer redan i DB'}
         
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
+        
         super().__init__(*args, **kwargs)
-        self.fields['status'].choices = forms.ChoiceField(
+        self.user = user
+        self.fields['status'] = forms.ChoiceField(
                 choices=ConfigurationOptions.get_status_choices(),
                 required=True
         )
+        if user and not user.is_superuser and 'dictionaries' in self.fields:
+            self.fields['dictionaries'].queryset = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
 
+        
     def clean(self):
         
+        print(f'DEBUG ->> {self.user=}')
         cleaned_definition = self.cleaned_data.get('definition')
+        cleaned_data = super().clean()
+
         
         if any((c in ['{', '}', '½']) for c in cleaned_definition):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
         
-        return self.cleaned_data
+        if (not hasattr(self, 'user')) or (self.user is None):
+            set_trace()
+            raise Exception("Form is missing 'user'. Make sure it's passed from the admin.")
+
+        
+        user = self.user
+        if user and not user.is_superuser:
+            selected_dictionaries = cleaned_data.get("dictionaries")
+            allowed = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
+
+            unauthorized = selected_dictionaries.exclude(pk__in=allowed.values_list("pk", flat=True))
+            if unauthorized.exists():
+                raise ValidationError("Du har inte behörighet att koppla detta begrepp till en eller flera av de valda ordlistorna.")
+
+        return cleaned_data
         
 class ConceptExternalFilesForm(forms.ModelForm):
 

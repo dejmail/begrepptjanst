@@ -68,7 +68,7 @@ body {
 th {
   position: sticky;
   top: 0; 
-  background: white;
+  /* background: transparent; */
   z-index: 2000;
   }
 
@@ -148,14 +148,14 @@ text-decoration: line-through;
     padding-top: 1em;
   }
 
-  .tag-avrådd {
+  .tag-red {
     border-color: #f44336;
     background-color: rgba(255, 0, 0, 0.8);
     color: white;
     border-radius: 4px;
   }
 
-  .btn-avrådd {
+  .btn-red {
       border-color: #f44336;
       background-color: rgba(255, 0, 0, 0.8);
       color: white;
@@ -169,22 +169,22 @@ text-decoration: line-through;
       border-radius: 4px;
     }
 
-  .tag-grön {
+  .tag-green {
     background-color: rgb(105, 189, 27);
   }
 
-.btn-grön {
+.btn-green {
       border-color: rgb(105, 189, 27);
       background-color: rgb(105, 189, 27);
       color: rgb(0, 0, 0);
       border-radius: 4px;
     }
 
-.tag-oklart{
+.tag-orange{
 background-color: rgb(255, 126, 41);
 }
 
-.btn-oklart {
+.btn-orange {
       border-color: rgb(255, 126, 41);
       background-color: rgb(255, 126, 41);
       color: black;
@@ -368,9 +368,9 @@ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
 }
 
 /* Specific colors for different statuses */
-.table-success { background-color: #d4edda;}
-.table-warning { background-color: #fff3cd;}
-.table-danger { background-color: #f8d7da;}
+.table-green { background-color: #d4edda;}
+.table-yellow { background-color: #fff3cd;}
+.table-red { background-color: #f8d7da;}
 
 /* Styling for text inside the indicators */
 .text-smaller {

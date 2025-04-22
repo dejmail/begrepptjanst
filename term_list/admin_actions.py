@@ -21,6 +21,17 @@ from pdb import set_trace
 from typing import List
 from django.db.models import QuerySet
 from django.http import HttpRequest
+import traceback
+
+from django.contrib.admin.utils import get_deleted_objects
+from django.contrib.admin import helpers
+from django.template.response import TemplateResponse
+from django.core.exceptions import PermissionDenied
+from django.db import router, transaction
+from django.contrib import messages
+from django.utils.translation import gettext_lazy as _
+from django.utils.html import format_html
+
 
 from term_list.models import Dictionary, Attribute
 from term_list.forms import ColumnMappingForm, ExcelImportForm
@@ -71,7 +82,6 @@ def export_chosen_concept_as_csv(request: HttpRequest,
     # Formatting
     bold = workbook.add_format({'bold': True})
 
-    # set_trace()
     # Write Header Row
     worksheet.write_row(0, 0, selected_fields, bold)
 
@@ -111,8 +121,12 @@ def export_chosen_concept_as_csv(request: HttpRequest,
     return response
 
 def delete_allowed_concepts(modeladmin, request, queryset):
+
+    opts = modeladmin.model._meta
+    app_label = opts.app_label
+
     accessible_dictionaries = modeladmin.get_accessible_dictionaries(request)
-    deletable = queryset.filter(dictionaries__in=accessible_dictionaries).distinct()
+    deletable = [obj for obj in queryset if modeladmin._user_has_dictionary_access(request, obj)]
 
     if not deletable:
         modeladmin.message_user(
@@ -122,21 +136,59 @@ def delete_allowed_concepts(modeladmin, request, queryset):
         )
         return
 
-    try:
-        with transaction.atomic():
-            count = deletable.count()
-            deletable.delete()
+    if request.POST.get("post"):
+        try:
+            with transaction.atomic():
+                count = len(deletable)
+                for obj in deletable:
+                    obj.delete()
+                modeladmin.message_user(
+                    request,
+                    f"Raderade {count} begrepp/term.",
+                    level=messages.SUCCESS
+                )
+        except Exception as e:
             modeladmin.message_user(
                 request,
-                f"Raderade {count} begrepp.",
-                level=messages.SUCCESS
+                f"Ett fel uppstod under radering: {str(e)}",
+                level=messages.ERROR
             )
-    except Exception as e:
-        modeladmin.message_user(
-            request,
-            f"Ett fel uppstod under radering: {str(e)}",
-            level=messages.ERROR
+        return None
+    
+    using = router.db_for_write(modeladmin.model)
+    try:
+        deletable_objects, model_count, perms_needed, protected = get_deleted_objects(
+            objs=deletable,
+            request=request,
+            admin_site=modeladmin.admin_site
         )
+        print(f'{perms_needed=}')
+    except Exception as e:
+        traceback.print_exc()
+        raise
+    
+    if perms_needed:
+        raise PermissionDenied(
+            "Du har inte tillräckliga rättigheter för att radera dessa objekt."
+        )
+    
+    context = {
+        **modeladmin.admin_site.each_context(request),
+        "title": _("Är du säker?"),
+        "objects_name": str(opts.verbose_name_plural),
+        "deletable_objects": deletable_objects,
+        "queryset": deletable,
+        "opts": opts,
+        "app_label": app_label,
+        "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+    }
+
+    return TemplateResponse(
+        request,
+        "admin/delete_selected_intermediate.html",
+        context
+    )
+
 
 delete_allowed_concepts.short_description = "Radera valda begrepp (om tillåtet)"
 

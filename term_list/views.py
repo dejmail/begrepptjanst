@@ -39,18 +39,18 @@ from term_list.functions import (HTML_TAGS, Xlator, mäta_förklaring_träff,
                               mäta_sök_träff, replace_nbs_with_normal_space)
 from term_list.models import (Concept, ConceptExternalFiles, Dictionary, Synonym, 
                            Concept, ConceptComment, Attribute, AttributeValue,
-                           GroupAttribute, TaskOrderer)
+                           GroupAttribute, TaskOrderer, ConfigurationOptions)
 
 
 logger = logging.getLogger(__name__)
 
 re_pattern = re.compile(r'\s+')
 
-COLOUR_STATUS_DICT = {'Avråds' : 'table-danger',
-                    'Avställd' : 'table-danger',
-                    'Beslutad': 'table-success',
-                    'Pågår': 'table-warning',
-                    'Ej Påbörjad': 'table-warning',
+COLOUR_STATUS_DICT = {'Avråds' : 'table-red',
+                    'Avställd' : 'table-red',
+                    'Beslutad': 'table-green',
+                    'Pågår': 'table-yellow',
+                    'Ej Påbörjad': 'table-yellow',
                     'Publiceras ej' : 'table-light-blue'}
 
 ATTRIBUTE_VALUE_FIELDS = {
@@ -608,11 +608,13 @@ def assemble_search_results_view(url_parameter, dictionary):
 
     styled_results = mark_fields_as_safe_html(styled_results, ['definition',])
 
+    status_config = ConfigurationOptions.objects.get(name="status-and-colour").config
+
     html = render_to_string(
         template_name="term_results_partial.html", 
         context={
             'styled_results': styled_results,
-            'colour_status' : COLOUR_STATUS_DICT,
+            "status_config": status_config,
             'search_results' : search_results,
             'searched_for_term' : url_parameter,
             'chosen_dictionary' : Dictionary.objects.get(
@@ -678,9 +680,11 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse:
 
         combined_fields = sorted(combined_fields, key=lambda x: (x['position']))
 
+        status_config = ConfigurationOptions.objects.get(name="status-and-colour").config
+
         template_context = {'concept': single_term.get('concept'),
                             'attributes' : combined_fields,
-                            'colour_status' : status_colour_dict}
+                            'status_config' : status_config}
         
         html = render_to_string(template_name="term_metadata_ajax.html", context=template_context)
 

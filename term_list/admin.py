@@ -13,6 +13,10 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
+
+from django.contrib import messages
+
+
 from rangefilter.filters import DateRangeFilterBuilder
 from simple_history.admin import SimpleHistoryAdmin
 from django.http import HttpResponse
@@ -33,6 +37,8 @@ from term_list.admin_actions import (
     export_chosen_concepts_action,
     delete_allowed_concepts
 )
+from django.contrib.admin.actions import delete_selected
+
 
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
@@ -345,8 +351,11 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     inlines = [AttributeValueInline]
 
     def _get_dictionary_from_obj(self, obj):
-        # For Concept, it has ManyToMany so pick one (simplified logic)
-        return obj.dictionaries
+        return obj.dictionaries.first()
+
+    # def _get_dictionary_from_obj(self, obj):
+    #     # For Concept, it has ManyToMany so pick one (simplified logic)
+    #     return obj.dictionaries
 
     def _get_dictionary_lookup(self):
         return 'dictionaries__in'
@@ -359,13 +368,13 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
 
     def status_button(self, obj):
         status_classes = {
-        'Avråds': 'tag tag-avrådd text-monospace',
-        'Avrådd': 'tag tag-avrådd text-monospace',
-        'Avställd': 'tag tag-avrådd text-monospace',
+        'Avråds': 'tag tag-red text-monospace',
+        'Avrådd': 'tag tag-red text-monospace',
+        'Avställd': 'tag tag-red text-monospace',
         'Publicera ej': 'tag tag-light-blue text-monospace dark-text',
-        'Pågår': 'tag tag-oklart light-text text-monospace',
-        'Ej Påbörjad': 'tag tag-oklart light-text text-monospace',
-        'Beslutad': 'tag tag-grön light-text text-monospace'
+        'Pågår': 'tag tag-orange light-text text-monospace',
+        'Ej Påbörjad': 'tag tag-orange dark-text text-monospace',
+        'Beslutad': 'tag tag-green light-text text-monospace'
         }
 
         css_class = status_classes.get(obj.status, 'tag btn-white dark-text text-monospace')
@@ -395,7 +404,19 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
             )
         
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
-    
+
+
+    def get_form(self, request, obj=None, **kwargs):
+        form_class = super().get_form(request, obj, **kwargs)
+
+        class FormWithUser(form_class):
+            def __init__(self2, *args, **kwargs2):
+                print("✅ Injecting user:", request.user)
+                kwargs2['user'] = request.user
+                super().__init__(*args, **kwargs2)
+
+        return FormWithUser
+
     def get_queryset(self, request):
 
         """
@@ -427,7 +448,6 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         logger.debug(f"POST data received: {request.POST}")
         super().save_model(request, obj, form, change)
 
-
     def save_related(self, request, form, formsets, change):
         """
         After saving the Concept and its ManyToMany relationships,
@@ -435,10 +455,11 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         """
         super().save_related(request, form, formsets, change)
 
-        # Now that ManyToMany relationships are saved, proceed with AttributeValues
-        concept = form.instance  # Get the current Concept instance
-        
+        # # Now that ManyToMany relationships are saved, proceed with AttributeValues
+        concept = form.instance  # Get the current Concept instance                
+
         if concept.dictionaries.exists():
+            # set_trace()
             # Step 1: Get all related Group IDs from the selected Dictionaries
             group_ids = concept.dictionaries.values_list('groups__id', flat=True)
             
@@ -509,6 +530,8 @@ class AttributeAdmin(admin.ModelAdmin):
 class AttributeValueAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     model = AttributeValue
+    actions = [delete_selected]
+
 
     list_display = ['term', 'attribute__display_name', 'get_value', 'term__dictionaries__dictionary_long_name']
 
