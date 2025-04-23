@@ -120,9 +120,13 @@ def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) 
     Search for concepts based on attributes or related data.
     """
     logger.debug(f'Searching for {url_parameter} within Concepts')
+    excluded_statuses = ConfigurationOptions.get_excluded_statuses()
+    
     # Step 1: Get Concepts that match `term` or `definition`
-    queryset = Concept.objects.exclude(status='Publicera ej').filter(
-        Q(term__icontains=url_parameter) | Q(definition__icontains=url_parameter)
+    queryset = Concept.objects.exclude(status__in=excluded_statuses).filter(
+        Q(term__icontains=url_parameter) | 
+        Q(definition__icontains=url_parameter) |
+        Q(synonyms__synonym__icontains=url_parameter)
     ).distinct()
     
     logger.debug(f'Filtering for {url_parameter} within Attributes')
@@ -138,17 +142,13 @@ def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) 
 
     # Step 3: Combine both searches (Concept matches + Attribute matches)
     matched_concepts = Concept.objects.filter(
-        Q(id__in=queryset.values_list('id', flat=True)) | Q(id__in=attribute_query)
+        Q(id__in=queryset.values_list('id', flat=True)) | 
+        Q(id__in=attribute_query)
     ).distinct()
 
     matched_attribute_values = AttributeValue.objects.filter(term__in=matched_concepts)
 
-
     logger.debug(f'Filtering Concept queryset with Attribute queryset')
-    
-    # # Extend queryset with an attribute matches OR filter so that all concepts with results are retrieved
-    #queryset = Concept.objects.filter(Q(id__in=queryset.values_list('id', flat=True)) | Q(id__in=attribute_query)).distinct()
-
     logger.debug(f'Returning concepts within a chosen dictionary - {dictionary}')
     
     queryset = get_prefetched_queryset(queryset, dictionary)

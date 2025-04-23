@@ -191,6 +191,14 @@ class ConfigurationOptions(models.Model):
             return ((s["label"], s["label"]) for s in config.get("statuses", []))
         except cls.DoesNotExist:
             return []
+        
+    @classmethod
+    def get_excluded_statuses(cls, name="status-exclude"):
+        try:
+            config = cls.objects.get(name=name).config or {}
+            return [s["label"] for s in config.get("statuses", []) if s.get("exclude")]
+        except cls.DoesNotExist:
+            return []
 
     
 # Word Model (Core Entity)
