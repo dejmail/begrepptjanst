@@ -411,7 +411,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
 
         class FormWithUser(form_class):
             def __init__(self2, *args, **kwargs2):
-                print("✅ Injecting user:", request.user)
+                logger.info("✅ Injecting user:", request.user)
                 kwargs2['user'] = request.user
                 super().__init__(*args, **kwargs2)
 
@@ -531,7 +531,6 @@ class AttributeValueAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     model = AttributeValue
     actions = [delete_selected]
-
 
     list_display = ['term', 'attribute__display_name', 'get_value', 'term__dictionaries__dictionary_long_name']
 

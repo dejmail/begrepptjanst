@@ -258,10 +258,8 @@ class ConceptForm(GroupFilteredModelForm):
         if user and not user.is_superuser and 'dictionaries' in self.fields:
             self.fields['dictionaries'].queryset = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
 
-        
     def clean(self):
         
-        print(f'DEBUG ->> {self.user=}')
         cleaned_definition = self.cleaned_data.get('definition')
         cleaned_data = super().clean()
 

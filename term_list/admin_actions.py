@@ -162,7 +162,7 @@ def delete_allowed_concepts(modeladmin, request, queryset):
             request=request,
             admin_site=modeladmin.admin_site
         )
-        print(f'{perms_needed=}')
+        logger.debug(f'{perms_needed=}')
     except Exception as e:
         traceback.print_exc()
         raise

@@ -101,7 +101,7 @@ class DictionaryRestrictedAdminMixin:
                 dictionary_id__in=self.get_accessible_dictionaries(request)
             ).exists()
         except Exception as e:
-            print(f"DEBUG >>> has_change_permission failed: {e}")
+            logger.error(f"DEBUG >>> has_change_permission failed: {e}")
             return False
 
     def has_delete_permission(self, request, obj=None):
