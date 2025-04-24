@@ -366,6 +366,18 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
             del actions['delete_selected']
         return actions
 
+    def get_inline_instances(self, request, obj=None):
+        instances = []
+        for inline_class in self.inlines:
+            inline = inline_class(self.model, self.admin_site)
+            inline.parent_model_admin = self  # Still assign for safety
+            # Wrap get_formset to pass the parent
+            original_get_formset = inline.get_formset
+            inline.get_formset = lambda request, obj=None, **kwargs: \
+                original_get_formset(request, obj, parent_model_admin=self, **kwargs)
+            instances.append(inline)
+        return instances
+    
     def status_button(self, obj):
         status_classes = {
         'Avråds': 'tag tag-red text-monospace',
@@ -593,7 +605,6 @@ class GroupAttributeAdmin(admin.ModelAdmin):
 
     list_display = ['group__name', 'attribute__display_name', 'position']
 
-# admin.site.register(Begrepp, BegreppAdmin)
 # admin.site.register(TaskOrderer, TaskOrdererAdmin)
 admin.site.register(Dictionary, DictionaryAdmin)
 admin.site.register(Synonym, SynonymAdmin)
@@ -604,6 +615,6 @@ admin.site.register(ConceptExternalFiles,ConceptExternalFilesAdmin)
 admin.site.register(ConfigurationOptions, ConfigurationOptionsAdmin)
 admin.site.register(Concept, ConceptAdmin)
 admin.site.register(Attribute, AttributeAdmin)
-admin.site.register(AttributeValue,AttributeValueAdmin)
+# admin.site.register(AttributeValue,AttributeValueAdmin)
 admin.site.register(GroupHierarchy)
 admin.site.register(GroupAttribute, GroupAttributeAdmin)

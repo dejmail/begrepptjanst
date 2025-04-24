@@ -58,6 +58,19 @@ def conditional_lowercase(cell):
     return ' '.join(new_word)
 
 class DictionaryRestrictedInlineMixin:
+
+    parent_model_admin = None  # Default to None for clarity
+
+    def get_formset(self, request, obj=None, **kwargs):
+        self.parent_model_admin = kwargs.pop('parent_model_admin', None)
+        return super().get_formset(request, obj, **kwargs)
+    
+    def _require_parent_admin(self):
+        if not self.parent_model_admin:
+            raise AttributeError(
+                f"{self.__class__.__name__} requires 'parent_model_admin' to be set."
+            )
+        
     def has_change_permission(self, request, obj=None):
         if obj is None or request.user.is_superuser:
             return True
