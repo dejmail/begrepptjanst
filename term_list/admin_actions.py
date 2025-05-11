@@ -120,19 +120,26 @@ def export_chosen_concept_as_csv(request: HttpRequest,
     
     return response
 
-def delete_allowed_concepts(modeladmin, request, queryset):
-
+def delete_allowed_objects(
+    modeladmin, request, queryset, *,
+    object_label="objekt",
+    permission_check=None
+):
     opts = modeladmin.model._meta
     app_label = opts.app_label
-
     accessible_dictionaries = modeladmin.get_accessible_dictionaries(request)
-    deletable = [obj for obj in queryset if modeladmin._user_has_dictionary_access(request, obj)]
+
+    # Use provided permission checker or fallback to modeladmin
+    if permission_check is None:
+        permission_check = modeladmin._user_has_dictionary_access
+
+    deletable = [obj for obj in queryset if permission_check(request, obj)]
 
     if not deletable:
         modeladmin.message_user(
             request,
-                "Inga av de valda begreppen kan raderas baserat på dina gruppbehörigheter.",
-            level=messages.WARNING
+            f"Inga av de valda {object_label} kan raderas baserat på dina gruppbehörigheter.",
+            level=messages.WARNING,
         )
         return
 
@@ -144,40 +151,37 @@ def delete_allowed_concepts(modeladmin, request, queryset):
                     obj.delete()
                 modeladmin.message_user(
                     request,
-                    f"Raderade {count} begrepp/term.",
-                    level=messages.SUCCESS
+                    f"Raderade {count} {object_label}.",
+                    level=messages.SUCCESS,
                 )
         except Exception as e:
             modeladmin.message_user(
                 request,
                 f"Ett fel uppstod under radering: {str(e)}",
-                level=messages.ERROR
+                level=messages.ERROR,
             )
-        return None
-    
+        return redirect(request.get_full_path())
+
     using = router.db_for_write(modeladmin.model)
-    try:
-        deletable_objects, model_count, perms_needed, protected = get_deleted_objects(
-            objs=deletable,
-            request=request,
-            admin_site=modeladmin.admin_site
-        )
-        logger.debug(f'{perms_needed=}')
-    except Exception as e:
-        traceback.print_exc()
-        raise
-    
+    deletable_objects, model_count, perms_needed, protected = get_deleted_objects(
+        objs=deletable,
+        request=request,
+        admin_site=modeladmin.admin_site,
+    )
+
     if perms_needed:
         raise PermissionDenied(
-            "Du har inte tillräckliga rättigheter för att radera dessa objekt."
+            f"Du har inte tillräckliga rättigheter för att radera dessa {object_label}."
         )
-    
+
+    set_trace()
     context = {
         **modeladmin.admin_site.each_context(request),
-        "title": _("Är du säker?"),
+        "title": "Är du säker?",
         "objects_name": str(opts.verbose_name_plural),
         "deletable_objects": deletable_objects,
         "queryset": deletable,
+        "action": request.POST.get("action"),
         "opts": opts,
         "app_label": app_label,
         "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
@@ -186,12 +190,8 @@ def delete_allowed_concepts(modeladmin, request, queryset):
     return TemplateResponse(
         request,
         "admin/delete_selected_intermediate.html",
-        context
+        context,
     )
-
-
-delete_allowed_concepts.short_description = "Radera valda begrepp (om tillåtet)"
-
 
 
 def change_dictionaries(modeladmin, request, queryset):

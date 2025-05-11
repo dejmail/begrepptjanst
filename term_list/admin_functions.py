@@ -59,32 +59,43 @@ def conditional_lowercase(cell):
 
 class DictionaryRestrictedInlineMixin:
 
-    parent_model_admin = None  # Default to None for clarity
+    parent_model_admin = None  # Assigned by the parent ModelAdmin
 
     def get_formset(self, request, obj=None, **kwargs):
         self.parent_model_admin = kwargs.pop('parent_model_admin', None)
         return super().get_formset(request, obj, **kwargs)
-    
+
     def _require_parent_admin(self):
         if not self.parent_model_admin:
             raise AttributeError(
                 f"{self.__class__.__name__} requires 'parent_model_admin' to be set."
             )
-        
-    def has_change_permission(self, request, obj=None):
+
+    def get_accessible_dictionaries(self, request):
+        self._require_parent_admin()
+        return self.parent_model_admin.get_accessible_dictionaries(request)
+
+    def _has_permission(self, request, obj):
+        self._require_parent_admin()
         if obj is None or request.user.is_superuser:
             return True
-        return self._get_dictionary_from_obj(obj) in self.parent_model_admin.get_accessible_dictionaries(request)
+
+        obj_dicts = self._get_dictionary_from_obj(request, obj)
+        accessible = self.get_accessible_dictionaries(request)
+        return obj_dicts in accessible
+
+
+    def has_change_permission(self, request, obj=None):
+        return self._has_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        if obj is None or request.user.is_superuser:
-            return True
-        return self._get_dictionary_from_obj(obj) in self.parent_model_admin.get_accessible_dictionaries(request)
+        return self._has_permission(request, obj)
 
     def has_add_permission(self, request, obj=None):
+        self._require_parent_admin()
         if request.user.is_superuser:
             return True
-        return self.parent_model_admin.get_accessible_dictionaries(request).exists()
+        return self.get_accessible_dictionaries(request).exists()
 
     def get_readonly_fields(self, request, obj=None):
         if obj and not self.has_change_permission(request, obj):
@@ -92,31 +103,47 @@ class DictionaryRestrictedInlineMixin:
         return super().get_readonly_fields(request, obj)
 
 
+
 class DictionaryRestrictedAdminMixin:
     """
-    Mixin for Django Admin to restrict change/delete/add access based on
-    the dictionaries linked to the user's groups.
+    Mixin for Django admin classes that restricts object edit permissions
+    based on the user's access to related dictionaries.
+    
+    Assumes that the model (or its related model) has a ManyToManyField to Dictionary
+    accessible via .dictionaries or .concept.dictionaries.
     """
 
     def get_accessible_dictionaries(self, request):
+        if not request or not hasattr(request, "user"):
+            logger.error('[Permission Check] No request or user found')
+            return Dictionary.objects.none()
         if request.user.is_superuser:
             return Dictionary.objects.all()
         return Dictionary.objects.filter(groups__in=request.user.groups.all()).distinct()
 
     def has_change_permission(self, request, obj=None):
         if obj is None or request.user.is_superuser:
+            logger.debug("Allowing change: no object or user is superuser")
             return True
-        
-        try:
-            # If it's an AttributeValue object with a linked Concept via `.term`
-            concept = obj.term if hasattr(obj, 'term') and hasattr(obj.term, 'dictionaries') else obj
-            return concept.dictionaries.filter(
-                dictionary_id__in=self.get_accessible_dictionaries(request)
-            ).exists()
-        except Exception as e:
-            logger.error(f"DEBUG >>> has_change_permission failed: {e}")
-            return False
 
+        try:
+            dictionaries = self._get_dictionary_from_obj(request, obj)
+            logger.debug(f"Resolved dictionaries: {dictionaries}")
+
+            if not dictionaries.exists():
+                logger.debug("No dictionary found — denying change")
+                return False
+
+            accessible_ids = self.get_accessible_dictionaries(request).values_list('dictionary_id', flat=True)
+            result = dictionaries.filter(dictionary_id__in=accessible_ids).exists()
+
+            logger.debug(f"Change permission result: {result}")
+            return result
+
+        except Exception as e:
+            logger.error(f"[Permission Check] has_change_permission failed for {obj}: {e}")
+            return False
+        
     def has_delete_permission(self, request, obj=None):
 
         if obj is None or request.user.is_superuser:
@@ -126,11 +153,28 @@ class DictionaryRestrictedAdminMixin:
 
     def _user_has_dictionary_access(self, request, obj):
         
-        dictionary = self._get_dictionary_from_obj(obj)
-        if dictionary is None:
+        dictionary_qs = self._get_dictionary_from_obj(request, obj)
+
+        if dictionary_qs is None:
             return False
         
-        return dictionary.pk in self.get_accessible_dictionaries(request).values_list("pk", flat=True)
+        return dictionary_qs.filter(dictionary_id__in=self.get_accessible_dictionaries(request)
+                                            .values_list('dictionary_id', flat=True)).exists()
+
+    def _get_related_dictionary(self, obj):
+        """Tries to extract a single related dictionary from the object."""
+        try:
+            if hasattr(obj, "term") and hasattr(obj.term, "dictionary"):
+                return obj.term.dictionary
+            if hasattr(obj, "concept") and hasattr(obj.concept, "dictionaries"):
+                return obj.concept.dictionaries.first()
+            if hasattr(obj, "dictionaries"):
+                return obj.dictionaries.first()
+            if hasattr(obj, "dictionary_name"):
+                return obj
+        except Exception as e:
+            logger.warning(f"Could not resolve dictionary for {obj}: {e}")
+        return "No dictionary found"
 
     def has_add_permission(self, request):
         if request.user.is_superuser:
@@ -159,10 +203,6 @@ class DictionaryRestrictedAdminMixin:
 
     def _get_dictionary_from_obj(self, request, obj):
         raise NotImplementedError("Subclasses must implement _get_dictionary_from_obj")
-
-        # dictionary = self._get_dictionary_from_obj(obj)
-
-        # return dictionary in self.get_accessible_dictionaries(request)
 
     def _get_dictionary_lookup(self):
         raise NotImplementedError("Subclasses must implement _get_dictionary_lookup")
@@ -471,21 +511,28 @@ class DuplicateTermFilter(admin.SimpleListFilter):
 
 
 class DictionaryFilter(admin.SimpleListFilter):
-    title = 'term_list'
-    parameter_name = 'term_list'
+    title = 'ordbok'
+    parameter_name = 'dictionary'
 
     def lookups(self, request, model_admin):
-        # Returns a list of tuples. The first element in each tuple is the coded value for the option that will appear in the URL query. The second element is the human-readable name for the option that will appear in the right sidebar.
-        dictionaries = Dictionary.objects.values('dictionary_name').annotate(name_count=Count('dictionary_name')).filter(name_count__gt=0).distinct()
-        lookups = [(dictionary['dictionary_name'], dictionary['dictionary_name']) for dictionary in dictionaries]
-        lookups.append(('no_dictionary', 'Inga Ordböcker'))
-        return  lookups
+        # Works for both Concept and Synonym, via concept__dictionaries or dictionaries
+        return [
+            (d.dictionary_name, d.dictionary_long_name)
+            for d in Dictionary.objects.annotate(count=Count('concept')).filter(count__gt=0)
+        ] + [('no_dictionary', 'Inga Ordböcker')]
 
     def queryset(self, request, queryset):
+        model = queryset.model.__name__.lower()
+
         if self.value() == 'no_dictionary':
-            # Filter for Concept instances without an associated Dictionary
-            return queryset.filter(dictionaries__isnull=True)
+            if model == 'concept':
+                return queryset.filter(dictionaries__isnull=True)
+            elif model == 'synonym':
+                return queryset.filter(concept__dictionaries__isnull=True)
         elif self.value():
-            # Filter for Concept instances with the selected Dictionary name
-            return queryset.filter(dictionaries__dictionary_name=self.value())
+            if model == 'concept':
+                return queryset.filter(dictionaries__dictionary_name=self.value())
+            elif model == 'synonym':
+                return queryset.filter(concept__dictionaries__dictionary_name=self.value())
+
         return queryset

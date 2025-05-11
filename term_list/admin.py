@@ -13,6 +13,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
+from django.core.exceptions import PermissionDenied
 
 from django.contrib import messages
 
@@ -35,7 +36,7 @@ from term_list.forms import ConceptExternalFilesForm, ChooseExportAttributes
 from term_list.admin_actions import (
     change_dictionaries, 
     export_chosen_concepts_action,
-    delete_allowed_concepts
+    delete_allowed_objects
 )
 from django.contrib.admin.actions import delete_selected
 
@@ -126,26 +127,67 @@ class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
     list_filter = ("dictionary_name",)
     #search_fields = ('begrepp__term',)
 
+    def _get_dictionary_from_obj(self,  request, obj):
+        print("✅ DictionaryAdmin._get_dictionary_from_obj called")
+        return Dictionary.objects.filter(pk=obj.pk)
+        # return dictionary_qs
+        # return super()._get_dictionary_from_obj(request, obj)
+
 class SynonymAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
     
     ordering = ['concept__term']
     list_display = ('concept',
-                    # 'begrepp',
                     'synonym',
-                    'synonym_status')
+                    'synonym_status',
+                    'get_dictionaries',)
 
     list_select_related = (
         'concept',
     )
-    list_filter = ("synonym_status",)
+    list_filter = ("synonym_status", DictionaryFilter)
     search_fields = ("concept__term", "synonym")
+
+    def _get_dictionary_from_obj(self, request, obj):
+        return obj.concept.dictionaries.all() if obj and obj.concept else Dictionary.objects.none()
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        return actions
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+    
+    @admin.action(description="Radera valda synonymer")
+    def delete_synonyms(modeladmin, request, queryset):
+
+        return delete_allowed_objects(
+            modeladmin,
+            request,
+            queryset,
+            object_label="synonymer",
+            permission_check=modeladmin._user_has_dictionary_access
+        )
+    
+    actions = [delete_synonyms]
+  
+
+    def has_delete_permission(self, request, obj=None):
+        return True
+
+    def get_dictionaries(self, obj):
+        # Assuming term has a many-to-many relationship to dictionaries
+        
+        return ", ".join(d.dictionary_long_name for d in obj.concept.dictionaries.all())
+    get_dictionaries.short_description = "Ordböcker"
+
 
 class ConceptExternalFileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.label_suffix = ""  # Removes the ":" after the label
-
-
 
 class ContextFilesInline(admin.StackedInline):
 
@@ -266,7 +308,7 @@ class AttributeValueInline(DictionaryRestrictedInlineMixin, admin.StackedInline)
     can_delete = False
     template = "admin/edit_inline/stacked.html" 
 
-    def _get_dictionary_from_obj(self, obj):
+    def _get_dictionary_from_obj(self, request, obj):
 
         return obj.dictionaries.first()
 
@@ -350,15 +392,20 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     
     inlines = [AttributeValueInline]
 
-    def _get_dictionary_from_obj(self, obj):
-        return obj.dictionaries.first()
-
-    # def _get_dictionary_from_obj(self, obj):
-    #     # For Concept, it has ManyToMany so pick one (simplified logic)
-    #     return obj.dictionaries
+    def _get_dictionary_from_obj(self, request, obj):
+        return obj.dictionaries.all() if obj else Dictionary.objects.none()
 
     def _get_dictionary_lookup(self):
         return 'dictionaries__in'
+    
+    @admin.action(description="Radera valda begrepp")
+    def delete_concepts(modeladmin, request, queryset):
+        return delete_allowed_objects(
+            modeladmin,
+            request,
+            queryset,
+            object_label="begrepp",
+        )
     
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -524,7 +571,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         return response
     
     export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
-    actions = [export_chosen_concepts_action, delete_allowed_concepts]
+    actions = [export_chosen_concepts_action, delete_concepts]
 
 class AttributeAdmin(admin.ModelAdmin):
 
@@ -558,7 +605,7 @@ class AttributeValueAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
     'value_url'
     ]
 
-    def _get_dictionary_from_obj(self, obj):
+    def _get_dictionary_from_obj(self, request, obj):
         return obj.term.dictionaries.first()
 
     def _get_dictionary_lookup(self):
