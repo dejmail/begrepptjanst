@@ -1,0 +1,148 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-05-10 07:23+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: templates/admin/base_original.html:28
+msgid "Skip to main content"
+msgstr "Hoppa till huvudinnehåll"
+
+#: templates/admin/base_original.html:43
+msgid "Welcome,"
+msgstr "Välkommen"
+
+#: templates/admin/base_original.html:48
+msgid "View site"
+msgstr "Visa på webbplatsen"
+
+#: templates/admin/base_original.html:53
+msgid "Documentation"
+msgstr "Dokumentation"
+
+#: templates/admin/base_original.html:57
+msgid "Change password"
+msgstr "Ändra lösenord"
+
+#: templates/admin/base_original.html:61
+msgid "Log out"
+msgstr "Logga ut"
+
+#: templates/admin/base_original.html:73
+msgid "Breadcrumbs"
+msgstr ""
+
+#: templates/admin/base_original.html:76 templates/admin/change_form.html:18
+#: templates/admin/change_form_old.html:18 templates/admin/change_list.html:32
+#: templates/admin/delete_selected_intermediate.html:14
+msgid "Home"
+msgstr "Hem"
+
+#: templates/admin/change_dictionary_action.html:12
+msgid "Select Dictionaries to apply to the selected Begrepp"
+msgstr "Välja Ordböcker som Begrepp ska ingå i "
+
+#: templates/admin/change_dictionary_action.html:13
+msgid "Dictionaries"
+msgstr "Ordböcker"
+
+#: templates/admin/change_dictionary_action.html:19
+msgid "Select Dictionary"
+msgstr "Välja Ordböcker"
+
+#: templates/admin/change_form.html:21 templates/admin/change_form_old.html:21
+#, python-format
+msgid "Add %(name)s"
+msgstr ""
+
+#: templates/admin/change_form.html:43 templates/admin/change_form_old.html:43
+#: templates/admin/change_list.html:52
+msgid "Please correct the error below."
+msgid_plural "Please correct the errors below."
+msgstr[0] "Vänligen korrigera nedanför felet"
+msgstr[1] "Vänligen korrigera nedanför felen"
+
+#: templates/admin/change_form.html:43 templates/admin/change_form_old.html:43
+msgid "Please correct the errors below."
+msgstr "Vänligen korrigera nedanför felen"
+
+#: templates/admin/change_list.html:77
+msgid "Filter"
+msgstr "Filtrera"
+
+#: templates/admin/change_list.html:79
+msgid "Clear all filters"
+msgstr "Nollställa alla filtrar"
+
+#: templates/admin/delete_selected_intermediate.html:17
+msgid "Delete multiple objects"
+msgstr "Radera flera objekt"
+
+#: templates/admin/delete_selected_intermediate.html:23
+#, python-format
+msgid ""
+"Deleting the selected %(objects_name)s would result in deleting related "
+"objects, but your account doesn't have permission to delete the following "
+"types of objects:"
+msgstr ""
+"Att ta bort valda %(objects_name)s skulle innebära att relaterade objekt också tas bort, "
+"men ditt konto har inte behörighet att ta bort följande typer av objekt:"
+
+#: templates/admin/delete_selected_intermediate.html:26
+#, python-format
+msgid ""
+"Deleting the selected %(objects_name)s would require deleting the following "
+"protected related objects:"
+msgstr ""
+"Att ta bort valda %(objects_name)s skulle kräva att följande skyddade relaterade "
+"objekt tas bort:"
+
+#: templates/admin/delete_selected_intermediate.html:29
+#, python-format
+msgid ""
+"Are you sure you want to delete the selected %(objects_name)s? All of the "
+"following objects and their related items will be deleted:"
+msgstr ""
+"Är du säker på att du vill ta bort de valda %(objects_name)s? Alla följande objekt "
+"och deras relaterade poster kommer att tas bort:"
+
+#: templates/admin/delete_selected_intermediate.html:31
+msgid "Objects"
+msgstr "Objekt"
+
+#: templates/admin/delete_selected_intermediate.html:52
+msgid "Yes, I’m sure"
+msgstr "Ja, jag är säker"
+
+#: templates/admin/delete_selected_intermediate.html:53
+msgid "No, take me back"
+msgstr "Nej, gå tillbaka"
+
+#: templates/admin/edit_inline/stacked.html:47
+msgid "View on site"
+msgstr "Visa på webbplatsen"
+
+#: templates/admin/multiple_status_filter.html:2
+#, python-format
+msgid " By %(filter_title)s "
+msgstr " Efter %(filter_title)s "
+
+msgid "From date"
+msgstr "Från datum"
+
+msgid "To date"
+msgstr "Till datum"
