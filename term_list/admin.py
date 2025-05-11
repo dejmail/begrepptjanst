@@ -518,7 +518,6 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         concept = form.instance  # Get the current Concept instance                
 
         if concept.dictionaries.exists():
-            # set_trace()
             # Step 1: Get all related Group IDs from the selected Dictionaries
             group_ids = concept.dictionaries.values_list('groups__id', flat=True)
             

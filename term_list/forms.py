@@ -268,10 +268,8 @@ class ConceptForm(GroupFilteredModelForm):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
         
         if (not hasattr(self, 'user')) or (self.user is None):
-            set_trace()
             raise Exception("Form is missing 'user'. Make sure it's passed from the admin.")
 
-        
         user = self.user
         if user and not user.is_superuser:
             selected_dictionaries = cleaned_data.get("dictionaries")

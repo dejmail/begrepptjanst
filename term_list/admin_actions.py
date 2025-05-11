@@ -174,7 +174,6 @@ def delete_allowed_objects(
             f"Du har inte tillräckliga rättigheter för att radera dessa {object_label}."
         )
 
-    set_trace()
     context = {
         **modeladmin.admin_site.each_context(request),
         "title": "Är du säker?",
