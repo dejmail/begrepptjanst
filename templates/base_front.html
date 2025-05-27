@@ -2,154 +2,169 @@
 <!doctype html>
 {% load static %}
 <html lang="sv">
+
 <head>
   <!-- Required meta tags -->
   <title style="font-family: frutiger;">VGR Informatik och Standardisering - OLLI Begreppstjänst</title>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="43200" />
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
   <link rel="icon" type="image/png" href="{% static '/images/favicon-32x32.png' %}" sizes="32x32" />
   <link rel="icon" type="image/png" href="{% static '/images/favicon-16x16.png' %}" sizes="16x16" />
 
-  {% block base_static %}  
-      <script src="{% static '/javascript/jquery-3.4.1.min.js' %}"></script>
-      <!-- Bootstrap CDN -->
-      <script src="{% static '/javascript/popper.min.js' %}" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-      <script src="{% static '/javascript/bootstrap.min.js' %}" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-      <script src="{% static 'javascript/tooltipDefinitions.js' %}"></script>
+  {% block base_static %}
+  <script src="{% static '/javascript/jquery-3.4.1.min.js' %}"></script>
+  <!-- Bootstrap CDN -->
+  <script src="{% static '/javascript/popper.min.js' %}"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="{% static '/javascript/bootstrap.min.js' %}"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+  <script src="{% static 'javascript/tooltipDefinitions.js' %}"></script>
 
-      <link rel="stylesheet" href="{% static '/css/bootstrap.min.css' %}" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-      <link rel="stylesheet" href="{% static '/css/all.css' %}" integrity="sha384-auPUsi7xBPi42agztVxY2mYib6liO5KcD0wN/aupjzbo895Nad/WXtxjqvuSZaxL" >
-      <link rel="stylesheet" href="{% static '/css/main.css' %}" media="screen">
+  <link rel="stylesheet" href="{% static '/css/bootstrap.min.css' %}"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static '/css/all.css' %}"
+    integrity="sha384-auPUsi7xBPi42agztVxY2mYib6liO5KcD0wN/aupjzbo895Nad/WXtxjqvuSZaxL">
+  <link rel="stylesheet" href="{% static '/css/main.css' %}" media="screen">
   {% endblock base_static %}
-  {% block extra_head_static %}  
-  {% endblock extra_head_static %}  
+  {% block extra_head_static %}
+  {% endblock extra_head_static %}
 </head>
-<body>
-{% endblock preamble %}
-<div class="container-fluid">
-  {% load crispy_forms_tags %}
-  {% block header %}
-      {% block header_row1 %}
 
-      <div class="container-fluid">
-      <div class="row align-items-center top-buffer-15" style="position: relative; vertical-align: middle; text-align: center;">
+<body>
+  {% endblock preamble %}
+  <div class="container-fluid">
+    {% load crispy_forms_tags %}
+    {% block header %}
+    {% block header_row1 %}
+
+    <div class="container-fluid">
+      <div class="row align-items-center top-buffer-15"
+        style="position: relative; vertical-align: middle; text-align: center;">
         {% block header_row1_column_left %}
-            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-              <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.SVG'%}" alt="Västra Götalands Region logo">
-            </div>
+        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+          <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.SVG'%}"
+            alt="Västra Götalands Region logo">
+        </div>
         {% endblock header_row1_column_left %}
         {% block header_row1_column_center %}
-            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
-              
-              <div class="row" id="header_row"> 
-                <div class="col-2 mt-3" id="header_left_column"></div>
-                <header class="col-8 text-center mt-3" id="header_center_column">
-                  <h3>
-                      <a href="{% url 'concept' %}" style="text-decoration: none; color: inherit;" class="non-ajax-link">
-                          OLLI Begreppstjänst (beta)
-                      </a>
-                  </h3>
-              </header>                            
-                <div class="col-2" id="header_left_column"></div>
-              </div>
-              <div class="row" id="thermos_flask_icon_row">
-                <div class="text-center col-12 top-buffer-10">
-                  <img src="{% static '/images/termos.png' %}" alt="OLLI logo av en termos dvs term + mos">
-                </div>
-              </div>
+        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+
+          <div class="row" id="header_row">
+            <div class="col-2 mt-3" id="header_left_column"></div>
+            <header class="col-8 text-center mt-3" id="header_center_column">
+              <h3>
+                <a href="{% url 'concept' %}" style="text-decoration: none; color: inherit;" class="non-ajax-link">
+                  OLLI Begreppstjänst (beta)
+                </a>
+              </h3>
+            </header>
+            <div class="col-2" id="header_left_column"></div>
+          </div>
+          <div class="row" id="thermos_flask_icon_row">
+            <div class="text-center col-12 top-buffer-10">
+              <img src="{% static '/images/termos.png' %}" alt="OLLI logo av en termos dvs term + mos">
             </div>
+          </div>
+        </div>
         {% endblock header_row1_column_center %}
         {% block header_row1_column_right %}
-            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 1%; vertical-align: middle;">
+        <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 1%; vertical-align: middle;">
 
-              <div id="prenumera" data-toggle="tooltip" data-placement="right" title="Anmälan till utskick från OLLI" style="display: inline-block;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" stroke="black" stroke-width="6" fill="steelblue" viewBox="0 0 512 512" 
-                    data-toggle="modal" data-target="#newsletter_signup"  style="cursor: pointer;"
-                    tabindex="0" role="button" aria-label="Anmälan till utskick från OLLI" alt="Anmälan till utskick från OLLI">
-                    <path d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z"/>
-                </svg>
-            </div>
-            
+          <div id="prenumera" data-toggle="tooltip" data-placement="right" title="Anmälan till utskick från OLLI"
+            style="display: inline-block;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" stroke="black" stroke-width="6"
+              fill="steelblue" viewBox="0 0 512 512" data-toggle="modal" data-target="#newsletter_signup"
+              style="cursor: pointer;" tabindex="0" role="button" aria-label="Anmälan till utskick från OLLI"
+              alt="Anmälan till utskick från OLLI">
+              <path
+                d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z" />
+            </svg>
+          </div>
 
-            <div class="modal" role="dialog" id="newsletter_signup">
-              <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                  <div class="modal-header justify-content-center">
-                    <h5 class="modal-title">Anmälan till utskick från OLLI</h5>
-                  </div>
-                  <div class="modal-body">
-                    <form class="form-group" action="{% url 'email_subscribe' %}" method="get">
-                      <label for="prenumera" class="sr-only">E-postadress:</label>
-                      <input type="email" class="form-control" id="prenumera" name="epost" placeholder="E-postadress" aria-label="E-postadress" required>
-                      <button type="submit" class="btn btn-primary mt-2">Prenumerera</button>
-                  </form>                  
-                  </div>
-                  
+
+          <div class="modal" role="dialog" id="newsletter_signup">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header justify-content-center">
+                  <h5 class="modal-title">Anmälan till utskick från OLLI</h5>
                 </div>
+                <div class="modal-body">
+                  <form class="form-group" action="{% url 'email_subscribe' %}" method="get">
+                    <label for="prenumera" class="sr-only">E-postadress:</label>
+                    <input type="email" class="form-control" id="prenumera" name="epost" placeholder="E-postadress"
+                      aria-label="E-postadress" required>
+                    <button type="submit" class="btn btn-primary mt-2">Prenumerera</button>
+                  </form>
+                </div>
+
               </div>
             </div>
-        
-            <div  style="display : inline-block;">
-            <svg stroke="black"  width="5" height="50">
+          </div>
+
+          <div style="display : inline-block;">
+            <svg stroke="black" width="5" height="50">
               <line x1="2" y1="0" x2="2" y2="60"></line>
             </svg>
 
-            <button onclick="scrollToHelp()"type="button" style="font-family: frutiger; background-color:#006298;" class="btn btn-info btn-md">
-                Hjälp!
+            <button onclick="scrollToHelp()" type="button" style="font-family: frutiger; background-color:#006298;"
+              class="btn btn-info btn-md">
+              Hjälp!
             </button>
           </div>
 
 
-            
-          </div>
-        {% endblock header_row1_column_right %}
-          </div>
-        </div>
-      
-      {% endblock header_row1 %}
-  {% block header_row2 %}
-  {% endblock header_row2 %}
-  {% block header_row3 %}
-  {% endblock header_row3 %}
 
-  {% endblock header %}
-  {% block search_bar %}
+        </div>
+        {% endblock header_row1_column_right %}
+      </div>
+    </div>
+
+    {% endblock header_row1 %}
+    {% block header_row2 %}
+    {% endblock header_row2 %}
+    {% block header_row3 %}
+    {% endblock header_row3 %}
+
+    {% endblock header %}
+    {% block search_bar %}
     {% block search_left_column %}
     {% endblock search_left_column %}
     {% block search_middle_column %}
     {% endblock search_middle_column %}
     {% block search_right_column %}
     {% endblock search_right_column %}
-  {% endblock search_bar %}  
-  {% block replaceable-content %}
-  <div class="row mt-10" id="replaceable-content-row">
-    <div class="col-2" id="replaceable-content-left-column"></div>
-    <div class="col-8 text-left top-buffer-15" id="replaceable-content-middle-column"></div>
-    <div class="col-2" id="replaceable-content-right-column"></div>
-  </div>
-  {% endblock replaceable-content %}  
-  {% block mitten-span %}
-  <div class="row mt-1" id="display-row">
-    {% block display-left-column %}
-    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-left-column">
-      {% include 'colour_explanation_panel.html' %}
+    {% endblock search_bar %}
+    {% block replaceable-content %}
+    <div class="row mt-10" id="replaceable-content-row">
+      <div class="col-2" id="replaceable-content-left-column"></div>
+      <div class="col-8 text-left top-buffer-15" id="replaceable-content-middle-column"></div>
+      <div class="col-2" id="replaceable-content-right-column"></div>
     </div>
-    {% endblock display-left-column %}
-    {% block display-middle-column %}
-    <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column"></div>
-    {% endblock display-middle-column %}
-    {% block display-right-column %}
-    <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 scrollable-content" id="display-right-column">
+    {% endblock replaceable-content %}
+    {% block mitten-span %}
+    <div class="row mt-1" id="display-row">
+      {% block display-left-column %}
+      <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0" id="display-left-column">
+        {% include 'colour_explanation_panel.html' %}
+      </div>
+      {% endblock display-left-column %}
+      {% block display-middle-column %}
+      <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column"></div>
+      {% endblock display-middle-column %}
+      {% block display-right-column %}
+      <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 scrollable-content" id="display-right-column">
         <!-- Container for tooltips and the close button -->
         <div class="tooltip-container" role="region" aria-labelledby="tooltip-container-label">
           <h2 id="tooltip-container-label" class="sr-only">Tooltips</h2>
           <button id="close-all-tooltips" aria-label="Close all tooltips" style="display: none;">Close All</button>
           <div class="tooltip-area">
-              <!-- Tooltips will be appended here -->
+            <!-- Tooltips will be appended here -->
           </div>
         </div>
 
@@ -160,91 +175,111 @@
 
   {% include "help_text_and_video.html" %}
 
-  {% endblock mitten-span %}   
+  {% endblock mitten-span %}
   {% block footer %}
   {% endblock footer %}
 
-{% block endbody %}
+  {% block endbody %}
 
 
-</div>
+  </div>
 
 </body>
+
 </html>
 {% endblock endbody %}
 
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
 <script>
-function no_search_result(requested_term, chosen_dictionary)
-
-    {
+  function no_search_result(requested_term, chosen_dictionary) {
     $.ajax({
-    type: "get", 
-    dataType: "html",
-    url: "{% url 'no_search_result' %}?q="+requested_term+"&dictionary="+chosen_dictionary,
-    success: function(data) {
-      var display_html = data.html_from_view;
-      document.getElementById("colour-panel").style.display = "none";
-      $('#display-middle-column').html(data);      
-      changeBrowserURL(data, this.url);
-    popStateHandler();
-    
-    }
+      type: "get",
+      dataType: "html",
+      url: "{% url 'no_search_result' %}?q=" + requested_term + "&dictionary=" + chosen_dictionary,
+      success: function (data) {
+        var display_html = data.html_from_view;
+        document.getElementById("colour-panel").style.display = "none";
+        $('#display-middle-column').html(data);
+        changeBrowserURL(data, this.url);
+        popStateHandler();
+
+      }
     })
-    }
-
-function populate_request_form(requested_term,chosen_dictionary)
-    {
-    $.ajax({
-        type: "GET",
-        dataType: "html",
-        headers: {"X-CUSTOM-REQUESTED-WITH": "XMLHttpRequest"},
-        url: "{% url 'request_new_term' %}?q="+requested_term+"&dictionary="+chosen_dictionary,
-        beforeSend: function() {
-          document.getElementById("colour-panel").style.display = "none";
-          closeAllTooltips();
-        },
-        success: function(data) {
-          var display_html = data.html_from_view;
-          $('#display-middle-column').html(data);
-          changeBrowserURL(data, this.url);
-          popStateHandler();
-        },
-        error: function() {
-        $('#display-middle-column').html('<div id="error-message" class="alert alert-danger d-none" role="alert"><strong>Error:</strong>Har skett ett fel, vänligen försök igen.</div>');
-        },
-        });
-    };
-
-function scrollToHelp()
-{
-  toggle_element("replaceable-content-middle-column");
-  $('#display-middle-column').empty(); 
-  var x = document.getElementById("helpInfo");
-  if (x.style.display === "none") {
-    x.style.display = "block";
-  } else {
-    x.style.display = "none";
   }
-  var elmnt = document.getElementById("helpInfo");
-  elmnt.scrollIntoView({behavior : 'smooth'});
-}
 
-function clear_mittenspanrow() {
-  $('#helpInfo').hide();
+  function populate_request_form(requested_term, chosen_dictionary) {
+    $.ajax({
+      type: "GET",
+      dataType: "html",
+      headers: { "X-CUSTOM-REQUESTED-WITH": "XMLHttpRequest" },
+      url: "{% url 'request_new_term' %}?q=" + requested_term + "&dictionary=" + chosen_dictionary,
+      beforeSend: function () {
+        document.getElementById("colour-panel").style.display = "none";
+        closeAllTooltips();
+      },
+      success: function (data) {
+        var display_html = data.html_from_view;
+        $('#display-middle-column').html(data);
+        changeBrowserURL(data, this.url);
+        popStateHandler();
+      },
+      error: function () {
+        $('#display-middle-column').html('<div id="error-message" class="alert alert-danger d-none" role="alert"><strong>Error:</strong>Har skett ett fel, vänligen försök igen.</div>');
+      },
+    });
+  };
 
-}
-
-document.querySelector('#prenumera svg').addEventListener('keydown', function(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault(); // Prevent default action (like scrolling for Space key)
-        
-        // Trigger the Bootstrap modal programmatically
-        $('#newsletter_signup').modal('show');
+  function scrollToHelp() {
+    toggle_element("replaceable-content-middle-column");
+    $('#display-middle-column').empty();
+    var x = document.getElementById("helpInfo");
+    if (x.style.display === "none") {
+      x.style.display = "block";
+    } else {
+      x.style.display = "none";
     }
-});
+    var elmnt = document.getElementById("helpInfo");
+    elmnt.scrollIntoView({ behavior: 'smooth' });
+  }
 
+  function clear_mittenspanrow() {
+    $('#helpInfo').hide();
+
+  }
+
+  document.querySelector('#prenumera svg').addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault(); // Prevent default action (like scrolling for Space key)
+
+      // Trigger the Bootstrap modal programmatically
+      $('#newsletter_signup').modal('show');
+    }
+  });
+
+
+  // This must be called after the modal is added to the DOM
+  function bindModalInertLogic() {
+    const mainContent = document.getElementById('display-middle-column');
+
+    $('#commentModal')
+      .off('show.bs.modal')  // Clean up old bindings if reloaded
+      .on('show.bs.modal', function () {
+        console.log('Modal opening: adding inert to main content');
+        if (mainContent) {
+          mainContent.setAttribute('inert', '');
+        }
+      })
+      .off('hidden.bs.modal')
+      .on('hidden.bs.modal', function () {
+        console.log('Modal closed: removing inert from main content');
+        if (mainContent) {
+          mainContent.removeAttribute('inert');
+        }
+        const openBtn = document.getElementById('open-comment-button');
+        if (openBtn) openBtn.focus();
+      });
+  }
 
 </script>
 {% endblock extra_javascript %}

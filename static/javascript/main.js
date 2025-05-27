@@ -1,17 +1,17 @@
 const user_input = $("#user-input");
 const search_icon = $('#search-icon');
 const concept_div = $('#display-middle-column');
-const rootUrl =  window.location.href;
+const rootUrl = window.location.href;
 
 function endpoint_check() {
-    
-    if (location.hostname == "127.0.0.1") { 
-		const endpoint = '/';
-		return endpoint
+
+    if (location.hostname == "127.0.0.1") {
+        const endpoint = '/';
+        return endpoint
     } else {
-		const endpoint = document.URL;
-		return endpoint
-	} 
+        const endpoint = document.URL;
+        return endpoint
+    }
 
 }
 
@@ -23,17 +23,17 @@ const delay_by_in_ms = 1000
 let scheduled_function = false
 
 function toggle_element(element_id) {
-	var div = document.getElementById(element_id);
-	while(div.firstChild) {
-		div.removeChild(div.firstChild);
-	}
+    var div = document.getElementById(element_id);
+    while (div.firstChild) {
+        div.removeChild(div.firstChild);
+    }
 }
 
 function toggleHelp() {
     document.getElementById("helpInfo").classList.toggle("hidden");
 }
 
-function toggleVisibility(elementId, status='toggle') {
+function toggleVisibility(elementId, status = 'toggle') {
     const element = document.getElementById(elementId);
     if (element) {
         if (element.classList.contains('d-none') && status === 'off') {
@@ -45,9 +45,9 @@ function toggleVisibility(elementId, status='toggle') {
         } else if (status === 'toggle') {
             element.classList.toggle('d-none');
         }
-    else {
-        console.error(`Element with ID '${elementId}' not found.`);
-    }
+        else {
+            console.error(`Element with ID '${elementId}' not found.`);
+        }
     }
 }
 
@@ -60,9 +60,9 @@ function toggleVisibility(elementId, status='toggle') {
 const ajax_call = function (endpoint, requestParameters) {
 
     console.log('inside ajax_call function');
-    console.log('requestParameters:', requestParameters);   
+    console.log('requestParameters:', requestParameters);
     console.log('endpoint.href', endpoint.href);
-    
+
     let customHeaders = new Headers({
         "X-CUSTOM-REQUESTED-WITH": "XMLHttpRequest",
     });
@@ -70,36 +70,36 @@ const ajax_call = function (endpoint, requestParameters) {
         method: 'GET',
         credentials: 'same-origin',
         headers: customHeaders
-                },        
-        )
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();  // Assuming the response is in JSON format
-    })
-    .then(responseData => {
-        console.log("document.URL", document.URL);
-        console.log("endpoint", endpoint);
-        changeBrowserURL(responseData, endpoint);
-        toggle_element("replaceable-content-middle-column");
-        toggle_element("display-middle-column");
-        clear_mittenspanrow();
-        
-        // fade out the concept_div, then:
-        concept_div.fadeTo('fast', 0).promise().then(() => {
-            // replace the HTML contents
-            concept_div.html(responseData);
-            // fade-in the div with new contents
-            concept_div.fadeTo('fast', 1);
-            // stop animating search icon
-            search_icon.removeClass('blink');
-            popStateHandler();
+    },
+    )
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();  // Assuming the response is in JSON format
+        })
+        .then(responseData => {
+            console.log("document.URL", document.URL);
+            console.log("endpoint", endpoint);
+            changeBrowserURL(responseData, endpoint);
+            toggle_element("replaceable-content-middle-column");
+            toggle_element("display-middle-column");
+            clear_mittenspanrow();
+
+            // fade out the concept_div, then:
+            concept_div.fadeTo('fast', 0).promise().then(() => {
+                // replace the HTML contents
+                concept_div.html(responseData);
+                // fade-in the div with new contents
+                concept_div.fadeTo('fast', 1);
+                // stop animating search icon
+                search_icon.removeClass('blink');
+                popStateHandler();
+            });
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
 
     popStateHandler();
 };
@@ -114,16 +114,16 @@ $("#user-input").keyup(function (event) {
     toggle_element("replaceable-content-middle-column");
     toggleVisibility('colour-panel', 'off');
     closeAllTooltips();
-    
+
     const requestParameters = {
         dictionary: $('[name="dictionary"]').val(),
-        q: $(this).val() 
+        q: $(this).val()
     }
-    
+
     const url = new URL(rootUrl);
     const params = new URLSearchParams(requestParameters);
     url.search = params.toString();
-        
+
     if (requestParameters.q.length > 1) {
         // Start animating the search icon with the CSS class
         search_icon.addClass('blink');
@@ -142,42 +142,42 @@ $("#user-input").keyup(function (event) {
             ajax_call(url, requestParameters);
         }, delay_by_in_ms);
     }
-    
+
 });
 
 
 // 
-document.getElementById('dictionary-select').addEventListener('change', function() {
+document.getElementById('dictionary-select').addEventListener('change', function () {
     document.getElementById('display-middle-column').innerHTML = '';
-    document.getElementById('display-right-column').innerHTML = ''; 
+    document.getElementById('display-right-column').innerHTML = '';
     toggleVisibility('colour-panel', 'off');
     document.getElementById('user-input').value = '';
 
 });
 
 
-document.body.addEventListener("click", function(e) {
-	// e.target was the clicked element
+document.body.addEventListener("click", function (e) {
+    // e.target was the clicked element
     if (e.target.classList.contains('non-ajax-link')) {
         console.log('Following a non-ajax-link')
         return
     }
-	if(e.target && e.target.nodeName == "A") {
-    // Stop the browser redirecting to  the HREF value.
-    e.preventDefault();    
-    console.log("sending", e.target.id, "ID to URL", e.target.href);
-    // Attach event listeners for browser history and hash changes.
-    
-    const url = new URL(e.target.href);
-    const requestParameters = {
-        dictionary: url.searchParams.get('dictionary'), 
-        q: url.searchParams.get('q') 
+    if (e.target && e.target.nodeName == "A") {
+        // Stop the browser redirecting to  the HREF value.
+        e.preventDefault();
+        console.log("sending", e.target.id, "ID to URL", e.target.href);
+        // Attach event listeners for browser history and hash changes.
+
+        const url = new URL(e.target.href);
+        const requestParameters = {
+            dictionary: url.searchParams.get('dictionary'),
+            q: url.searchParams.get('q')
+        }
+        //changeBrowserURL(null, e.target.href);            
+        // Get page and replace current content.
+        ajax_call(url, requestParameters);
+        popStateHandler();
     }
-    //changeBrowserURL(null, e.target.href);            
-	// Get page and replace current content.
-	ajax_call(url, requestParameters);
-	popStateHandler();
-	}
 });
 
 /*
@@ -185,14 +185,14 @@ document.body.addEventListener("click", function(e) {
 */
 
 function changeBrowserURL(data, href) {
-	// Change URL with browser address bar using the HTML5 History API.
-	if (history.pushState) {
-	  console.log('in changeBrowserURL function, changing URL to', href)
-	  // Parameters: data, page title, URL
-	  history.pushState(data, null, href);
-	}
-	
-   };
+    // Change URL with browser address bar using the HTML5 History API.
+    if (history.pushState) {
+        console.log('in changeBrowserURL function, changing URL to', href)
+        // Parameters: data, page title, URL
+        history.pushState(data, null, href);
+    }
+
+};
 
 /*
  * Function to detect when back and forward buttons clicked.
@@ -201,15 +201,15 @@ function changeBrowserURL(data, href) {
  * the browser cannot re-render the AJAX content between state changes.
  */
 function popStateHandler() {
-	// FF, Chrome, Safari, IE9.
-	if (history.pushState) {
-	  // Event listener to capture when user pressing the back and forward buttons within the browser.
-	  console.log('popStateHandler  - history.pushState variable exists');
-	  window.addEventListener("popstate", function(e) {
-		// Get the URL from the address bar and fetch the page.
-		console.log('popstateHandler eventlistener fired, next stop getPage function')
-		$('#display-middle-column').html(history.state);
-		//getPage(document.URL);
-	  });
-}
+    // FF, Chrome, Safari, IE9.
+    if (history.pushState) {
+        // Event listener to capture when user pressing the back and forward buttons within the browser.
+        console.log('popStateHandler  - history.pushState variable exists');
+        window.addEventListener("popstate", function (e) {
+            // Get the URL from the address bar and fetch the page.
+            console.log('popstateHandler eventlistener fired, next stop getPage function')
+            $('#display-middle-column').html(history.state);
+            //getPage(document.URL);
+        });
+    }
 };

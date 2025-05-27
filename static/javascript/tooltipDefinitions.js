@@ -23,11 +23,11 @@
 // });
 
 $("#colour-panel").removeClass('d-none');
-$("#colour-explanation").click(function(){
+$("#colour-explanation").click(function () {
     $("#colour-panel").toggle();
-    });
+});
 
-  
+
 if (typeof currentTerm === 'undefined') {
     var currentTerm = null;
 }
@@ -36,10 +36,10 @@ function sanitizeId(id) {
     return id.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-]/g, '');
 }
 
-document.querySelectorAll('.tooltip').forEach(function(tooltip) {
-    tooltip.addEventListener('click', function(event) {
+document.querySelectorAll('.tooltip').forEach(function (tooltip) {
+    tooltip.addEventListener('click', function (event) {
         const tooltipText = tooltip.querySelector('.tooltiptext');
-        
+
         // Toggle visibility
         tooltipText.style.visibility = tooltipText.style.visibility === 'visible' ? 'hidden' : 'visible';
         tooltipText.style.opacity = tooltipText.style.opacity === '1' ? '0' : '1';
@@ -49,21 +49,27 @@ document.querySelectorAll('.tooltip').forEach(function(tooltip) {
     });
 });
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     document.body.addEventListener('click', (e) => {
-        if (e.target.classList.contains('term')) {
-            handleTermInteraction(e.target);
-        } else {
-            // Hide definition when clicking outside
-            console.log('Not clicking on a tooltip definition');
-            // hideAllDefinitions();
+        const termElement = e.target.closest('span.term');
+        if (termElement) {
+            console.log('Clicked on a tooltip definition');
+            handleTermInteraction(termElement);
+            return; // stops here
         }
-    })
+
+        // Other clicks go through normally, allowing buttons etc. to fire their handlers
+        console.log('Not clicking on a tooltip definition');
+        // hideAllDefinitions(); // Only if you still need it
+    });
+
+
 
     document.body.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             hideAllDefinitions();
-        } else if (e.key === 'Enter' && e.target.classList.contains('term')) {
+        } else if (e.key === 'Enter' && e.target.closest.contains('span.term')) {
+            console.log('Clicked on a term');
             e.preventDefault();  // Prevent default Enter key behavior
             handleTermInteraction(e.target);
         }
@@ -88,18 +94,18 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             console.error('Definition element not found for ID:', definitionId);
         }
-    
+
     }
 
-    });
-  
+});
+
 function hideDefinition(definitionElement) {
     if (definitionElement) {
         definitionElement.hidden = true;
     }
     currentTerm = null;
 }
-  
+
 function hideAllDefinitions() {
     document.querySelectorAll('.definition').forEach(def => def.hidden = true);
     currentTerm = null;
@@ -143,7 +149,7 @@ function updateDefinitionsPosition() {
 function updateTooltips() {
     const definitions = document.querySelectorAll('.copied-definition');
     const closeAllButton = document.getElementById('close-all-tooltips');
-    
+
     if (definitions.length == 0) {
     }
     else if (definitions.length > 1) {
@@ -158,19 +164,19 @@ function showDefinition(term, definitionElement) {
 
     // New code to copy definition to right panel
     const rightColumn = document.getElementById('display-right-column');
-    
+
     // Create a new element for the copied definition
     const copiedDefinition = document.createElement('div');
     copiedDefinition.dataset.timestamp = Date.now();
     copiedDefinition.className = 'copied-definition';
     copiedDefinition.id = `copied-${definitionId}`;
-    
+
     const headerContainer = document.createElement('div');
     headerContainer.className = 'header-container';
 
     const heading = document.createElement('h5');
     heading.textContent = `${term.textContent}`;
-    
+
     const closeButton = document.createElement('button');
     closeButton.textContent = 'X';
     closeButton.className = 'close-definition';
@@ -183,8 +189,8 @@ function showDefinition(term, definitionElement) {
     content.textContent = definitionElement.textContent;
     copiedDefinition.appendChild(content);
 
-    
-    closeButton.onclick = function() {
+
+    closeButton.onclick = function () {
         rightColumn.removeChild(copiedDefinition);
         // updateTooltips(); // Update visbility after closing a tooltip
     };
@@ -200,8 +206,8 @@ function showDefinition(term, definitionElement) {
         // Toggle visibility of the existing copied definition
         // existingDefinition.style.display = existingDefinition.style.display === 'none' ? 'block' : 'none';
         existingDefinition.remove();
-        }
-        updateDefinitionsPosition();
+    }
+    updateDefinitionsPosition();
 }
 
 function closeAllTooltips() {
@@ -211,9 +217,9 @@ function closeAllTooltips() {
 }
 
 // Event listener for the "Close All Tooltips" button
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const closeAllButton = document.getElementById('close-all-tooltips');
-    
+
     if (closeAllButton) {
         closeAllButton.addEventListener('click', closeAllTooltips);
     }
