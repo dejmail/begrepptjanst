@@ -58,7 +58,7 @@
                     </td>
                     <td>
                         <button type="button" style="float:right; font-size:14px; background-color:#006298;"
-                            class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
+                            class="btn btn-info" data-toggle="modal" data-target="#comment-help">Hjälp</button>
                     </td>
                 </tr>
             </tfoot>
@@ -67,37 +67,48 @@
     </div>
 </div>
 
-<div class="modal" id="comment_help" role="dialog">
-    <div class="modal-dialog">
-        <!-- Modal content-->
+<div class="modal fade" id="comment-help" tabindex="-1" role="dialog" aria-labelledby="commentHelpLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
+
             <div class="modal-header">
-                <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
+                <h5 class="modal-title" id="commentHelpLabel">Instruktioner för kommentera</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Stäng">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+
             <div class="modal-body">
-                <h4>Kommentera begrepp</h4>
-                <p style="font-family: Calibri;">
-                    Funktionen Kommentera är tänkt att vara en möjlighet att framföra synpunkter om ett begrepp,
-                    hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma termer
-                    som kan vara aktuella, ev översättning m m. Det är viktigt att kommentaren tydligt anger vad
-                    som avses samt motiveras på ett adekvat sätt. Ange även den kontext som din kommentar gäller.
-                    Kommentarerna kommer sedan bearbetas av BegreppsByrån. <br>Gör så här:<br>
-                <ol style="font-family: Calibri;">
-                    <li>Tryck på knappen Kommentera</li>
-                    <li>Fyll i kontaktuppgifter men namn, E-post och telefon så att vi kan nå dig för att ställa frågor.
+                <h5>Kommentera begrepp</h5>
+                <p>
+                    Funktionen <strong>Kommentera</strong> är tänkt att vara en möjlighet att framföra synpunkter om ett
+                    begrepp, hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma
+                    termer som kan vara aktuella, ev. översättning m.m.
+                </p>
+                <p>
+                    Det är viktigt att kommentaren tydligt anger vad som avses samt motiveras på ett adekvat sätt. Ange
+                    även den kontext som din kommentar gäller. Kommentarerna kommer sedan bearbetas av BegreppsByrån.
+                </p>
+                <hr>
+                <p><strong>Gör så här:</strong></p>
+                <ol>
+                    <li>Tryck på knappen <em>Kommentera</em>.</li>
+                    <li>Fyll i kontaktuppgifter med namn, e-post och telefon så att vi kan nå dig för att ställa frågor.
                     </li>
                     <li>Avge dina kommentarer om begreppet. Var så tydlig du kan!</li>
-                    <li>Tryck på Skicka</li>
+                    <li>Tryck på <em>Skicka</em>.</li>
                 </ol>
-                <br>
-                </p>
             </div>
+
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Stäng</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Stäng</button>
             </div>
+
         </div>
     </div>
 </div>
+
 
 {% else %}
 <p>Ingen definition hittades...</p>

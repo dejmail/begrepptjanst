@@ -157,28 +157,32 @@ document.getElementById('dictionary-select').addEventListener('change', function
 
 
 document.body.addEventListener("click", function (e) {
-    // e.target was the clicked element
-    if (e.target.classList.contains('non-ajax-link')) {
-        console.log('Following a non-ajax-link')
-        return
-    }
-    if (e.target && e.target.nodeName == "A") {
-        // Stop the browser redirecting to  the HREF value.
-        e.preventDefault();
-        console.log("sending", e.target.id, "ID to URL", e.target.href);
-        // Attach event listeners for browser history and hash changes.
+    const link = e.target.closest('a'); // Handles clicks on nested elements like <span> inside <a>
 
-        const url = new URL(e.target.href);
-        const requestParameters = {
-            dictionary: url.searchParams.get('dictionary'),
-            q: url.searchParams.get('q')
-        }
-        //changeBrowserURL(null, e.target.href);            
-        // Get page and replace current content.
-        ajax_call(url, requestParameters);
-        popStateHandler();
+    if (!link) return; // Not a link
+
+    const linkUrl = new URL(link.href, window.location.origin);
+    const isExternal = linkUrl.origin !== window.location.origin;
+
+    if (isExternal || link.classList.contains('non-ajax-link')) {
+        console.log('Following external or non-ajax link:', link.href);
+        return; // Let the browser handle it
     }
+
+    // Internal link: intercept and AJAX it
+    e.preventDefault();
+
+    console.log("Intercepting link:", link.href);
+
+    const requestParameters = {
+        dictionary: linkUrl.searchParams.get('dictionary'),
+        q: linkUrl.searchParams.get('q'),
+    };
+
+    ajax_call(linkUrl, requestParameters);
+    popStateHandler();
 });
+
 
 /*
 * Function to modify URL within browser address bar.
