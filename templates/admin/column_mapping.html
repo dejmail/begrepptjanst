@@ -1,74 +1,92 @@
 {% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load static %}
+
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 <div id="content" class="">
 
-<h1>Mappnings förslag av Excel kolumnar och model attribut</h1>
+    <h3>{% translate 'Suggested mapping of Excel columns to model attribute' %}</h3>
 
-<h4>Anpassa där förslag är fel</h4>
+    <h4>{% translate 'Adjust where suggestion is wrong' %}</h4>
 
-<h4>
-    <ul>
-        <li>Om du INTE ange ett motsvarande fält, så importeras inte fältet.</li>
-        <li>Kolumnar utan värden ignoreras.</li>
-    </ul></h4>
+    <h4>
+        <ul>
+            <li>{% translate 'If you do not provide the target field, the column will not be imported.' %}</li>
+            <li>{% translate 'Columns without values are ignored.' %}</li>
+        </ul>
+    </h4>
 
-<form method="POST" id="column-mapping-form" class="admin-form">
-    <div class="form-container">
-    
-        {% csrf_token %}
-        <!-- <div class="form-row">
+    <form method="POST" id="column-mapping-form" class="admin-form">
+        <div class="form-container">
+
+            {% csrf_token %}
+            <!-- <div class="form-row">
             <label class="label" for="ignore-blank-columns">Ignorera kolumnar som är tomma</label>
             <input class="field" type="checkbox" id="ignore-blank-columns" name="ignore-blank-columns" value="False">        
         </div> -->
-        <!-- {{ mapping_form.excel_file }} -->
+            <!-- {{ mapping_form.excel_file }} -->
 
-        <!-- Loop through the form fields, except the dictionary field -->
-        <fieldset class="module aligned">
-            {% for field in mapping_form %}
-                {% if field.name != 'dictionary' %}
-                <div class="form-row">
-                    <div class="label">{{ field.label_tag }}</div>
-                    <div class="field">{{ field }}</div>
+            <!-- Loop through the form fields, except the dictionary field -->
+
+            <fieldset class="module aligned">
+                <div class="row font-weight-bold border-bottom pb-2 mb-2">
+                    <div class="col-md-6">{% trans "Excel column" %}</div>
+                    <div class="col-md-6">{% trans "Model attribute" %}</div>
+                </div>
+
+                {% for field in mapping_form %}
+                {% if field.name != 'dictionary' and field.name|lower != 'Excel file' %}
+                <div class="row align-items-center mb-2">
+                    <div class="col-md-6">
+                        {{field.label}}
+                    </div>
+                    <div class="col-md-6">
+                        {{field}}
+                    </div>
                 </div>
                 {% endif %}
-            {% endfor %}
-        </fieldset>
+                {% endfor %}
+            </fieldset>
 
-        <!-- Render the dictionary field only if it's not present in the Excel file -->
-        {% if not dictionary_in_excel %}
+
+            <!-- Render the dictionary field only if it's not present in the Excel file -->
+            {% if not dictionary_in_excel %}
             <div class="form-row">
-                    <div class="label">
-                        <label for="{{ mapping_form.dictionary.id_for_label }}" class="required">Välj ordbok:</label>
-                    </div>
-                    <div class="field">
-                        {{ mapping_form.dictionary }}
-                    </div>
+                <div class="label">
+                    <label for="{{ mapping_form.dictionary.id_for_label }}" class="required">
+                        {% translate 'Choose dictionary:' %}
+                    </label>
+                </div>
+                <div class="field">
+                    {{ mapping_form.dictionary }}
                 </div>
             </div>
+        </div>
 
         {% else %}
         <p class="form-info">
-            <strong>Vald ordbok:</strong> {{ chosen_dictionary }}
-          </p>
-          <input type="hidden" id="dictionary-in-file" name="dictionary-in-file" value="{{chosen_dictionary}}">
-        {% endif %}        
+            <strong>{% translate 'Chosen dictionary:' %}</strong> {{ chosen_dictionary }}
+        </p>
+        <input type="hidden" id="dictionary-in-file" name="dictionary-in-file" value="{{chosen_dictionary}}">
+        {% endif %}
 
         <input type="hidden" id="column_mapping_json" name="column_mapping_json">
         <input type="hidden" name="apply_mapping" id="apply_mapping_hidden" value="">
-        
+
         <div class="submit-row submit-row-left">
             <input type="submit" name="apply_mapping" class="default" value="Skicka Mappning">
         </div>
-    
-    </div>
+
+</div>
 </form>
 </div>
 
 <script>
-    document.getElementById('column-mapping-form').addEventListener('submit', function(event) {
+    document.getElementById('column-mapping-form').addEventListener('submit', function (event) {
         // Prevent form submission to collect data
         event.preventDefault();
-        
+
         var columnMapping = {};
         // Collect the column mappings from the form
         var formElements = document.getElementById('column-mapping-form').elements;
@@ -89,10 +107,6 @@
 </script>
 
 <style>
-    .form-container {
-        margin-top: 20px;
-    }
-
     .form-row {
         display: grid;
         grid-template-columns: 1fr 2fr;
@@ -106,26 +120,25 @@
     }
 
     .form-info {
-  margin: 1rem 0;
-  padding: 0.75rem 1rem;
-  background: #f8f9fa;
-  border-left: 4px solid #ccc;
-}
+        margin: 1rem 0;
+        padding: 0.75rem 1rem;
+        background: #f8f9fa;
+        border-left: 4px solid #ccc;
+    }
 
-.submit-row {
-  display: flex;
-  justify-content: center;
-  margin-top: 2rem;
-}
+    .submit-row {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
 
-.form-container {
-  padding: 1.5rem;
-  border: 1px solid #ddd;
-  background-color: #fff;
-  border-radius: 6px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  margin-top: 1rem;
-}
-
+    .form-container {
+        padding: 1.5rem;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-top: 1rem;
+    }
 </style>
 {% endblock %}

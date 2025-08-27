@@ -1,18 +1,19 @@
 {% extends 'base_front.html' %}
 {% load static %}
+{% load i18n %}
 
 {% block header %}
-	{% block header_row1 %}
-		{{ block.super }}
-	{% endblock header_row1 %}
+{% block header_row1 %}
+{{ block.super }}
+{% endblock header_row1 %}
 {% endblock header %}
 
 {% block search_bar %}
 <div class="row mt-5" id="search_bar_row">
-	{% block search-left-column %}
-	<div class="col-3" id="search-left-column"></div>
-	{% endblock search-left-column %}
-	{% block search-middle-column %}
+    {% block search-left-column %}
+    <div class="col-3" id="search-left-column"></div>
+    {% endblock search-left-column %}
+    {% block search-middle-column %}
     <div class="col-6" id="search-middle-column">
         <!-- Help text in its own row -->
         <div class="row">
@@ -22,7 +23,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Dropdown and Input Fields in the same row -->
         <div class="row">
             <form class="d-flex w-100" method="GET" action="{% url 'concept' %}" onsubmit="return false;" role="search">
@@ -30,9 +31,9 @@
                     <label for="dictionary-select" class="sr-only">Välj ordlista</label>
                     <select id="dictionary-select" name="dictionary" class="form-control form-control-md custom-select">
                         {% for dict_value, dict_label in dictionaries %}
-                            <option value="{{ dict_value }}" {% if forloop.first %}selected{% endif %}>
-                                {{ dict_label }}
-                            </option>
+                        <option value="{{ dict_value }}" {% if forloop.first %}selected{% endif %}>
+                            {{ dict_label }}
+                        </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -40,54 +41,57 @@
                     <div class="input-group w-100">
                         <label for="user-input" class="sr-only">Sök</label>
                         <div class="input-group-prepend">
-                            <span class="input-group-text" id="search-icon"><i class="fas fa-search" aria-label="Sökikon"></i></span>
+                            <span class="input-group-text" id="search-icon"><i class="fas fa-search"
+                                    aria-label="Sökikon"></i></span>
                         </div>
-                        <input id="user-input" name="q" class="form-control form-control-md" type="text" placeholder="Sök" aria-label="Sök fält för önskad term">
+                        <input id="user-input" name="q" class="form-control form-control-md" type="text"
+                            placeholder="Sök" aria-label="Sök fält för önskad term">
                     </div>
                 </div>
             </form>
         </div>
-        
+
         <!-- Alphabetical Navigation -->
         <nav aria-label="Alfabetisk navigation som väljer alla ord som börjar med en bokstav" class="mb-0">
             <ul class="list-inline d-flex justify-content-between flex-wrap mt-2">
                 {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
-                    <li class="list-inline-item">
-                        <a href="{% url 'concept' %}?dictionary={{ dictionaries.0.0 }}&q={{ letter }}" data-letter="{{ letter }}">{{ letter }}</a>
-                    </li>
+                <li class="list-inline-item">
+                    <a href="{% url 'concept' %}?dictionary={{ dictionaries.0.0 }}&q={{ letter }}"
+                        data-letter="{{ letter }}">{{ letter }}</a>
+                </li>
                 {% endfor %}
             </ul>
         </nav>
     </div>
 
-{% endblock search-middle-column %}
+    {% endblock search-middle-column %}
 
-	
-	{% block search-right-column %}
-		<div class="col-3" id="search-right-column"></div>
-	{% endblock search-right-column %}
+
+    {% block search-right-column %}
+    <div class="col-3" id="search-right-column"></div>
+    {% endblock search-right-column %}
 </div>
 {% endblock search_bar %}
 
 {% block replaceable-content %}
 
 <section id="about-card">
-<div class="row mt-2" id="replaceable-content-row">
-    <div class="col-4" id="replaceable-content-left-column"></div>
-    <div class="col-4 text-left" id="replaceable-content-middle-column">
+    <div class="row mt-2" id="replaceable-content-row">
+        <div class="col-4" id="replaceable-content-left-column"></div>
+        <div class="col-4 text-left" id="replaceable-content-middle-column">
 
-	<div class="row" style="text-align: center;"> 
-		<h5 class="mx-auto" style="width: 150px;">Om ordlistan</h5>
-		  <div class="card mt-2" style="background-color:#aed9f0;">
-		  <div id="about-card-text" class="card-body text-justify" style="font-family: Calibri;">
-       
-		  </div>
-		</div>
-	  </div>
+            <div class="row" style="text-align: center;">
+                <h5 class="mx-auto" style="width: 150px;">Om ordlistan</h5>
+                <div class="card mt-2" style="background-color:#aed9f0;">
+                    <div id="about-card-text" class="card-body text-justify" style="font-family: Calibri;">
 
-	</div>
-    <div class="col-4" id="replaceable-content-right-column"></div>
-  </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-4" id="replaceable-content-right-column"></div>
+    </div>
 </section>
 
 {% endblock replaceable-content %}
@@ -98,9 +102,9 @@
 {{block.super}}
 
 <script>
-    var home_url ='{% url "concept" %}';
-  </script>
-  <script src="{% static 'javascript/captureInput.js' %}"></script>
-  <script src="{% static 'javascript/about-card-text.js' %}"></script>
+    var home_url = '{% url "concept" %}';
+</script>
+<script src="{% static 'javascript/captureInput.js' %}"></script>
+<script src="{% static 'javascript/about-card-text.js' %}"></script>
 
 {% endblock extra_javascript %}

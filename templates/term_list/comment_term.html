@@ -1,18 +1,24 @@
 {% load crispy_forms_filters %}
 
+{% load i18n %}
+
+
 <div class="modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="commentModalLabel">Kommentera Begrepp</h5>
+				<h5 class="modal-title" id="commentModalLabel">{% translate "Comment on a concept" %}</h5>
 				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 					<span aria-hidden="true">&times;</span>
 				</button>
 			</div>
 			<div class="modal-body">
-				<p style="font-size: 15px;">Fyll i kontaktuppgifter och avge sedan dina kommentarer om begreppet.
-					Kommentaren bör på ett tydligt sett ange vad som avses och ska motiveras. Ange även den kontext som
-					din kommentar härrör från. Kommentarerna kommer bearbetas av Begrepps Byrån.</p>
+				<p style="font-size: 15px;">
+					{% blocktranslate%}Fill in your contact details and then submit your comments about the concept. The
+					comment should clearly state what is meant and must be justified. Also indicate the context from
+					which your comment originates. The comments will be processed by the backoffice.
+					{% endblocktranslate %}
+				</p>
 				<form id="comment_term_form" action="{% url 'comment_term' %}" , method='POST'>{% csrf_token %}
 					{{ comment|crispy }}
 

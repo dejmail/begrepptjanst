@@ -535,6 +535,11 @@ def replace_non_html_brackets(
 
     return edit_string
 
+
+def is_ajax(request: HttpRequest) -> HttpResponse:
+    
+    return request.headers.get('X-Custom-Requested-With')
+
 def mark_fields_as_safe_html(list_of_dict, fields):
 
     """ Make certain fields within a list of dictionary
@@ -553,9 +558,7 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
     return list_of_dict
 
-def is_ajax(request: HttpRequest) -> HttpResponse:
-    
-    return request.headers.get('X-Custom-Requested-With')
+   
         
 def determine_search_strategy(url_parameter, dictionary):
 
@@ -635,6 +638,7 @@ def main_search_view(request : HttpRequest):
     """
     url_parameter = request.GET.get("q")
     dictionary = request.GET.get("dictionary")
+
     if is_ajax(request):
         
         data_dict, styled_results = assemble_search_results_view(url_parameter, dictionary)

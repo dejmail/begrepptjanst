@@ -80,7 +80,7 @@
                 <tfoot>
                     <tr>
                         <td>
-                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="kommentera_button">Kommentera</button>
+                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="comment_button">Kommentera</button>
                         </td>
                         <td>
                             <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
@@ -170,7 +170,7 @@
     // configuration of the observer:
     var config = {childList: true}
      
-    var target = document.querySelector('#kommentera_bekräfta');
+    var target = document.querySelector('#comment');
     // pass in the target node, as well as the observer options
     observer.observe(target, config); 
     
@@ -181,7 +181,7 @@
                 type : type_method,
                 success: function(response){
                     $(div_to_replace).html(response);
-                    $("#kommenteraModal").modal('show');
+                    $("#commentModal").modal('show');
                 },
                 error: function() {
             $(div_to_replace).html("There has been an error loading this form");
@@ -191,10 +191,10 @@
     
     $(document).ready(function(){
     
-        $("#kommentera_button").click(function(){
+        $("#comment_button").click(function(){
             
-            get_form_function(url="{% url 'kommentera_term' %}?q={{begrepp_full.term}}", 
-                              div_to_replace="#kommentera_bekräfta",
+            get_form_function(url="{% url 'comment_term' %}?q={{concept_full.term}}", 
+                              div_to_replace="#comment",
                               type_method="GET");
                         });
                     });

@@ -14,6 +14,8 @@ from pdb import set_trace
 import logging
 import json
 from .models import ConfigurationOptions
+from django.utils.translation import gettext_lazy as _
+
 
 logger = logging.getLogger(__name__)
 
@@ -177,12 +179,12 @@ class ExternalFilesForm(forms.ModelForm):
     support_file = forms.FileField()
 
 class ExcelImportForm(forms.Form):
-    excel_file = forms.FileField(label='Excel fil')
+    excel_file = forms.FileField()
 
 class ColumnMappingForm(forms.Form):
 
     excel_file = forms.CharField(widget=forms.HiddenInput())
-    dictionary = forms.ChoiceField(label="Select Dictionary", required=False)  # Add dictionary field here
+    dictionary = forms.ChoiceField(label=_("Select Dictionary"), required=False)  # Add dictionary field here
 
     def __init__(self, *args, **kwargs):
         columns = kwargs.pop('columns')
@@ -196,7 +198,7 @@ class ColumnMappingForm(forms.Form):
             self.fields[col] = forms.ChoiceField(
                 choices=[(None, '---')] + [(field, field) for field in model_fields],
                 required=False,
-                label=f"Mappa excel kolumn '{col}' mot model attribut"
+                label=f"{col}"
             )
         
         # If dictionaries are available, allow the user to choose one
@@ -246,7 +248,10 @@ class ConceptForm(GroupFilteredModelForm):
         help_texts = {'term': 'Rullistan visar termer redan i DB',
                       'definition': 'Visas som HTML på framsidan',
                       'källa': 'Rullistan visar termer redan i DB'}
-        
+    
+    def use_required_attribute(self, *args):
+        return False
+    
     def __init__(self, *args, user=None, **kwargs):
         
         super().__init__(*args, **kwargs)
@@ -258,11 +263,19 @@ class ConceptForm(GroupFilteredModelForm):
         if user and not user.is_superuser and 'dictionaries' in self.fields:
             self.fields['dictionaries'].queryset = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
 
+        
+        if "dictionaries" in self.fields:
+            self.fields["dictionaries"].required = True
+
+            if user and not user.is_superuser:
+                self.fields["dictionaries"].queryset = Dictionary.objects.filter(
+                    groups__in=user.groups.all()
+                ).distinct()
+        
     def clean(self):
         
         cleaned_definition = self.cleaned_data.get('definition')
         cleaned_data = super().clean()
-
         
         if any((c in ['{', '}', '½']) for c in cleaned_definition):
             raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
@@ -270,6 +283,11 @@ class ConceptForm(GroupFilteredModelForm):
         if (not hasattr(self, 'user')) or (self.user is None):
             raise Exception("Form is missing 'user'. Make sure it's passed from the admin.")
 
+        selected_dictionaries = cleaned_data.get("dictionaries")
+        if not selected_dictionaries:
+                # field-specific error mapping if you prefer it here
+                raise forms.ValidationError({"dictionaries": "Välj minst en ordlista innan du sparar."})
+        
         user = self.user
         if user and not user.is_superuser:
             selected_dictionaries = cleaned_data.get("dictionaries")
@@ -283,7 +301,7 @@ class ConceptForm(GroupFilteredModelForm):
         
 class ConceptExternalFilesForm(forms.ModelForm):
 
-    support_file = forms.FileField(label='Bifogad fil')
+    support_file = forms.FileField(label=_('Attached file'))
     
     class Meta:
         model = ConceptExternalFiles

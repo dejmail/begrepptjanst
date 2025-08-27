@@ -309,7 +309,6 @@ class ConceptFileImportMixin:
 
                 # Get draft mappings
                 draft_mapping = self.get_draft_mappings(columns, available_dictionaries)
-
                 # Show the mapping form
                 #initial_mapping = {col: draft_mapping[col] for col in columns}
 
@@ -327,6 +326,8 @@ class ConceptFileImportMixin:
                                              dict.dictionary_name) for dict in available_dictionaries],
                     initial=initial_data,
               )
+
+
             return render(request, 'admin/column_mapping.html', {
                 'mapping_form': mapping_form,
                 'dictionary_in_excel': dictionary_in_excel,
