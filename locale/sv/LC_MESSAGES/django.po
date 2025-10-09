@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-22 21:06+0200\n"
+"POT-Creation-Date: 2025-09-27 07:53+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,9 +42,9 @@ msgstr "Ändra lösenord"
 msgid "Log out"
 msgstr "Logga ut"
 
-#: templates/admin/base_original.html:81 templates/admin/change_form.html:19
-#: templates/admin/change_list.html:32
-#: templates/admin/delete_selected_intermediate.html:14
+#: templates/admin/base_original.html:81 templates/admin/change_form.html:21
+#: templates/admin/change_list.html:34
+#: templates/admin/delete_selected_intermediate.html:15
 msgid "Home"
 msgstr "Hem"
 
@@ -62,12 +62,16 @@ msgstr "Ordböcker"
 msgid "Select Dictionary"
 msgstr "Välja Ordböcker"
 
-#: templates/admin/change_form.html:23
-#, python-format
-msgid "Add %(name)s"
+#: templates/admin/change_form.html:27
+#, fuzzy, python-format
+#| msgid "Add %(name)s"
+msgid ""
+"\n"
+"  Add %(name)s\n"
+"  "
 msgstr "Lägga till %(name)"
 
-#: templates/admin/change_form.html:47
+#: templates/admin/change_form.html:55
 #, fuzzy
 #| msgid "Please correct the error below."
 #| msgid_plural "Please correct the errors below."
@@ -82,17 +86,22 @@ msgid_plural ""
 msgstr[0] "Vänligen korrigera nedanför felet"
 msgstr[1] "Vänligen korrigera nedanför felen"
 
-#: templates/admin/change_list.html:52
+#: templates/admin/change_list.html:54
+#, fuzzy
+#| msgid "Please correct the error below."
+#| msgid_plural "Please correct the errors below."
 msgid "Please correct the error below."
-msgid_plural "Please correct the errors below."
+msgid_plural ""
+"Please\n"
+"    correct the errors below."
 msgstr[0] "Vänligen korrigera nedanför felet"
 msgstr[1] "Vänligen korrigera nedanför felen"
 
-#: templates/admin/change_list.html:77
+#: templates/admin/change_list.html:81
 msgid "Filter"
 msgstr "Filtrera"
 
-#: templates/admin/change_list.html:79
+#: templates/admin/change_list.html:83
 msgid "Clear all filters"
 msgstr "Nollställa alla filtrar"
 
@@ -134,54 +143,66 @@ msgstr "Välj ordbok:"
 msgid "Chosen dictionary:"
 msgstr "Vald ordbok:"
 
-#: templates/admin/confirm_mapping.html:6
+#: templates/admin/confirm_mapping.html:7
 #, fuzzy
 #| msgid "Confirm the concepts that will be imported or updated"
 msgid "Confirm concepts that will be imported or updated"
 msgstr "Bekräfta begrepp som ska importeras eller uppdateras"
 
-#: templates/admin/delete_selected_intermediate.html:17
+#: templates/admin/delete_selected_intermediate.html:18
 msgid "Delete multiple objects"
 msgstr "Radera flera objekt"
 
-#: templates/admin/delete_selected_intermediate.html:23
-#, python-format
+#: templates/admin/delete_selected_intermediate.html:24
+#, fuzzy, python-format
+#| msgid ""
+#| "Deleting the selected %(objects_name)s would result in deleting related "
+#| "objects, but your account doesn't have permission to delete the following "
+#| "types of objects:"
 msgid ""
 "Deleting the selected %(objects_name)s would result in deleting related "
-"objects, but your account doesn't have permission to delete the following "
-"types of objects:"
+"objects, but your\n"
+"    account doesn't have permission to delete the following types of objects:"
 msgstr ""
 "Att ta bort valda %(objects_name)s skulle innebära att relaterade objekt "
 "också tas bort, men ditt konto har inte behörighet att ta bort följande "
 "typer av objekt:"
 
-#: templates/admin/delete_selected_intermediate.html:26
-#, python-format
+#: templates/admin/delete_selected_intermediate.html:28
+#, fuzzy, python-format
+#| msgid ""
+#| "Deleting the selected %(objects_name)s would require deleting the "
+#| "following protected related objects:"
 msgid ""
 "Deleting the selected %(objects_name)s would require deleting the following "
-"protected related objects:"
+"protected related\n"
+"    objects:"
 msgstr ""
 "Att ta bort valda %(objects_name)s skulle kräva att följande skyddade "
 "relaterade objekt tas bort:"
 
-#: templates/admin/delete_selected_intermediate.html:29
-#, python-format
+#: templates/admin/delete_selected_intermediate.html:32
+#, fuzzy, python-format
+#| msgid ""
+#| "Are you sure you want to delete the selected %(objects_name)s? All of the "
+#| "following objects and their related items will be deleted:"
 msgid ""
 "Are you sure you want to delete the selected %(objects_name)s? All of the "
-"following objects and their related items will be deleted:"
+"following objects and\n"
+"    their related items will be deleted:"
 msgstr ""
 "Är du säker på att du vill ta bort de valda %(objects_name)s? Alla följande "
 "objekt och deras relaterade poster kommer att tas bort:"
 
-#: templates/admin/delete_selected_intermediate.html:31
+#: templates/admin/delete_selected_intermediate.html:35
 msgid "Objects"
 msgstr "Objekt"
 
-#: templates/admin/delete_selected_intermediate.html:52
+#: templates/admin/delete_selected_intermediate.html:56
 msgid "Yes, I’m sure"
 msgstr "Ja, jag är säker"
 
-#: templates/admin/delete_selected_intermediate.html:53
+#: templates/admin/delete_selected_intermediate.html:57
 msgid "No, take me back"
 msgstr "Nej, gå tillbaka"
 
@@ -193,6 +214,22 @@ msgstr "Visa på webbplatsen"
 #, python-format
 msgid " By %(filter_title)s "
 msgstr " Efter %(filter_title)s "
+
+#: templates/no_search_result.html:4
+msgid "The concept is not currently in the OLLI Concept system."
+msgstr "Begreppet finns för närvarande inte i OLLI Begreppssystem."
+
+#: templates/no_search_result.html:6
+msgid ""
+"To request a concept, click on \"Request concept\", and you"
+"will be presented with a form that will be sent to us"
+msgstr ""
+"För att efterfråga detta begrepp tryck på \"Efterfråga begrepp\", så får du "
+"ett formulär som kan skickas in till oss."
+
+#: templates/no_search_result.html:11
+msgid "Request concept"
+msgstr "Efterfråga begrepp"
 
 #: templates/term_list/comment_term.html:10
 msgid "Comment on a concept"
@@ -208,10 +245,10 @@ msgid ""
 "the backoffice.\n"
 "\t\t\t\t\t"
 msgstr ""
-"Fyll i dina kontaktuppgifter och skicka sedan in dina kommentarer om begreppet.
-Kommentaren bör tydligt ange vad som avses och vara motiverad.
-Ange även den kontext som din kommentar härrör från.
-Kommentarerna kommer att behandlas av Begrepps Bureau."
+"Fyll i dina kontaktuppgifter och skicka sedan in dina kommentarer om "
+"begreppet.Kommentaren bör tydligt ange vad som avses och vara motiverad.Ange "
+"även den kontext som din kommentar härrör från.Kommentarerna kommer att "
+"behandlas av Begrepps Bureau."
 
 #~ msgid "Please correct the errors below."
 #~ msgstr "Vänligen korrigera nedanför felen"
@@ -225,3 +262,6 @@ Kommentarerna kommer att behandlas av Begrepps Bureau."
 
 #~ msgid "To date"
 #~ msgstr "Till datum"
+
+#~ msgid "dictionaries"
+#~ msgstr "ordböcker"

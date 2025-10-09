@@ -198,6 +198,50 @@ background-color: rgb(255, 126, 41);
       border-radius: 4px;
     }
 
+/* Reduce interaction with background content while the comment modal is open */
+body.modal-open #concept-metadata,
+body.modal-open #term_metadata_table {
+  pointer-events: none;
+}
+
+body.modal-open #term_metadata_table tr:hover,
+body.modal-open #term_metadata_table tr:hover td,
+body.modal-open #term_metadata_table tr:hover th {
+  background-color: inherit !important;
+}
+
+body.modal-open #comment .modal,
+body.modal-open #comment .modal * {
+  pointer-events: auto;
+}
+
+#term_metadata_table .metadata-label {
+  font-weight: 500;
+  text-transform: none;
+  color: #333;
+  width: 30%;
+  border-right: 1px solid #ddd;
+  background-color: transparent;
+}
+
+#term_metadata_table .metadata-label--primary {
+  background-color: #f4f4f4;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #333;
+}
+
+#term_metadata_table .metadata-label--primary::after {
+  content: '';
+}
+
+#term_metadata_table th {
+  position: static;
+  top: auto;
+  left: auto;
+  z-index: auto;
+}
+
 .tag-light-blue {
       background-color: rgb(222,234,246);
 

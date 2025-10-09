@@ -200,8 +200,6 @@ class ConfigurationOptions(models.Model):
         except cls.DoesNotExist:
             return []
 
-    
-# Word Model (Core Entity)
 class Concept(models.Model):
 
     class Meta:

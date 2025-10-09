@@ -213,7 +213,10 @@ from django.forms.widgets import HiddenInput
 class AttributeValueInlineForm(forms.ModelForm):
     class Meta:
         model = AttributeValue
-        fields = ['value_string', 'value_text', 'value_integer', 'value_decimal', 'value_boolean', 'value_url']
+        fields = ['value_string', 'value_text', 
+                  'value_integer', 'value_decimal', 
+                  'value_boolean', 'value_url'
+                  ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,203 +1,262 @@
 {% extends 'base_front.html' %}
 {% load static %}
 {% load crispy_forms_filters %}
+{% load status_tags %}
 
 {% block search_bar %}
 {% endblock search_bar %}
 
 
 {% block header_row1_column_right %}
-<a href="{% url 'concept' %}"><img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}" alt="Navigera tillbaka till OLLI"></a>
+<a href="{% url 'concept' %}" class="non-ajax-link">
+    <img style="width: 50%;" src="{% static 'images/tillbaka.svg' %}"
+        alt="Navigera tillbaka till OLLI" role="presentation">
+    <span class="sr-only">Tillbaka till startsidan för OLLI</span>
+</a>
 {% endblock header_row1_column_right %}
 
 {% block mitten-span %}
-{% if concept_full %}
+{% if concept %}
 <div class="row mt-10" id="display-row">
 
     <div class="col-2" id="display-left-column"></div>
     <div class="col-8" id="display-middle-column">
-     
-        <div id="förklaring" class="förklaring">
-        <div class="searchTable">
-        <table id="term_metadata_table" class="table table-bordered">
-            <tbody>
-                <tr class="{{färg_status.concept}}">
-                    <td>Status</td>
-                    <td>{{concept_full.status}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Term</td>
-                    <td>{{concept_full.term}}</td>
-                </tr>
-                <tr>
-                    <td>Synonym</td>
-                    <td >
-                        {% for synonym in concept_full.synonym_set.all %}
-                            {% if synonym.synonym is not None %}
-                                {% if synonym.synonym_status == "Avråds" %}
-                                    -&nbsp;
-                                    <span class="btn-sm btn-avrådd strike" aria-label="Synonym avråds: {{synonym.synonym}}">
-                                        <s class="strike">{{synonym.synonym}}</s>
-                                    </span><br>
-                                {% else %}
-                                    -&nbsp;
-                                    {{synonym.synonym}}<br>
-                                {% endif %}
-                            {% else %}
-                                -
-                            {% endif %}
+
+        <div id="concept-metadata" class="concept-metadata">
+            <div class="searchTable table-wrapper">
+                <table id="term_metadata_table" class="table table-bordered mb-0" aria-describedby="concept-summary">
+                    <tbody>
+                        <tr class="{{ concept.status|status_colour:status_config }}">
+                            <th scope="row" class="metadata-label metadata-label--primary">Status</th>
+                            <td>{{concept.status}}</td>
+                        </tr>
+                        <tr class="{{ concept.status|status_colour:status_config }}">
+                            <th scope="row" class="metadata-label metadata-label--primary">Term</th>
+                            <td>{{concept.term}}</td>
+                        </tr>
+                        <tr class="{{ concept.status|status_colour:status_config }}">
+                            <th scope="row" class="metadata-label metadata-label--primary">Definition</th>
+                            <td>{{concept.definition}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="metadata-label metadata-label--primary">Synonym</th>
+                            <td>
+                                <ul class="synonym-list" aria-label="Synonymer för {{ concept.term }}">
+                                    {% for synonym in concept.synonyms.all %}
+                                    {% if synonym.synonym is not None %}
+                                    <li>
+                                        {% if synonym.synonym_status == "Avråds" %}
+                                        <span class="{{ synonym.synonym_status|status_colour:status_config }}"
+                                            aria-label="Synonym avråds: {{synonym.synonym}}">
+                                            <s class="strike">{{synonym.synonym}}</s>
+                                        </span>
+                                        {% else %}
+                                        {{synonym.synonym}}
+                                        {% endif %}
+                                    </li>
+                                    {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                        </tr>
+                        {% for attribute in attributes %}
+                        <tr>
+                            <th scope="row" class="metadata-label">{{ attribute.display_name }}</th>
+                            <td>{{ attribute.value|default:"-" }}</td>
+                        </tr>
                         {% endfor %}
-                    </td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Definition</td>
-                    <td>{{concept_full.definition|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Källa</td>
-                    <td>{{concept_full.källa|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Anmärkning</td>
-                    <td>{{concept_full.anmärkningar|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Term på annat språk</td>
-                    <td>{{concept_full.term_på_annat_språk|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Annan referens</td>
-                    <td>{{concept_full.annan_referens|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Kod</td>
-                    <td>{{concept_full.kod|default_if_none:"-"}}</td>
-                </tr>
-                <tr class="{{färg_status.concept}}">
-                    <td>Term ID</td>
-                    <td>{{concept_full.id|default_if_none:"-"}}</td>
-                </tr>
-                <tfoot>
-                    <tr>
-                        <td>
-                            <button class="btn btn-warning" type="button" style="font-family: frutiger; background-color: #f2a900;" id="comment_button">Kommentera</button>
-                        </td>
-                        <td>
-                            <button type="button" style="float:right;font-family:frutiger; background-color:#006298;"  class="btn btn-info" data-toggle="modal" data-target="#Comment">Hjälp</button>
-                        </td>
-                    </tr>
-                </tfoot>
-            </tbody>
-        </table>
+                    <tfoot>
+                        <tr>
+                            <td>
+                                <button class="btn btn-warning" type="button"
+                                    style="font-size:14px; background-color: #f2a900;"
+                                    id="open-comment-button" aria-haspopup="dialog" aria-controls="commentModal">Kommentera</button>
+                            </td>
+                            <td>
+                                <button type="button" style="float:right; font-size:14px; background-color:#006298;"
+                                    class="btn btn-info" data-toggle="modal" data-target="#comment-help">Hjälp</button>
+                            </td>
+                        </tr>
+                    </tfoot>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
-    </div>
-    
+
 
     <div class="col-2" id="display-right-column"></div>
 
-    <div class="modal" id="Comment" role="dialog">
-        <div class="modal-dialog">
+    <div class="modal" id="Comment" role="dialog" aria-modal="true" aria-labelledby="comment-help-title">
+        <div class="modal-dialog" role="document">
             <!-- Modal content-->
             <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
+                <div class="modal-header">
+                    <h4 class="modal-title" id="comment-help-title" style="font-family: frutiger;">Instruktioner för kommentera</h4>
+                </div>
+                <div class="modal-body">
+                    <h4 style="font-family: frutiger;">Kommentera begrepp</h4>
+                    <p style="font-family: Calibri;">
+                        Funktionen Kommentera är tänkt att vara en möjlighet att framföra synpunkter om ett begrepp,
+                        hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma termer
+                        som kan vara aktuella, ev översättning m m. Det är viktigt att kommentaren tydligt anger vad
+                        som avses samt motiveras på ett adekvat sätt. Ange även den kontext som din kommentar gäller.
+                        Kommentarerna kommer sedan bearbetas av BegreppsByrån. <br>Gör så här:<br>
+                    <ol style="font-family: Calibri;">
+                        <li>Tryck på knappen Kommentera</li>
+                        <li>Fyll i kontaktuppgifter men namn, E-post och telefon så att vi kan nå dig för att ställa
+                            frågor.</li>
+                        <li>Avge dina kommentarer om begreppet. Var så tydlig du kan!</li>
+                        <li>Tryck på Skicka</li>
+                    </ol>
+                    <br>
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Stäng</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <h4 style="font-family: frutiger;">Kommentera begrepp</h4>
-                <p style="font-family: Calibri;">
-                Funktionen Kommentera är tänkt att vara en möjlighet att framföra synpunkter om ett begrepp, 
-                hur och var det används eller om det finns felaktigheter. Man kan också ange synonyma termer 
-                som kan vara aktuella, ev översättning m m. Det är viktigt att kommentaren tydligt anger vad 
-                som avses samt motiveras på ett adekvat sätt. Ange även den kontext som din kommentar gäller.
-                    Kommentarerna kommer sedan bearbetas av BegreppsByrån. <br>Gör så här:<br>
-                <ol style="font-family: Calibri;">
-                    <li>Tryck på knappen Kommentera</li>
-                    <li>Fyll i kontaktuppgifter men namn, E-post och telefon så att vi kan nå dig för att ställa frågor.</li>
-                    <li>Avge dina kommentarer om begreppet. Var så tydlig du kan!</li>
-                    <li>Tryck på Skicka</li>
-                </ol> 
-                <br>
-            </p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Stäng</button>
-            </div>
-            </div>			
         </div>
-        </div>
-        
-    {% else %}
-            <p>Ingen definition hittades...</p>
-    {% endif %}
-    
-    <div id="kommentera_bekräfta">
     </div>
-    
-    <style>
-    
-    /* This allows us to keep the normal spacing
-    in the certain cells without having to use <br> */
-    
-    tbody > tr:nth-child(4) > td:nth-child(2) {
-        white-space: pre-line;
-        }
-    
-    tbody > tr:nth-child(6) > td:nth-child(2) {
-        white-space: pre-line;
-        }
-    
-    </style>
+
+    {% else %}
+    <p>Ingen definition hittades...</p>
+    {% endif %}
+
+    <div id="comment">
+    </div>
+
     {% endblock mitten-span %}
-    {% block extra_javascript %}
-    
-    <script>
-    
-    var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
-    // create an observer instance
-    var observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                if ($('input[name=namn]').length > 0) {
-                    $('input[name=namn]').focus();
-                } else {
-                    $('input[name=epost]').focus();
-                }
+
+    {% block extra_css %}
+
+    <style>
+        #term_metadata_table {
+            width: 100%;
+            border-collapse: collapse;
+            /* Remove double borders */
+            background-color: #fff;
+            /* White background */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            /* Drop shadow */
+            border-radius: 8px;
+            /* Rounded corners */
+            overflow: hidden;
+            /* Clip overflowing content for rounded corners */
         }
+
+        #term_metadata_table th,
+        #term_metadata_table td {
+            padding: 12px 15px;
+            /* Add padding for better spacing */
+            text-align: left;
+            /* Align text to the left */
+            border-bottom: 1px solid #ddd;
+            /* Add subtle row dividers */
+        }
+
+        .metadata-label {
+            background-color: #f4f4f4;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #333;
+            width: 30%;
+            border-right: 1px solid #ddd;
+        }
+
+        #term_metadata_table tr:hover {
+            background-color: #f9f9f9;
+            /* Highlight row on hover */
+        }
+
+        #term_metadata_table tr:last-child td {
+            border-bottom: none;
+            /* Remove border for last row */
+        }
+
+        .table-wrapper {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            /* forces visible rounding regardless of table rules */
+        }
+
+        /* This allows us to keep the normal spacing
+in the certain cells without having to use <br> */
+
+        tbody>tr:nth-child(3)>td:nth-child(2) {
+            white-space: pre-line;
+        }
+
+        tbody>tr:nth-child(6)>td:nth-child(2) {
+            white-space: pre-line;
+        }
+    </style>
+    {% endblock extra_css %}
+
+    {% block extra_javascript %}
+
+    <script>
+
+        var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+        // create an observer instance
+        var observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.type === 'childList') {
+                    if ($('input[name=namn]').length > 0) {
+                        $('input[name=namn]').focus();
+                    } else {
+                        $('input[name=epost]').focus();
+                    }
+                }
+            });
         });
-    });
-     
-    // configuration of the observer:
-    var config = {childList: true}
-     
-    var target = document.querySelector('#comment');
-    // pass in the target node, as well as the observer options
-    observer.observe(target, config); 
-    
-    function get_form_function(url, div_to_replace, type_method){
-            
+
+        // configuration of the observer:
+        var config = { childList: true }
+
+        var target = document.querySelector('#comment');
+        // pass in the target node, as well as the observer options
+        observer.observe(target, config);
+
+        function get_form_function(url, div_to_replace, type_method) {
             $.ajax({
-                url : url,
-                type : type_method,
-                success: function(response){
+                url: url,
+                type: type_method,
+                success: function (response) {
                     $(div_to_replace).html(response);
                     $("#commentModal").modal('show');
+                    bindModalInertLogic();
+
                 },
-                error: function() {
-            $(div_to_replace).html("There has been an error loading this form");
-            },
+                error: function () {
+                    $(div_to_replace).html("There has been an error loading this form");
+                },
             });
         };
-    
-    $(document).ready(function(){
-    
-        $("#comment_button").click(function(){
-            
-            get_form_function(url="{% url 'comment_term' %}?q={{concept_full.term}}", 
-                              div_to_replace="#comment",
-                              type_method="GET");
-                        });
-                    });
-    
+
+        $(document).ready(function () {
+            $("#open-comment-button").click(function () {
+
+                console.log('Getting comment form for {{concept.term}}');
+                get_form_function(url = "{% url 'comment_term' %}?q={{concept.term}}",
+                    div_to_replace = "#comment",
+                    type_method = "GET");
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const commentModal = document.getElementById('commentModal');
+            if (commentModal) {
+                $('#commentModal').on('hidden.bs.modal', function () {
+                    const openBtn = document.getElementById('open-comment-button');
+                    if (openBtn) {
+                        openBtn.focus(); // Restore focus after modal closes
+                    }
+                });
+            }
+        });
+
+
     </script>
     {% endblock extra_javascript %}

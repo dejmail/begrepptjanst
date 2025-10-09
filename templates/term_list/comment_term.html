@@ -3,14 +3,14 @@
 {% load i18n %}
 
 
-<div class="modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel">
+<div class="modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-modal="true">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
 				<h5 class="modal-title" id="commentModalLabel">{% translate "Comment on a concept" %}</h5>
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-					<span aria-hidden="true">&times;</span>
-				</button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{% translate 'Close' %}">
+                    <span aria-hidden="true">&times;</span>
+                </button>
 			</div>
 			<div class="modal-body">
 				<p style="font-size: 15px;">
@@ -19,7 +19,7 @@
 					which your comment originates. The comments will be processed by the backoffice.
 					{% endblocktranslate %}
 				</p>
-				<form id="comment_term_form" action="{% url 'comment_term' %}" , method='POST'>{% csrf_token %}
+				<form id="comment_term_form" action="{% url 'comment_term' %}" method='POST' novalidate>{% csrf_token %}
 					{{ comment|crispy }}
 
 					<input type="submit" data-dismiss="commentModal" value="Skicka" id="comment_button"

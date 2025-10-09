@@ -19,7 +19,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="help mb-1" id="helptext">
-                    <div>Välj ordlista</div>
+                    <div id="dictionary-help">Välj ordlista</div>
                 </div>
             </div>
         </div>
@@ -29,7 +29,7 @@
             <form class="d-flex w-100" method="GET" action="{% url 'concept' %}" onsubmit="return false;" role="search">
                 <div class="col-4">
                     <label for="dictionary-select" class="sr-only">Välj ordlista</label>
-                    <select id="dictionary-select" name="dictionary" class="form-control form-control-md custom-select">
+                    <select id="dictionary-select" name="dictionary" class="form-control form-control-md custom-select" aria-describedby="dictionary-help">
                         {% for dict_value, dict_label in dictionaries %}
                         <option value="{{ dict_value }}" {% if forloop.first %}selected{% endif %}>
                             {{ dict_label }}
@@ -57,7 +57,7 @@
                 {% for letter in 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'|make_list %}
                 <li class="list-inline-item">
                     <a href="{% url 'concept' %}?dictionary={{ dictionaries.0.0 }}&q={{ letter }}"
-                        data-letter="{{ letter }}">{{ letter }}</a>
+                        data-letter="{{ letter }}" aria-label="Visa begrepp som börjar på {{ letter }}">{{ letter }}</a>
                 </li>
                 {% endfor %}
             </ul>

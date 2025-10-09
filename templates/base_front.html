@@ -38,6 +38,7 @@
 
 <body>
   {% endblock preamble %}
+  <a class="sr-only sr-only-focusable" href="#main-content">Hoppa till huvudinnehåll</a>
   <div class="container-fluid">
     {% load crispy_forms_tags %}
     {% block header %}
@@ -48,7 +49,7 @@
         style="position: relative; vertical-align: middle; text-align: center;">
         {% block header_row1_column_left %}
         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
-          <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/VGR-logga.SVG'%}"
+          <img style="margin-top: 1%; margin-left: 1%;  width: 100%;" src="{% static '/images/vgr_logga_svartvit.svg'%}"
             alt="Västra Götalands Region logo">
         </div>
         {% endblock header_row1_column_left %}
@@ -76,12 +77,12 @@
         {% block header_row1_column_right %}
         <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 1%; vertical-align: middle;">
 
-          <div id="prenumera" data-toggle="tooltip" data-placement="right" title="Anmälan till utskick från OLLI"
+          <div id="newsletter-trigger" data-toggle="tooltip" data-placement="right" title="Anmälan till utskick från OLLI"
             style="display: inline-block;">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" stroke="black" stroke-width="6"
               fill="steelblue" viewBox="0 0 512 512" data-toggle="modal" data-target="#newsletter_signup"
-              style="cursor: pointer;" tabindex="0" role="button" aria-label="Anmälan till utskick från OLLI"
-              alt="Anmälan till utskick från OLLI">
+              style="cursor: pointer;" tabindex="0" role="button" aria-labelledby="newsletter-icon-title">
+              <title id="newsletter-icon-title">Anmälan till utskick från OLLI</title>
               <path
                 d="M502.3 190.8c3.9-3.1 9.7-.2 9.7 4.7V400c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V195.6c0-5 5.7-7.8 9.7-4.7 22.4 17.4 52.1 39.5 154.1 113.6 21.1 15.4 56.7 47.8 92.2 47.6 35.7.3 72-32.8 92.3-47.6 102-74.1 131.6-96.3 154-113.7zM256 320c23.2.4 56.6-29.2 73.4-41.4 132.7-96.3 142.8-104.7 173.4-128.7 5.8-4.5 9.2-11.5 9.2-18.9v-19c0-26.5-21.5-48-48-48H48C21.5 64 0 85.5 0 112v19c0 7.4 3.4 14.3 9.2 18.9 30.6 23.9 40.7 32.4 173.4 128.7 16.8 12.2 50.2 41.8 73.4 41.4z" />
             </svg>
@@ -96,8 +97,8 @@
                 </div>
                 <div class="modal-body">
                   <form class="form-group" action="{% url 'email_subscribe' %}" method="get">
-                    <label for="prenumera" class="sr-only">E-postadress:</label>
-                    <input type="email" class="form-control" id="prenumera" name="epost" placeholder="E-postadress"
+                    <label for="newsletter-email" class="sr-only">E-postadress:</label>
+                    <input type="email" class="form-control" id="newsletter-email" name="epost" placeholder="E-postadress"
                       aria-label="E-postadress" required>
                     <button type="submit" class="btn btn-primary mt-2">Prenumerera</button>
                   </form>
@@ -132,6 +133,7 @@
     {% endblock header_row3 %}
 
     {% endblock header %}
+    <main id="main-content" role="main" tabindex="-1">
     {% block search_bar %}
     {% block search_left_column %}
     {% endblock search_left_column %}
@@ -143,7 +145,7 @@
     {% block replaceable-content %}
     <div class="row mt-10" id="replaceable-content-row">
       <div class="col-2" id="replaceable-content-left-column"></div>
-      <div class="col-8 text-left top-buffer-15" id="replaceable-content-middle-column"></div>
+      <div class="col-8 text-left top-buffer-15" id="replaceable-content-middle-column" role="region" aria-live="polite" aria-label="Utbytbar information"></div>
       <div class="col-2" id="replaceable-content-right-column"></div>
     </div>
     {% endblock replaceable-content %}
@@ -155,14 +157,14 @@
       </div>
       {% endblock display-left-column %}
       {% block display-middle-column %}
-      <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column"></div>
+      <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12" id="display-middle-column" role="region" aria-live="polite" aria-label="Sökresultat och begreppsdetaljer"></div>
       {% endblock display-middle-column %}
       {% block display-right-column %}
       <div class="col-lg-2 col-md-2 col-sm-0 col-xs-0 scrollable-content" id="display-right-column">
         <!-- Container for tooltips and the close button -->
         <div class="tooltip-container" role="region" aria-labelledby="tooltip-container-label">
           <h2 id="tooltip-container-label" class="sr-only">Tooltips</h2>
-          <button id="close-all-tooltips" aria-label="Close all tooltips" style="display: none;">Close All</button>
+          <button id="close-all-tooltips" aria-label="Stäng alla verktygstips" type="button" style="display: none;">Stäng alla</button>
           <div class="tooltip-area">
             <!-- Tooltips will be appended here -->
           </div>
@@ -176,6 +178,7 @@
   {% include "help_text_and_video.html" %}
 
   {% endblock mitten-span %}
+    </main>
   {% block footer %}
   {% endblock footer %}
 
@@ -188,6 +191,8 @@
 
 </html>
 {% endblock endbody %}
+
+{% block extra_css %}{% endblock extra_css %}
 
 {% block extra_javascript %}
 <script type="text/javascript" src="{% static '/javascript/main.js' %}"></script>
@@ -248,7 +253,7 @@
 
   }
 
-  document.querySelector('#prenumera svg').addEventListener('keydown', function (event) {
+  document.querySelector('#newsletter-trigger svg').addEventListener('keydown', function (event) {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault(); // Prevent default action (like scrolling for Space key)
 

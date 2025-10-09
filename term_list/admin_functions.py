@@ -72,8 +72,20 @@ class DictionaryRestrictedInlineMixin:
             )
 
     def get_accessible_dictionaries(self, request):
-        self._require_parent_admin()
-        return self.parent_model_admin.get_accessible_dictionaries(request)
+        """
+           Works for both InlineModelAdmin (has parent_model_admin) and ModelAdmin (no parent).
+        """
+        # If we're an inline and have a parent, delegate to the parent admin.
+        parent = getattr(self, "parent_model_admin", None)
+        if parent is not None:
+            return parent.get_accessible_dictionaries(request)
+
+        # We're on the parent ModelAdmin (no parent_model_admin here).
+        if request.user.is_superuser:
+            return Dictionary.objects.all()
+        return Dictionary.objects.filter(
+            groups__in=request.user.groups.all()
+        ).distinct()
 
     def _has_permission(self, request, obj):
         self._require_parent_admin()
@@ -83,130 +95,84 @@ class DictionaryRestrictedInlineMixin:
         obj_dicts = self._get_dictionary_from_obj(request, obj)
         accessible = self.get_accessible_dictionaries(request)
         return obj_dicts in accessible
+    
+    def _has_permission(self, request, obj=None):
+    # Django calls inline perms early (before parent is injected).
+    # Be permissive until we have both an object and a parent.
+        if obj is None or request.user.is_superuser:
+            return True
+        if not getattr(self, "parent_model_admin", None):
+            # Early call during inline construction — allow, we’ll lock fields later.
+            return True
+        self._require_parent_admin()
+        obj_dicts = self._get_dictionary_from_obj(request, obj)
+        accessible = self.get_accessible_dictionaries(request)
 
+        return obj_dicts.filter(pk__in=accessible.values_list('pk', flat=True)).exists()
+
+    def has_view_permission(self, request, obj=None):
+        return True
 
     def has_change_permission(self, request, obj=None):
         return self._has_permission(request, obj)
 
-    def has_delete_permission(self, request, obj=None):
-        return self._has_permission(request, obj)
-
-    def has_add_permission(self, request, obj=None):
-        self._require_parent_admin()
-        if request.user.is_superuser:
-            return True
-        return self.get_accessible_dictionaries(request).exists()
+    def has_add_permission(self, request):
+     # Admin itself doesn't need a parent inline to be set.
+     if request.user.is_superuser:
+         return True
+     # Optionally: only allow Add if the user has access to at least one dictionary
+     return self.get_accessible_dictionaries(request).exists()
 
     def get_readonly_fields(self, request, obj=None):
         if obj and not self.has_change_permission(request, obj):
             return [f.name for f in self.model._meta.fields]
         return super().get_readonly_fields(request, obj)
+    def get_readonly_fields(self, request, obj=None):
+    # Call the internal checker to avoid recursion/early parent requirement
+        if obj and not self._has_permission(request, obj):
+            return [f.name for f in self.model._meta.fields]
+        return super().get_readonly_fields(request, obj)
 
-
+    def _get_dictionary_from_obj(self, request, obj):
+        # Delegate to the parent admin’s helper
+        # self._require_parent_admin()
+        return self.parent_model_admin._get_dictionary_from_obj(request, obj)
+    
+    def get_max_num(self, request, obj=None, **kwargs):
+        # Hide the “Add another …” row when user can’t change this obj
+        if obj and not self._has_permission(request, obj):
+            return 0
+        return super().get_max_num(request, obj, **kwargs)
 
 class DictionaryRestrictedAdminMixin:
     """
-    Mixin for Django admin classes that restricts object edit permissions
-    based on the user's access to related dictionaries.
-    
-    Assumes that the model (or its related model) has a ManyToManyField to Dictionary
-    accessible via .dictionaries or .concept.dictionaries.
+    Used by ModelAdmin (not inlines). No parent_model_admin here.
     """
-
     def get_accessible_dictionaries(self, request):
-        if not request or not hasattr(request, "user"):
-            logger.error('[Permission Check] No request or user found')
-            return Dictionary.objects.none()
+        from .models import Dictionary  # adjust import if needed
         if request.user.is_superuser:
             return Dictionary.objects.all()
-        return Dictionary.objects.filter(groups__in=request.user.groups.all()).distinct()
-
-    def has_change_permission(self, request, obj=None):
-        if obj is None or request.user.is_superuser:
-            logger.debug("Allowing change: no object or user is superuser")
-            return True
-
-        try:
-            dictionaries = self._get_dictionary_from_obj(request, obj)
-            logger.debug(f"Resolved dictionaries: {dictionaries}")
-
-            if not dictionaries.exists():
-                logger.debug("No dictionary found — denying change")
-                return False
-
-            accessible_ids = self.get_accessible_dictionaries(request).values_list('dictionary_id', flat=True)
-            result = dictionaries.filter(dictionary_id__in=accessible_ids).exists()
-
-            logger.debug(f"Change permission result: {result}")
-            return result
-
-        except Exception as e:
-            logger.error(f"[Permission Check] has_change_permission failed for {obj}: {e}")
-            return False
-        
-    def has_delete_permission(self, request, obj=None):
-
-        if obj is None or request.user.is_superuser:
-            return True
-
-        return self._user_has_dictionary_access(request, obj)
-
-    def _user_has_dictionary_access(self, request, obj):
-        
-        dictionary_qs = self._get_dictionary_from_obj(request, obj)
-
-        if dictionary_qs is None:
-            return False
-        
-        return dictionary_qs.filter(dictionary_id__in=self.get_accessible_dictionaries(request)
-                                            .values_list('dictionary_id', flat=True)).exists()
-
-    def _get_related_dictionary(self, obj):
-        """Tries to extract a single related dictionary from the object."""
-        try:
-            if hasattr(obj, "term") and hasattr(obj.term, "dictionary"):
-                return obj.term.dictionary
-            if hasattr(obj, "concept") and hasattr(obj.concept, "dictionaries"):
-                return obj.concept.dictionaries.first()
-            if hasattr(obj, "dictionaries"):
-                return obj.dictionaries.first()
-            if hasattr(obj, "dictionary_name"):
-                return obj
-        except Exception as e:
-            logger.warning(f"Could not resolve dictionary for {obj}: {e}")
-        return "No dictionary found"
-
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        return self.get_accessible_dictionaries(request).exists()
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj and not self.has_change_permission(request, obj):
-            return [f.name for f in self.model._meta.fields]
-        return super().get_readonly_fields(request, obj)
-
-    def get_queryset(self, request):
-        """We want all the dictionaries and terms to be visible to the user"""
-        return super().get_queryset(request)
-    
-    def get_actions(self, request):
-        """Ensure delete_selected is available unless explicitly overridden"""
-        actions = super().get_actions(request)
-        if 'delete_selected' not in actions:
-            actions['delete_selected'] = (
-                delete_selected,
-                'delete_selected',
-                f"Delete selected {model_ngettext(self.opts, 2)}"
-            )
-        return actions
+        return Dictionary.objects.filter(
+            groups__in=request.user.groups.all()
+        ).distinct()
 
     def _get_dictionary_from_obj(self, request, obj):
-        raise NotImplementedError("Subclasses must implement _get_dictionary_from_obj")
+        # Implement in the concrete ModelAdmin
+        raise NotImplementedError
 
-    def _get_dictionary_lookup(self):
-        raise NotImplementedError("Subclasses must implement _get_dictionary_lookup")
+    def _has_permission(self, request, obj=None):
+        if obj is None or request.user.is_superuser:
+            return True
+        obj_dicts = self._get_dictionary_from_obj(request, obj)
+        accessible = self.get_accessible_dictionaries(request)
+        return obj_dicts.filter(pk__in=accessible.values_list('pk', flat=True)).exists()
 
+    def has_view_permission(self, request, obj=None):   return self._has_permission(request, obj)
+    def has_change_permission(self, request, obj=None): return self._has_permission(request, obj)
+    def has_delete_permission(self, request, obj=None): return self._has_permission(request, obj)
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser or self.get_accessible_dictionaries(request).exists()
 
 class ConceptFileImportMixin:
 

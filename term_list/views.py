@@ -677,7 +677,7 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse:
 
         mäta_förklaring_träff(sök_term=url_parameter, request=request)
         
-        status_colour_dict = {'concept' : COLOUR_STATUS_DICT.get(single_term.get('concept').status),
+        status_colour = {'concept' : COLOUR_STATUS_DICT.get(single_term.get('concept').status),
                             'synonym' : [[i.synonym,i.synonym_status] for i in single_term.get('concept').synonyms.all()]}
         
         combined_fields = concept_detail_view(concept_id=url_parameter)

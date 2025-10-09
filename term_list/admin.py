@@ -9,10 +9,16 @@ from django.db.models import Case, IntegerField, Q, Value, When, Count
 from django.db.models.functions import Lower
 from django.shortcuts import render, redirect
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+
+
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from django_admin_multiple_choice_list_filter.list_filters import \
+from django.contrib.admin.filters import RelatedFieldListFilter
+
+from django_admin_multiple_choice_list_filter.list_filters import (
     MultipleChoiceListFilter
+)
 from django.core.exceptions import PermissionDenied
 
 from django.contrib import messages
@@ -20,7 +26,7 @@ from django.contrib import messages
 
 from rangefilter.filters import DateRangeFilterBuilder
 from simple_history.admin import SimpleHistoryAdmin
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 
 from term_list.forms import (
     ConceptForm, 
@@ -64,22 +70,32 @@ class SynonymInlineForm(forms.ModelForm):
     class Meta:
         model = Synonym
         fields = "__all__"
+        labels = {"synonym": "Synonym"}
+
 
     def clean(self):
         super(SynonymInlineForm, self).clean()
         if self.cleaned_data.get('synonym') == None:
             self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
 
-class SynonymInline(admin.StackedInline):
+class SynonymInline(admin.TabularInline):
 
     model = Synonym
     form = SynonymInlineForm
     extra = 1
+    min_num = 0
+    verbose_name = "Synonym"
+    verbose_name_plural = "Synonymer"
+
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
         formset.form.user = request.user  # Pass the user to the form
-        return formset
+        parent = kwargs.pop('parent_model_admin', None)
+        if parent is not None:
+            self.parent_model_admin = parent
+        return super().get_formset(request, obj, **kwargs)
+        # return formset
 
 class ConceptExternalFilesInline(admin.StackedInline):
 
@@ -99,7 +115,8 @@ class StatusListFilter(MultipleChoiceListFilter):
 class ExcelImportForm(forms.Form):
     excel_file = forms.FileField()
 
-class TaskOrdererAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
+class TaskOrdererAdmin(
+    admin.ModelAdmin):
 
     list_display = ('name',
                     'email',
@@ -117,7 +134,8 @@ class TaskOrdererAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
         if display_text:
             return mark_safe(", ".join(display_text))   
 
-class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
+class DictionaryAdmin(
+    admin.ModelAdmin):
 
     list_display = ('dictionary_name',
                     'dictionary_id',
@@ -130,10 +148,10 @@ class DictionaryAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
     def _get_dictionary_from_obj(self,  request, obj):
         print("✅ DictionaryAdmin._get_dictionary_from_obj called")
         return Dictionary.objects.filter(pk=obj.pk)
-        # return dictionary_qs
-        # return super()._get_dictionary_from_obj(request, obj)
 
-class SynonymAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
+
+class SynonymAdmin(
+    admin.ModelAdmin):
     
     ordering = ['concept__term']
     list_display = ('concept',
@@ -199,8 +217,9 @@ class ContextFilesInline(admin.StackedInline):
     readonly_fields = ['concept',]
 
 
-class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, 
-                             admin.ModelAdmin):
+class ConceptCommentsAdmin(
+    # DictionaryRestrictedAdminMixin, 
+    admin.ModelAdmin):
 
     class Media:
         css = {
@@ -268,8 +287,9 @@ class SearchTrackAdmin(admin.ModelAdmin):
                     'sök_timestamp',
                     'records_returned')
 
-class ConceptExternalFilesAdmin(DictionaryRestrictedAdminMixin, 
-                                admin.ModelAdmin):
+class ConceptExternalFilesAdmin(
+    # DictionaryRestrictedAdminMixin, 
+    admin.ModelAdmin):
 
     model = ConceptExternalFiles
     form = ConceptExternalFilesForm
@@ -301,26 +321,82 @@ class ConfigurationOptionsAdmin(admin.ModelAdmin):
         return mark_safe(f'<pre>{pretty}</pre>')
     pretty_json.short_description = "Config"
 
-class AttributeValueInline(DictionaryRestrictedInlineMixin, admin.StackedInline):
+class AttributeValueInline(
+    DictionaryRestrictedInlineMixin, 
+    admin.StackedInline
+    ):
     model = AttributeValue
     form = AttributeValueInlineForm
+    fk_name = "term"
     extra = 0
     can_delete = False
-    template = "admin/edit_inline/stacked.html" 
-
-    def _get_dictionary_from_obj(self, request, obj):
-
-        return obj.dictionaries.first()
+    # template = "admin/edit_inline/stacked.html" 
 
     def get_parent_object(self, request):
         return getattr(request, '_admin_form_parent_instance', None)
 
+    # def get_formset(self, request, obj=None, **kwargs):
+    #     self.parent_model_admin = self.admin_site._registry.get(obj.__class__)
+    #     return super().get_formset(request, obj, **kwargs)
+
     def get_formset(self, request, obj=None, **kwargs):
-        self.parent_model_admin = self.admin_site._registry.get(obj.__class__)
-        return super().get_formset(request, obj, **kwargs)
+        """
+        Force-disable all form fields when the parent object isn't changeable.
+        This works regardless of templates or custom widgets.
+        """
+        # Ensure the inline knows its parent admin (ConceptAdmin)
+        if obj is not None and not getattr(self, "parent_model_admin", None):
+            self.parent_model_admin = self.admin_site._registry.get(obj.__class__)
+
+        # If we cannot change the Concept, disable all inline fields
+        can_change = self.has_change_permission(request, obj=obj)
+
+        if not can_change:
+            self.readonly_fields = tuple(self.get_fields(request, obj))
+            self.can_delete = False
+            self.max_num = 0
+            kwargs.setdefault("extra", 0)
+        else:
+            self.readonly_fields = getattr(self, "readonly_fields", ())
+
+        FormSet = super().get_formset(request, obj, **kwargs)
+
+        if not can_change:
+            FormSet.can_delete = False
+            orig_init = FormSet.form.__init__
+            def disabled_init(formself, *a, **k):
+                orig_init(formself, *a, **k)
+                for f in formself.fields.values():
+                    f.disabled = True
+            FormSet.form.__init__ = disabled_init
+
+        return FormSet
+
 
     def has_add_permission(self, request, obj=None):
         return False  # ✅ Prevents the 'Add another' button from appearing
+
+    def has_change_permission(self, request, obj=None):
+        if obj is None:
+            return True  # early calls during construction
+        p = getattr(self, "parent_model_admin", None)
+        if p is not None:
+            return p.has_change_permission(request, obj=obj)
+        return self._has_permission(request, obj)
+
+        return p.has_change_permission(request, obj=obj)
+
+    # ✅ Make the inline read-only if parent says “no change” on this Concept
+    def get_readonly_fields(self, request, obj=None):
+        if obj and not self.has_change_permission(request, obj):
+            return tuple(self.get_fields(request, obj))
+        return super().get_readonly_fields(request, obj)
+
+    # ✅ Hide “add another” row when read-only (belt & braces)
+    def get_max_num(self, request, obj=None, **kwargs):
+        if obj and not self.has_change_permission(request, obj):
+            return 0
+        return super().get_max_num(request, obj, **kwargs)
 
     def get_fields(self, request, obj=None):
         """
@@ -331,18 +407,14 @@ class AttributeValueInline(DictionaryRestrictedInlineMixin, admin.StackedInline)
 
         # Get the term's groups (or another relevant relation)
         term_groups = obj.dictionaries.values_list("groups", flat=True)
-        # attributes = Attribute.objects.filter(groups__id__in=term_groups).distinct()
 
-        # term_groups = obj.dictionaries.all()  # Adjust this if needed
         attributes = Attribute.objects.filter(groups__in=term_groups).distinct()
 
         # Get sorted attributes based on GroupAttribute position
         group_attributes = GroupAttribute.objects.filter(attribute__in=attributes).order_by("position")
 
-        # Extract the sorted attributes
         sorted_attributes = [ga.attribute for ga in group_attributes]
 
-        # Field mapping for each attribute type
         field_map = {
             'string': 'value_string',
             'text': 'value_text',
@@ -357,7 +429,18 @@ class AttributeValueInline(DictionaryRestrictedInlineMixin, admin.StackedInline)
             field_map[attr.data_type] for attr in sorted_attributes if attr.data_type in field_map
         ]
         return sorted_fields
-    
+
+class AllDictionaryFilter(RelatedFieldListFilter):
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super().__init__(field, request, params, model, model_admin, field_path)
+        self.title = _("Ordböcker")
+
+
+    def field_choices(self, field, request, model_admin):
+        from .models import Dictionary
+        qs = Dictionary.objects.all().order_by("dictionary_name")
+        return [(d.pk, str(d)) for d in qs]
 
 class ConceptAdmin(DictionaryRestrictedAdminMixin,
                    ConceptFileImportMixin,
@@ -386,14 +469,57 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     
     list_filter = (StatusListFilter,
                    ('changed_at', DateRangeFilterBuilder()),
-                   'dictionaries',
+                   ("dictionaries", AllDictionaryFilter),
                    DuplicateTermFilter
     )
+
+    # --- defaults for the first page load ---
+    DICT_PARAM = "dictionaries__dictionary_id__exact"
+    DEFAULT_SUPERUSER_DICT_NAME = "VGR gemensam"
     
-    inlines = [AttributeValueInline]
+    inlines = [AttributeValueInline, SynonymInline]
+
+    def _default_dictionary_id(self, request):
+        """Pick the default dictionary id for this user."""
+        if request.user.is_superuser:
+            return (
+                Dictionary.objects
+                .filter(dictionary_name=self.DEFAULT_SUPERUSER_DICT_NAME)
+                .values_list("dictionary_id", flat=True)
+                .first()
+            )
+        # Limited users: start on one of the dictionaries they can access
+        qs = self.get_accessible_dictionaries(request)
+        return qs.order_by("dictionary_name").values_list("dictionary_id", flat=True).first()
+
+    def changelist_view(self, request, extra_context=None):
+        """
+        If no dictionary filter is present, redirect to the same URL
+        with a default 'dictionaries__id__exact=<id>' applied.
+        """
+        if request.method == "GET" and self.DICT_PARAM not in request.GET:
+            default_id = self._default_dictionary_id(request)
+            if default_id:
+                params = request.GET.copy()
+                params[self.DICT_PARAM] = str(default_id)
+                return HttpResponseRedirect(f"{request.path}?{params.urlencode()}")
+        return super().changelist_view(request, extra_context)
+    
+    def has_view_permission(self, request, obj=None):
+        # Let any authenticated staff view terms (even outside their dictionaries).
+        return request.user.is_active and request.user.is_staff
+
+    def get_readonly_fields(self, request, obj=None):
+        # If user lacks change permission on this object, make the form read-only.
+        ro = list(super().get_readonly_fields(request, obj))
+        if obj and not self.has_change_permission(request, obj=obj):
+            # All concrete fields read-only
+            ro = sorted(set(ro + [f.name for f in self.model._meta.fields]))
+        return ro
 
     def _get_dictionary_from_obj(self, request, obj):
         return obj.dictionaries.all() if obj else Dictionary.objects.none()
+    
 
     def _get_dictionary_lookup(self):
         return 'dictionaries__in'
@@ -414,15 +540,12 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         return actions
 
     def get_inline_instances(self, request, obj=None):
-        instances = []
-        for inline_class in self.inlines:
-            inline = inline_class(self.model, self.admin_site)
-            inline.parent_model_admin = self  # Still assign for safety
-            # Wrap get_formset to pass the parent
-            original_get_formset = inline.get_formset
-            inline.get_formset = lambda request, obj=None, **kwargs: \
-                original_get_formset(request, obj, parent_model_admin=self, **kwargs)
-            instances.append(inline)
+
+        if obj is None:
+            return []
+        instances = super().get_inline_instances(request, obj)
+        for inline in instances:
+            inline.parent_model_admin = self
         return instances
     
     def status_button(self, obj):
@@ -442,14 +565,6 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
-
-    def get_inlines(self, request, obj=None):
-        """
-        Conditionally return inlines only when editing an existing Concept.
-        """
-        if obj:  # Only show inlines when editing an existing instance
-            return [AttributeValueInline]
-        return []
     
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -470,7 +585,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
 
         class FormWithUser(form_class):
             def __init__(self2, *args, **kwargs2):
-                logger.info("✅ Injecting user:", request.user)
+                logger.info(f"Injecting user: {request.user}")
                 kwargs2['user'] = request.user
                 super().__init__(*args, **kwargs2)
 
@@ -585,7 +700,9 @@ class AttributeAdmin(admin.ModelAdmin):
     def list_groups(self, obj):
         return ", ".join([group.name for group in obj.groups.all()])
 
-class AttributeValueAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
+class AttributeValueAdmin(
+    #  DictionaryRestrictedAdminMixin, 
+    admin.ModelAdmin):
 
     model = AttributeValue
     actions = [delete_selected]
@@ -661,6 +778,5 @@ admin.site.register(ConceptExternalFiles,ConceptExternalFilesAdmin)
 admin.site.register(ConfigurationOptions, ConfigurationOptionsAdmin)
 admin.site.register(Concept, ConceptAdmin)
 admin.site.register(Attribute, AttributeAdmin)
-# admin.site.register(AttributeValue,AttributeValueAdmin)
 admin.site.register(GroupHierarchy)
 admin.site.register(GroupAttribute, GroupAttributeAdmin)

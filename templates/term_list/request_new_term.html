@@ -1,20 +1,22 @@
 {% block display-middle-column %}
 
 {% load crispy_forms_filters %}
-    {% if form %}
-    
-    <h5>{{header}}</h5>
-    <form id="beställ_form" action="{% url 'request_new_term' %}?{{whichTemplate}}" method='POST' enctype="multipart/form-data">{% csrf_token %}
-      
+{% if form %}
+
+<h5>{{header}}</h5>
+<form id="request-new-term-form" action="{% url 'request_new_term' %}?{{whichTemplate}}" method='POST'
+    enctype="multipart/form-data" aria-describedby="request-form-info" novalidate>{% csrf_token %}
+
     {{ form|crispy }}
 
     {% else %}
-        {% for term in concept %}
-        {{ term.term }}
-        {% endfor %}
+    {% for term in concept %}
+    {{ term.term }}
+    {% endfor %}
     <h5>Sökningen gav ingen träff!</h5>
     There is no form variable coming in
     {% endif %}
+    <div id="request-form-info" class="sr-only">Alla fält märkta med * är obligatoriska.</div>
     <input class="btn btn-primary" type="submit" value="Skicka">
 
 </form>
@@ -24,38 +26,38 @@
 {% block extra_javascript %}
 
 <script>
- 
-    $("#beställ_form").submit(function(event){
-    event.preventDefault();
-    var post_url = $(this).attr("action");
-    var request_method = $(this).attr("method");
-    var formdata = new FormData($(this)[0]);
-    
-    $.ajax({
-        beforeSend: function (request)
-            {
+
+    $("#request-new-term-form").submit(function (event) {
+        event.preventDefault();
+        var post_url = $(this).attr("action");
+        var request_method = $(this).attr("method");
+        var formdata = new FormData($(this)[0]);
+
+        $.ajax({
+            beforeSend: function (request) {
                 request.setRequestHeader("X-CSRFTOKEN", "{{ csrf_token }}");
             },
-        url : post_url,
-        type: request_method,
-        dataType: 'html',
-        contentType: false,
-        cache: false,
-        processData:false,
-        data : formdata,
-        success : function(response){
-            $("#display-middle-column").html(response);
-            history.pushState(post_url, '', post_url)
-            setTimeout(function(){
-            $("#display-middle-column").html('<div id="display-middle-column"></div>')}, 2500);
-            document.getElementById('user-input').value = '';
-            history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', endpoint);
-        },
-        error: function(response) {
-            $("#display-middle-column").html(response.responseText);
-        }
+            url: post_url,
+            type: request_method,
+            dataType: 'html',
+            contentType: false,
+            cache: false,
+            processData: false,
+            data: formdata,
+            success: function (response) {
+                $("#display-middle-column").html(response);
+                history.pushState(post_url, '', post_url)
+                setTimeout(function () {
+                    $("#display-middle-column").html('<div id="display-middle-column" role="region" aria-live="polite"></div>')
+                }, 2500);
+                document.getElementById('user-input').value = '';
+                history.replaceState('', 'VGR Informatik - OLLI Begreppstjänst', endpoint);
+            },
+            error: function (response) {
+                $("#display-middle-column").html(response.responseText);
+            }
+        });
     });
-});
 
-    </script>
+</script>
 {% endblock extra_javascript %}
