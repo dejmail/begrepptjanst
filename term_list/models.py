@@ -5,7 +5,7 @@ from django.conf import settings
 from simple_history.models import HistoricalRecords
 from django.contrib.auth.models import User, Group
 from django.core.exceptions import ValidationError
-
+from django.utils.translation import gettext_lazy as _
 
 import json
 from django.utils.safestring import mark_safe
@@ -29,8 +29,8 @@ class Dictionary(models.Model):
     to more than one dictionary"""
     
     class Meta:     
-        verbose_name_plural = "Ordböcker"
-        verbose_name = "Ordbok"
+        verbose_name_plural = _("Dictionaries")
+        verbose_name = _("Dictionary")
         app_label = 'term_list'
 
     dictionary_id = models.AutoField(primary_key=True)
@@ -52,7 +52,8 @@ class ConceptExternalFiles(models.Model):
     """
 
     class Meta:
-        verbose_name_plural = "Uppladdade filer"
+        verbose_name = _('Uploaded File')
+        verbose_name_plural = _("Uploaded Files")
         app_label = 'term_list'
 
     concept = models.ForeignKey("Concept", to_field='id', on_delete=models.CASCADE)
@@ -72,7 +73,8 @@ class TaskOrderer(models.Model):
     """
 
     class Meta:
-        verbose_name_plural = "Beställare"
+        verbose_name = _("Requester")
+        verbose_name_plural = _("Requesters")
         app_label = 'term_list'
 
     name = models.CharField(max_length=255, blank=True)
@@ -96,8 +98,8 @@ class Synonym(models.Model):
                        ('Inte angiven','Inte angiven'))
 
     class Meta:
-        verbose_name_plural = "Synonymer"
-        verbose_name = "Synonym"
+        verbose_name_plural = _("Synonyms")
+        verbose_name = _("Synonym")
         app_label = 'term_list'
 
     #begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name="legacy_synonyms")
@@ -119,7 +121,7 @@ class ConceptComment(models.Model):
     """
 
     class Meta:
-        verbose_name_plural = 'Kommenterade Begrepp'
+        verbose_name_plural = _('Concept comments')
         app_label = 'term_list'
 
     concept = models.ForeignKey("Concept", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
@@ -141,7 +143,7 @@ class SearchTrack(models.Model):
     """
 
     class Meta:
-        verbose_name_plural = 'Sök data'
+        verbose_name_plural = _('Search data')
         app_label = 'term_list'
 
     sök_term = models.CharField(max_length=255)
@@ -158,8 +160,8 @@ class MetadataSearchTrack(models.Model):
     """
 
     class Meta:
-        verbose_name = ('Sök Metadata')
-        verbose_name_plural = ('Sök Metadata')
+        verbose_name = _('Search Metadata')
+        verbose_name_plural = _('Search Metadata')
         app_label = 'term_list'
 
     sök_term = models.CharField(max_length=255)
@@ -172,8 +174,8 @@ class MetadataSearchTrack(models.Model):
 class ConfigurationOptions(models.Model):
 
     class Meta:
-        verbose_name = ('Inställningar')
-        verbose_name_plural = "Inställningar"
+        verbose_name = _('Settings')
+        verbose_name_plural = _("Settings")
         app_label = 'term_list'
     
     name = models.CharField(max_length=255)     
@@ -203,8 +205,8 @@ class ConfigurationOptions(models.Model):
 class Concept(models.Model):
 
     class Meta:
-        verbose_name = "Begrepp"
-        verbose_name_plural = "Begrepp"
+        verbose_name = _('Concept')
+        verbose_name_plural = _('Concepts')
         app_label = 'term_list'
 
     term = models.CharField(max_length=255)  # The word itself
@@ -234,8 +236,8 @@ class GroupAttribute(models.Model):
 
     class Meta:
         unique_together = ('group', 'attribute')
-        verbose_name = "Attribut Grupp"
-        verbose_name_plural = "Attribut Grupper"
+        verbose_name = _("Attribute Group")
+        verbose_name_plural = _("Attribute Groups")
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     attribute = models.ForeignKey('Attribute', on_delete=models.CASCADE)
@@ -245,8 +247,8 @@ class GroupAttribute(models.Model):
 class Attribute(models.Model):
 
     class Meta:
-        verbose_name = "Attribut"
-        verbose_name_plural = "Attribut"    
+        verbose_name = _("Attribute")
+        verbose_name_plural = _("Attributes")
 
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
@@ -268,8 +270,8 @@ class Attribute(models.Model):
 class AttributeValue(models.Model):
 
     class Meta:
-        verbose_name = "Attribut Värde"
-        verbose_name_plural = "Attribut Värden"
+        verbose_name = _("Attribute Value")
+        verbose_name_plural = _("Attribute Values")
 
     term = models.ForeignKey(Concept, on_delete=models.CASCADE, related_name='attributes')
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
@@ -325,8 +327,8 @@ class AttributeValue(models.Model):
 class GroupHierarchy(models.Model):
 
     class Meta:
-        verbose_name = "Grupp Hierarki"
-        verbose_name_plural = "Grupp Hierarki"
+        verbose_name = _("Group Hierarchy")
+        verbose_name_plural = _("Group Hierarchy")
 
     parent = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='subgroups')
     child = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='parent_groups')

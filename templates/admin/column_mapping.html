@@ -6,14 +6,14 @@
 <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 <div id="content" class="">
 
-    <h3>{% translate 'Suggested mapping of Excel columns to model attribute' %}</h3>
+    <h3>{% blocktranslate %}Suggested mapping of Excel columns to model attribute{% endblocktranslate %}</h3>
 
-    <h4>{% translate 'Adjust where suggestion is wrong' %}</h4>
+    <h4>{% trans "Adjust where suggestion is wrong" %}</h4>
 
     <h4>
         <ul>
-            <li>{% translate 'If you do not provide the target field, the column will not be imported.' %}</li>
-            <li>{% translate 'Columns without values are ignored.' %}</li>
+            <li>{% trans "If you do not provide the target field, the column will not be imported." %}</li>
+            <li>{% trans "Columns without values are ignored." %}</li>
         </ul>
     </h4>
 
@@ -21,18 +21,11 @@
         <div class="form-container">
 
             {% csrf_token %}
-            <!-- <div class="form-row">
-            <label class="label" for="ignore-blank-columns">Ignorera kolumnar som är tomma</label>
-            <input class="field" type="checkbox" id="ignore-blank-columns" name="ignore-blank-columns" value="False">        
-        </div> -->
-            <!-- {{ mapping_form.excel_file }} -->
-
-            <!-- Loop through the form fields, except the dictionary field -->
 
             <fieldset class="module aligned">
                 <div class="row font-weight-bold border-bottom pb-2 mb-2">
-                    <div class="col-md-6">{% trans "Excel column" %}</div>
-                    <div class="col-md-6">{% trans "Model attribute" %}</div>
+                    <div class="col-md-6">{% translate "Excel column" %}</div>
+                    <div class="col-md-6">{% translate "Model attribute" %}</div>
                 </div>
 
                 {% for field in mapping_form %}
@@ -75,7 +68,7 @@
         <input type="hidden" name="apply_mapping" id="apply_mapping_hidden" value="">
 
         <div class="submit-row submit-row-left">
-            <input type="submit" name="apply_mapping" class="default" value="Skicka Mappning">
+            <input type="submit" name="apply_mapping" class="default" value="{% translate 'Send mapping' %}">
         </div>
 
 </div>

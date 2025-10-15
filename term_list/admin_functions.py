@@ -6,12 +6,15 @@ from term_list.models import (Dictionary,
                               Concept, 
                               Attribute, 
                               Synonym, 
-                              AttributeValue)
+                              AttributeValue,
+                              DEFAULT_STATUS,
+                              STATUS_CHOICES)
 from django.core.exceptions import ObjectDoesNotExist
 
 from term_list.forms import (ExcelImportForm,
                           ColumnMappingForm)
 from django.core.exceptions import ValidationError
+from django.utils.encoding import force_str
 
 from django.urls import path, reverse
 from django.shortcuts import render, redirect
@@ -56,6 +59,29 @@ def conditional_lowercase(cell):
         else:
             new_word.append(word.strip().lower())
     return ' '.join(new_word)
+
+
+def normalize_choice_value(raw_value, choices):
+    """
+    Convert an imported value to the canonical value defined in `choices`.
+    """
+    if raw_value in [None, ""]:
+        return raw_value, True
+
+    normalised = force_str(raw_value).strip()
+    if not normalised:
+        return "", True
+
+    lookup = {}
+    for db_value, display in choices:
+        canonical = force_str(db_value)
+        lookup[canonical.casefold()] = canonical
+        lookup[force_str(display).casefold()] = canonical
+
+    matched = lookup.get(normalised.casefold())
+    if matched is not None:
+        return matched, True
+    return normalised, False
 
 class DictionaryRestrictedInlineMixin:
 
@@ -156,6 +182,15 @@ class DictionaryRestrictedAdminMixin:
             groups__in=request.user.groups.all()
         ).distinct()
 
+    def _user_has_dictionary_access(self, request, obj):
+        if obj is None or request.user.is_superuser:
+            return True
+        dictionaries = self._get_dictionary_from_obj(request, obj)
+        if dictionaries is None:
+            return False
+        accessible = self.get_accessible_dictionaries(request).values_list('pk', flat=True)
+        return dictionaries.filter(pk__in=accessible).exists()
+
     def _get_dictionary_from_obj(self, request, obj):
         # Implement in the concrete ModelAdmin
         raise NotImplementedError
@@ -220,11 +255,14 @@ class ConceptFileImportMixin:
         available_fields = concept_fields + attribute_names
         logger.debug(f"Available fields to import: {available_fields}")
 
+        lower_to_original = {field.lower(): field for field in available_fields}
+
         for column in excel_columns:
+            lower_candidates = list(lower_to_original.keys())
             # Use difflib to find the closest match for each column in the model fields
-            closest_match = difflib.get_close_matches(column, available_fields, n=1)
-            if closest_match:
-                draft_mapping[column] = closest_match[0]  # Take the best match
+            match_lower = difflib.get_close_matches(column.lower(), lower_candidates, n=1)
+            if match_lower:
+                draft_mapping[column] = lower_to_original[match_lower[0]]
             else:
                 draft_mapping[column] = None  # No close match found
 
@@ -316,7 +354,7 @@ class ConceptFileImportMixin:
             # the mapping of this is not quite right...I want the sqwedish headers in the 
             # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
             logger.debug(f'adding key - {json_column_mapping=}')
-            column_mapping = {k: v for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
+            column_mapping = {k: force_str(v) for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
             
             df = pd.read_excel(io.BytesIO(base64.b64decode(request.POST.get('excel_file'))), engine='openpyxl')
 
@@ -324,15 +362,24 @@ class ConceptFileImportMixin:
     
             updated_records = []
             concept_data_list = []
+            invalid_status_values = set()
             
             for _, row in df.iterrows():                
-                data = {column_mapping[col]: row[col] for col in df.columns if column_mapping.get(col)}
+                data = {force_str(column_mapping[col]): row[col] for col in df.columns if column_mapping.get(col)}
                 data = {k: None if pd.isna(v) else v for k, v in data.items()}
                 data['term'] = conditional_lowercase(data.get('term'))
                 if data.get('definition'):
                     data['definition'] = data.get('definition').replace('\u200b','').strip()            
+                status_value = data.get('status')
+                if status_value is not None:
+                    normalised_status, is_valid_status = normalize_choice_value(status_value, STATUS_CHOICES)
+                    if is_valid_status:
+                        data['status'] = normalised_status
+                    else:
+                        invalid_status_values.add(force_str(status_value).strip())
+                        data['status'] = DEFAULT_STATUS
                 
-                data[Dictionary._meta.verbose_name_plural] = chosen_dictionary
+                data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary
                 
                 try:        
                     
@@ -356,6 +403,12 @@ class ConceptFileImportMixin:
                     data['is_changed'] = False 
                     data['is_new'] = True   
                     concept_data_list.append(data)
+            if invalid_status_values:
+                messages.warning(
+                    request,
+                    "Ogiltiga statusvärden hittades i importfilen och ersattes med standardstatus: "
+                    f"{', '.join(sorted(invalid_status_values))}."
+                )
             #Render the confirmation page
             return render(request, 'admin/confirm_mapping.html', {
                 'concept_data_list': concept_data_list,

@@ -1,0 +1,171 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-15 21:49+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: term_list/admin.py:437 term_list/models.py:32
+msgid "Dictionaries"
+msgstr "Ordböcker"
+
+#: term_list/forms.py:96
+msgid "The dictionary does not exist."
+msgstr ""
+
+#: term_list/forms.py:108
+msgid "Term som representerar begreppet"
+msgstr ""
+
+#: term_list/forms.py:110
+msgid "Beskriv hur begreppet används:"
+msgstr ""
+
+#: term_list/forms.py:112
+msgid "E-post"
+msgstr ""
+
+#: term_list/forms.py:113 term_list/forms.py:167
+msgid "Bifogar en/flera skärmklipp eller filer som kan hjälpa oss"
+msgstr ""
+
+#: term_list/forms.py:187
+msgid "Select Dictionary"
+msgstr "Välja ordbok"
+
+#: term_list/forms.py:250 term_list/forms.py:252
+msgid "Rullistan visar termer redan i DB"
+msgstr ""
+
+#: term_list/forms.py:251
+msgid "Visas som HTML på framsidan"
+msgstr ""
+
+#: term_list/forms.py:283
+msgid "Får inte ha { } eller ½ i texten"
+msgstr ""
+
+#: term_list/forms.py:286
+msgid "Form is missing 'user'. Make sure it's passed from the admin."
+msgstr ""
+
+#: term_list/forms.py:291
+msgid "Välj minst en ordlista innan du sparar."
+msgstr ""
+
+#: term_list/forms.py:300
+msgid ""
+"Du har inte behörighet att koppla detta begrepp till en eller flera av de "
+"valda ordlistorna."
+msgstr ""
+
+#: term_list/forms.py:306
+msgid "Attached file"
+msgstr "Bifogad fil"
+
+#: term_list/forms.py:311
+msgid "Kan länkas till en kommentar också, men behövs inte"
+msgstr ""
+
+#: term_list/models.py:33
+msgid "Dictionary"
+msgstr "Ordbok"
+
+#: term_list/models.py:55
+msgid "Uploaded File"
+msgstr "Bifogad file"
+
+#: term_list/models.py:56
+msgid "Uploaded Files"
+msgstr "Bifogad fil"
+
+#: term_list/models.py:76
+msgid "Requester"
+msgstr ""
+
+#: term_list/models.py:77
+msgid "Requesters"
+msgstr ""
+
+#: term_list/models.py:101
+msgid "Synonyms"
+msgstr "Syonymer"
+
+#: term_list/models.py:102
+msgid "Synonym"
+msgstr "Synonym"
+
+#: term_list/models.py:124
+msgid "Concept comments"
+msgstr "Begrepp kommentar"
+
+#: term_list/models.py:146
+msgid "Search data"
+msgstr "Söka data"
+
+#: term_list/models.py:163 term_list/models.py:164
+msgid "Search Metadata"
+msgstr "Söa metadata"
+
+#: term_list/models.py:177 term_list/models.py:178
+msgid "Settings"
+msgstr "inställningar"
+
+#: term_list/models.py:208
+msgid "Concept"
+msgstr "Begrepp"
+
+#: term_list/models.py:209
+msgid "Concepts"
+msgstr "Begrepp"
+
+#: term_list/models.py:239
+msgid "Attribute Group"
+msgstr "Atttribut grupp"
+
+#: term_list/models.py:240
+msgid "Attribute Groups"
+msgstr "Attribut grupper"
+
+#: term_list/models.py:250
+msgid "Attribute"
+msgstr "Attribut"
+
+#: term_list/models.py:251
+msgid "Attributes"
+msgstr "Attributer"
+
+#: term_list/models.py:273
+msgid "Attribute Value"
+msgstr "Attribut värde"
+
+#: term_list/models.py:274
+msgid "Attribute Values"
+msgstr "Attribut värden"
+
+#: term_list/models.py:330 term_list/models.py:331
+msgid "Group Hierarchy"
+msgstr "Grupp hierarki"
+
+#: term_list/views.py:929
+msgid "Request for a new term"
+msgstr "Efterfråga en ny term"
+
+#~ msgid "From date"
+#~ msgstr "Från datum"
+
+#~ msgid "To date"
+#~ msgstr "Till datum"

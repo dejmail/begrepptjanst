@@ -93,7 +93,7 @@ class TermRequestForm(forms.Form):
         dictionary = Dictionary.objects.filter(dictionary_long_name=self.cleaned_data.get('dictionary')).first()
                 # Assuming you're checking if the dictionary exists in the database
         if not dictionary:
-            raise ValidationError("The dictionary does not exist.")
+            raise ValidationError(_("The dictionary does not exist."))
 
         return dictionary
 
@@ -105,12 +105,12 @@ class TermRequestForm(forms.Form):
         begrepp = self.cleaned_data.get('begrepp')
         return begrepp
 
-    begrepp = forms.CharField(max_length=254, label="Term som representerar begreppet", widget = forms.TextInput)
+    begrepp = forms.CharField(max_length=254, label=_("Term som representerar begreppet"), widget = forms.TextInput)
     dictionary = forms.CharField(max_length=64, label="Ordlista")
-    kontext = forms.CharField(widget=forms.Textarea, label="Beskriv hur begreppet används:") 
+    kontext = forms.CharField(widget=forms.Textarea, label=_("Beskriv hur begreppet används:"))
     namn = forms.CharField(max_length=100)
-    epost =  forms.EmailField(max_length=254, label="E-post")
-    file_field = MultipleFileField(label="Bifogar en/flera skärmklipp eller filer som kan hjälp oss", required=False)
+    epost =  forms.EmailField(max_length=254, label=_("E-post"))
+    file_field = MultipleFileField(label=_("Bifogar en/flera skärmklipp eller filer som kan hjälpa oss"), required=False)
       
 class PrettyDecodedJSONWidget(forms.Textarea):
     def format_value(self, value):
@@ -164,7 +164,7 @@ class CommentTermForm(forms.Form):
     )
 
     file_field = MultipleFileField(
-        label="Bifogar en/flera skärmklipp eller filer som kan hjälpa oss",
+        label=_("Bifogar en/flera skärmklipp eller filer som kan hjälpa oss"),
         required=False
     )
 
@@ -224,9 +224,8 @@ class AttributeValueInlineForm(forms.ModelForm):
         if self.instance and self.instance.attribute_id:
             attribute = self.instance.attribute
             data_type = attribute.data_type
-            display_name = attribute.display_name  # ✅ Get the attribute's display name
+            display_name = attribute.display_name
 
-            # ✅ Map attribute data type to the correct field name
             field_map = {
                 'string': 'value_string',
                 'text': 'value_text',
@@ -238,7 +237,7 @@ class AttributeValueInlineForm(forms.ModelForm):
 
             for field_name, field in self.fields.items():
                 if field_name != field_map.get(data_type, ''):
-                    self.fields[field_name].widget = HiddenInput()  # ✅ Hide irrelevant fields
+                    self.fields[field_name].widget = HiddenInput() 
                 else:
                     self.fields[field_name].label = ''
 
@@ -248,9 +247,9 @@ class ConceptForm(GroupFilteredModelForm):
         model = Concept
         exclude = ()
         fields = '__all__'
-        help_texts = {'term': 'Rullistan visar termer redan i DB',
-                      'definition': 'Visas som HTML på framsidan',
-                      'källa': 'Rullistan visar termer redan i DB'}
+        help_texts = {'term': _('Rullistan visar termer redan i DB'),
+                      'definition': _('Visas som HTML på framsidan'),
+                      'källa': _('Rullistan visar termer redan i DB')}
     
     def use_required_attribute(self, *args):
         return False
@@ -281,15 +280,15 @@ class ConceptForm(GroupFilteredModelForm):
         cleaned_data = super().clean()
         
         if any((c in ['{', '}', '½']) for c in cleaned_definition):
-            raise forms.ValidationError({'definition' : 'Får inte ha { } eller ½ i texten'})
+            raise forms.ValidationError({'definition' : _('Får inte ha { } eller ½ i texten')})
         
         if (not hasattr(self, 'user')) or (self.user is None):
-            raise Exception("Form is missing 'user'. Make sure it's passed from the admin.")
+            raise Exception(_("Form is missing 'user'. Make sure it's passed from the admin."))
 
         selected_dictionaries = cleaned_data.get("dictionaries")
         if not selected_dictionaries:
                 # field-specific error mapping if you prefer it here
-                raise forms.ValidationError({"dictionaries": "Välj minst en ordlista innan du sparar."})
+                raise forms.ValidationError({"dictionaries": _("Välj minst en ordlista innan du sparar.")})
         
         user = self.user
         if user and not user.is_superuser:
@@ -298,7 +297,7 @@ class ConceptForm(GroupFilteredModelForm):
 
             unauthorized = selected_dictionaries.exclude(pk__in=allowed.values_list("pk", flat=True))
             if unauthorized.exists():
-                raise ValidationError("Du har inte behörighet att koppla detta begrepp till en eller flera av de valda ordlistorna.")
+                raise ValidationError(_("Du har inte behörighet att koppla detta begrepp till en eller flera av de valda ordlistorna."))
 
         return cleaned_data
         
@@ -309,7 +308,7 @@ class ConceptExternalFilesForm(forms.ModelForm):
     class Meta:
         model = ConceptExternalFiles
         exclude = ()
-        help_texts = {'kommentar' : 'Kan länkas till en kommentar också, men behövs inte'}
+        help_texts = {'kommentar' : _('Kan länkas till en kommentar också, men behövs inte')}
 
 class ChooseExportAttributes(forms.Form):
 

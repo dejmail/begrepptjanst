@@ -434,7 +434,7 @@ class AllDictionaryFilter(RelatedFieldListFilter):
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)
-        self.title = _("Ordböcker")
+        self.title = _("Dictionaries")
 
 
     def field_choices(self, field, request, model_admin):

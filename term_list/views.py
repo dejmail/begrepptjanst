@@ -51,7 +51,7 @@ COLOUR_STATUS_DICT = {'Avråds' : 'table-red',
                     'Beslutad': 'table-green',
                     'Pågår': 'table-yellow',
                     'Ej Påbörjad': 'table-yellow',
-                    'Publiceras ej' : 'table-light-blue'}
+                    'Publicera ej' : 'table-light-blue'}
 
 ATTRIBUTE_VALUE_FIELDS = {
     'string': 'value_string',
@@ -878,7 +878,7 @@ def request_new_term(request: HttpRequest):
                 new_term = Concept()
                 new_term.term = form.clean_concept()
 
-                new_term.status = 'Pågår'
+                new_term.status = DEFAULT_STATUS
                 new_term.save()
 
                 # saving not necessary again
@@ -926,7 +926,7 @@ def request_new_term(request: HttpRequest):
         
         return render(request, 'request_new_term.html', {'form': form, 
                                                     'whichTemplate' : 'requestTerm',
-                                                    'header' : 'Önskemål om nytt concept'})
+                                                    'header' : _('Request for a new term')})
 
     else:
         return render(request, 'term.html', {})

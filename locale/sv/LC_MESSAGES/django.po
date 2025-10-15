@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-27 07:53+0200\n"
+"POT-Creation-Date: 2025-10-15 21:52+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,9 +48,15 @@ msgstr "Logga ut"
 msgid "Home"
 msgstr "Hem"
 
+#: templates/admin/begrepp_change_form.html:7
+msgid "Add"
+msgstr "Lägg till"
+
+#: templates/admin/begrepp_change_form.html:9
+msgid "Change"
+msgstr "Ändra"
+
 #: templates/admin/change_dictionary_action.html:12
-#, fuzzy
-#| msgid "Select Dictionaries to apply to the selected Begrepp"
 msgid "Select Dictionaries to apply to the selected concept"
 msgstr "Välja Ordböcker som Begrepp ska ingå i "
 
@@ -63,18 +69,14 @@ msgid "Select Dictionary"
 msgstr "Välja Ordböcker"
 
 #: templates/admin/change_form.html:27
-#, fuzzy, python-format
-#| msgid "Add %(name)s"
+#, python-format
 msgid ""
 "\n"
 "  Add %(name)s\n"
 "  "
-msgstr "Lägga till %(name)"
+msgstr ""
 
 #: templates/admin/change_form.html:55
-#, fuzzy
-#| msgid "Please correct the error below."
-#| msgid_plural "Please correct the errors below."
 msgid ""
 "\n"
 "        Please correct the error below.\n"
@@ -83,19 +85,16 @@ msgid_plural ""
 "\n"
 "        Please correct the errors below.\n"
 "        "
-msgstr[0] "Vänligen korrigera nedanför felet"
-msgstr[1] "Vänligen korrigera nedanför felen"
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/admin/change_list.html:54
-#, fuzzy
-#| msgid "Please correct the error below."
-#| msgid_plural "Please correct the errors below."
 msgid "Please correct the error below."
 msgid_plural ""
 "Please\n"
 "    correct the errors below."
-msgstr[0] "Vänligen korrigera nedanför felet"
-msgstr[1] "Vänligen korrigera nedanför felen"
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/admin/change_list.html:81
 msgid "Filter"
@@ -106,16 +105,12 @@ msgid "Clear all filters"
 msgstr "Nollställa alla filtrar"
 
 #: templates/admin/column_mapping.html:9
-#, fuzzy
-#| msgid "Mappnings förslag av Excel kolumnar och model attribut"
 msgid "Suggested mapping of Excel columns to model attribute"
 msgstr "Mappnings förslag av Excel kolumnar och model attribut"
 
 #: templates/admin/column_mapping.html:11
-#, fuzzy
-#| msgid "Adjust where the suggestion is wrong"
 msgid "Adjust where suggestion is wrong"
-msgstr "Anpassa där förslag är fel"
+msgstr "Anpassa där förslaget är fel"
 
 #: templates/admin/column_mapping.html:15
 msgid ""
@@ -127,25 +122,27 @@ msgstr ""
 msgid "Columns without values are ignored."
 msgstr "Kolumnar utan värden ignoreras."
 
-#: templates/admin/column_mapping.html:34
+#: templates/admin/column_mapping.html:27
 msgid "Excel column"
 msgstr "Excel-kolumn"
 
-#: templates/admin/column_mapping.html:35
+#: templates/admin/column_mapping.html:28
 msgid "Model attribute"
 msgstr "Model-attribut"
 
-#: templates/admin/column_mapping.html:58
+#: templates/admin/column_mapping.html:51
 msgid "Choose dictionary:"
 msgstr "Välj ordbok:"
 
-#: templates/admin/column_mapping.html:69
+#: templates/admin/column_mapping.html:62
 msgid "Chosen dictionary:"
 msgstr "Vald ordbok:"
 
+#: templates/admin/column_mapping.html:71
+msgid "Send mapping"
+msgstr "Skicka mappning"
+
 #: templates/admin/confirm_mapping.html:7
-#, fuzzy
-#| msgid "Confirm the concepts that will be imported or updated"
 msgid "Confirm concepts that will be imported or updated"
 msgstr "Bekräfta begrepp som ska importeras eller uppdateras"
 
@@ -154,55 +151,40 @@ msgid "Delete multiple objects"
 msgstr "Radera flera objekt"
 
 #: templates/admin/delete_selected_intermediate.html:24
-#, fuzzy, python-format
-#| msgid ""
-#| "Deleting the selected %(objects_name)s would result in deleting related "
-#| "objects, but your account doesn't have permission to delete the following "
-#| "types of objects:"
+#, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would result in deleting related "
 "objects, but your\n"
 "    account doesn't have permission to delete the following types of objects:"
 msgstr ""
-"Att ta bort valda %(objects_name)s skulle innebära att relaterade objekt "
-"också tas bort, men ditt konto har inte behörighet att ta bort följande "
-"typer av objekt:"
 
 #: templates/admin/delete_selected_intermediate.html:28
-#, fuzzy, python-format
-#| msgid ""
-#| "Deleting the selected %(objects_name)s would require deleting the "
-#| "following protected related objects:"
+#, python-format
 msgid ""
 "Deleting the selected %(objects_name)s would require deleting the following "
-"protected related\n"
-"    objects:"
+"protected related objects:"
 msgstr ""
 "Att ta bort valda %(objects_name)s skulle kräva att följande skyddade "
 "relaterade objekt tas bort:"
 
-#: templates/admin/delete_selected_intermediate.html:32
-#, fuzzy, python-format
-#| msgid ""
-#| "Are you sure you want to delete the selected %(objects_name)s? All of the "
-#| "following objects and their related items will be deleted:"
+#: templates/admin/delete_selected_intermediate.html:31
+#, python-format
 msgid ""
 "Are you sure you want to delete the selected %(objects_name)s? All of the "
-"following objects and\n"
-"    their related items will be deleted:"
+"following objects and their related items will be deleted:"
 msgstr ""
 "Är du säker på att du vill ta bort de valda %(objects_name)s? Alla följande "
 "objekt och deras relaterade poster kommer att tas bort:"
 
-#: templates/admin/delete_selected_intermediate.html:35
+#: templates/admin/delete_selected_intermediate.html:33
 msgid "Objects"
 msgstr "Objekt"
 
-#: templates/admin/delete_selected_intermediate.html:56
+#: templates/admin/delete_selected_intermediate.html:54
 msgid "Yes, I’m sure"
 msgstr "Ja, jag är säker"
 
-#: templates/admin/delete_selected_intermediate.html:57
+#: templates/admin/delete_selected_intermediate.html:55
 msgid "No, take me back"
 msgstr "Nej, gå tillbaka"
 
@@ -216,13 +198,13 @@ msgid " By %(filter_title)s "
 msgstr " Efter %(filter_title)s "
 
 #: templates/no_search_result.html:4
-msgid "The concept is not currently in the OLLI Concept system."
+msgid "The concept is not current within the OLLI concept list."
 msgstr "Begreppet finns för närvarande inte i OLLI Begreppssystem."
 
 #: templates/no_search_result.html:6
 msgid ""
-"To request a concept, click on \"Request concept\", and you"
-"will be presented with a form that will be sent to us"
+"To request this concept, click on \"Request concept\", and you will be "
+"presented with a form that can be filled in and sent to us."
 msgstr ""
 "För att efterfråga detta begrepp tryck på \"Efterfråga begrepp\", så får du "
 "ett formulär som kan skickas in till oss."
@@ -235,20 +217,30 @@ msgstr "Efterfråga begrepp"
 msgid "Comment on a concept"
 msgstr "Kommentera ett begrepp"
 
-#: templates/term_list/comment_term.html:17
-msgid ""
-"Fill in your contact details and then submit your comments about the "
-"concept. The\n"
-"\t\t\t\t\tcomment should clearly state what is meant and must be justified. "
-"Also indicate the context from\n"
-"\t\t\t\t\twhich your comment originates. The comments will be processed by "
-"the backoffice.\n"
-"\t\t\t\t\t"
-msgstr ""
-"Fyll i dina kontaktuppgifter och skicka sedan in dina kommentarer om "
-"begreppet.Kommentaren bör tydligt ange vad som avses och vara motiverad.Ange "
-"även den kontext som din kommentar härrör från.Kommentarerna kommer att "
-"behandlas av Begrepps Bureau."
+#: templates/term_list/comment_term.html:11
+msgid "Close"
+msgstr "Stäng"
+
+#~ msgid ""
+#~ "Fill in your contact details and then submit your comments about the "
+#~ "concept. The comment should clearly state what is meant and must be "
+#~ "justified. Also indicate the context from which your comment originates. "
+#~ "The comments will be processed by the backoffice."
+#~ msgstr ""
+#~ "Fyll i dina kontaktuppgifter och skicka sedan in dina kommentarer om "
+#~ "begreppet.Kommentaren bör tydligt ange vad som avses och vara motiverad."
+#~ "Ange även den kontext som din kommentar härrör från.Kommentarerna kommer "
+#~ "att behandlas av Begrepps Bureau."
+
+#~ msgid "The concept is not currently in the OLLI Concept system."
+#~ msgstr "Begreppet finns för närvarande inte i OLLI Begreppssystem."
+
+#~ msgid ""
+#~ "To request a concept, click on \"Request concept\", and you will be "
+#~ "presented with a form that will be sent to us"
+#~ msgstr ""
+#~ "För att efterfråga detta begrepp tryck på \"Efterfråga begrepp\", så får "
+#~ "du ett formulär som kan skickas in till oss."
 
 #~ msgid "Please correct the errors below."
 #~ msgstr "Vänligen korrigera nedanför felen"
