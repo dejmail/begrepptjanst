@@ -14,7 +14,9 @@
 			</div>
 			<div class="modal-body">
 				<p style="font-size: 15px;">
-					{% translate%}Fill in your contact details and then submit your comments about the concept. The comment should clearly state what is meant and must be justified. Also indicate the context from which your comment originates. The comments will be processed by the backoffice.{% translate %}
+					{% blocktrans %}
+					Fill in your contact details and then submit your comments about the concept. The comment should clearly state what is meant and must be justified. Also indicate the context from which your comment originates. The comments will be processed by the backoffice.
+					{% endblocktrans %}
 				</p>
 				<form id="comment_term_form" action="{% url 'comment_term' %}" method='POST' novalidate>{% csrf_token %}
 					{{ comment|crispy }}
