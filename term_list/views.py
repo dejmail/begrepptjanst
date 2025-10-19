@@ -21,6 +21,8 @@ from django.http import (
     HttpResponseRedirect, 
     JsonResponse
 )
+from django.utils.translation import gettext_lazy as _
+
 
 from collections import defaultdict
 from django.shortcuts import render
@@ -587,7 +589,7 @@ def assemble_search_results_view(url_parameter, dictionary):
         logger.debug(f'Searching within {dictionary=}')
     except Exception as e:
         logger.error(f"Error determing search strategy: {e}")
-        return render_to_string("error-page.html", context={})
+        return render_to_string("term_list/error-page.html", context={})
 
     # this is all the terms and definitions from this dictiomary in the DB
     all_terms_and_definitions = return_list_of_term_and_definition(dictionary)
@@ -614,7 +616,7 @@ def assemble_search_results_view(url_parameter, dictionary):
     status_config = ConfigurationOptions.objects.get(name="status-and-colour").config
 
     html = render_to_string(
-        template_name="term_results_partial.html", 
+        template_name="term_list/term_results_partial.html", 
         context={
             'styled_results': styled_results,
             "status_config": status_config,
@@ -650,9 +652,9 @@ def main_search_view(request : HttpRequest):
         logger.debug("Search not ajax, or no search term")
         concept = Concept.objects.none()
     
-    html = render_to_string('term.html', context={'concept' : concept})
+    html = render_to_string('term_list/term.html', context={'concept' : concept})
     
-    return render(request, "term.html", context={
+    return render(request, "term_list/term.html", context={
         'dictionaries' : Dictionary.objects.all().order_by('order').values_list(
             'dictionary_name',
             'dictionary_long_name'
@@ -690,7 +692,7 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse:
                             'attributes' : combined_fields,
                             'status_config' : status_config}
         
-        html = render_to_string(template_name="term_metadata_ajax.html", context=template_context)
+        html = render_to_string(template_name="term_list/term_metadata_ajax.html", context=template_context)
 
         if is_ajax(request):        
             return JsonResponse(
@@ -699,11 +701,11 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse:
 
         elif request.method == 'GET':
             if url_parameter is None:
-                return render(request, "term.html", context={})
+                return render(request, "term_list/term.html", context={})
             else:
-                return render(request, "term_full_metadata.html", context=template_context)
+                return render(request, "term_list/term_full_metadata.html", context=template_context)
 
-    return render(request, "base.html", context={})
+    return render(request, "term_list/base.html", context={})
 
 def concept_detail_view(concept_id: str) -> Dictionary:
     """
@@ -910,7 +912,7 @@ def request_new_term(request: HttpRequest):
                                 </div>''')
         else:
             
-            return render(request, 'request_new_term.html', {'form': form,
+            return render(request, 'term_list/request_new_term.html', {'form': form,
                                                         'whichTemplate' : 'requestTerm'}, 
                                                         status=500)
         
@@ -924,12 +926,12 @@ def request_new_term(request: HttpRequest):
                                         'dictionary' : request.GET.get('dictionary')
                                         })
         
-        return render(request, 'request_new_term.html', {'form': form, 
+        return render(request, 'term_list/request_new_term.html', {'form': form, 
                                                     'whichTemplate' : 'requestTerm',
                                                     'header' : _('Request for a new term')})
 
     else:
-        return render(request, 'term.html', {})
+        return render(request, 'term_list/term.html', {})
 
 def comment_term(request):
 
@@ -947,7 +949,7 @@ def comment_term(request):
     if request.method == 'GET':
         inkommande_term = Concept.objects.get(term=url_parameter)
         form = CommentTermForm(initial={'term' : inkommande_term})
-        return render(request, 'comment_term.html', {'comment': form})
+        return render(request, 'term_list/comment_term.html', {'comment': form})
 
     elif request.method == 'POST':
         
@@ -983,7 +985,7 @@ def comment_term(request):
                                    Tack för dina synpunkter.
                                    </div>''')
         
-    return render(request, "comment_term.html", {"comment": form})
+    return render(request, "term_list/comment_term.html", {"comment": form})
 
 def prenumera_till_epost(request):
 
