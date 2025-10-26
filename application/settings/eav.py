@@ -1,12 +1,13 @@
 import logging
 import os
 
+from application.settings.base import *  # noqa: F401,F403
 from application.settings.base import INSTALLED_APPS, MIDDLEWARE
 
 logger = logging.getLogger(__name__)
 
 SUBDOMAIN = 'begreppstjanst-eav'
-DEBUG=True
+DEBUG=False
 
 DB_NAME = os.getenv('DB_NAME')
 DB_PASSWORD = os.getenv('DB_PASSWORD')
