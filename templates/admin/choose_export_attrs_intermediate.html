@@ -24,7 +24,7 @@
         <p class="h6">Du har valt följander begrepp eller termer för att exportera.</p></br>
 
         <ul>
-        {% for concept in chosen_concepts %}  
+        {% for concept in chosen_concepts %}
             <li>{{concept.term}}</li>
         {% endfor %}
         </ul>
@@ -42,7 +42,7 @@
             <div class="form-check">
                 <input class="form-check-input" type="checkbox" value="{{attr}}" name="attributes" id="{{attr}}" checked>
                 <label class="form-check-label" for="{{attr}}">{{attr}}</label>
-            </div>                
+            </div>
             {% endfor %}
             <input type="hidden" name="selected_concepts" id="selected_concepts" value="
             {% for concept in chosen_concepts %}{{ concept.pk }}{% if not forloop.last %}&{% endif %}{% endfor %}">
@@ -50,7 +50,7 @@
 
         </div>
     </div>
-    
+
 
     <div class="colM d-flex justify-content-center">
         <div class="submit-row p-2 my-2 text-center justify-content-center" style="max-width: 300px;">
@@ -58,7 +58,7 @@
             <button type="submit" name="submit" class="btn btn-primary btn-sm">Exportera</button>
         </div>
     </div>
-    
+
 </form>
 
 <script>

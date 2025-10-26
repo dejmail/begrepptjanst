@@ -16,7 +16,7 @@
   function updateDictionaryContent() {
     const selectElement = document.getElementById('dictionary-select');
     const selectedValue = selectElement.value;
-    
+
     console.log('Getting new about text for card');
     console.log(`${baseUrl}get-dictionary-content/${selectedValue}`);
 

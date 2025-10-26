@@ -16,7 +16,7 @@ window.addEventListener("load", function() {
 	if (document.body.innerHTML.search("Välkommen till OLLI Begreppstjänst Portalen") > -1) {
 
 	function change_link_anchor_text(data) {
-		
+
 		var inner_html = document.querySelectorAll( 'a' );
 
 		const element = [...inner_html].filter(elem => {
@@ -33,7 +33,7 @@ window.addEventListener("load", function() {
 	}
 
 	function check_number_of_recent_comments() {
-			
+
 		var req = new XMLHttpRequest();
 		req.responseType = 'json';
 		req.open('GET', "{% url 'unread_comments' %}", true);
@@ -41,13 +41,12 @@ window.addEventListener("load", function() {
 			change_link_anchor_text(req.response);
 		};
 		req.send(null);
-			
+
 		};
 
 		check_number_of_recent_comments();
-		
+
 	}
 })
 </script>
 {% endblock responsive %}
-

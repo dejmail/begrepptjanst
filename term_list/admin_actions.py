@@ -1,40 +1,25 @@
-from django.http import HttpResponse
+import datetime
+import io
+import logging
+from typing import List
+
+import xlsxwriter
+from django.contrib import messages
+from django.contrib.admin import helpers
+from django.contrib.admin.utils import get_deleted_objects
+from django.core import mail
+from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMultiAlternatives
+from django.db import transaction
+from django.db.models import QuerySet
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
+from django.template.response import TemplateResponse
 from django.urls import reverse
-from django.shortcuts import render, redirect
+
+from term_list.models import Attribute, Dictionary
 
 from .models import TaskOrderer
-
-from django.core import mail
-from django.core.mail import EmailMultiAlternatives, get_connection, message, send_mail
-from django.contrib import messages
-
-
-import io
-import xlsxwriter
-import datetime
-import pandas as pd
-from django.db import transaction
-
-
-import logging
-from pdb import set_trace
-from typing import List
-from django.db.models import QuerySet
-from django.http import HttpRequest
-import traceback
-
-from django.contrib.admin.utils import get_deleted_objects
-from django.contrib.admin import helpers
-from django.template.response import TemplateResponse
-from django.core.exceptions import PermissionDenied
-from django.db import router, transaction
-from django.contrib import messages
-from django.utils.translation import gettext_lazy as _
-from django.utils.html import format_html
-
-
-from term_list.models import Dictionary, Attribute
-from term_list.forms import ColumnMappingForm, ExcelImportForm
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +44,7 @@ predetermined_column_order =  ['id_vgr',
                                'id']
 
 def get_synonym_set(obj):
-    
+
     query = getattr(obj, 'synonyms')
     return_list = []
     for synonym in query.values_list('synonym','synonym_status'):
@@ -69,7 +54,7 @@ def get_synonym_set(obj):
     else:
         return ''
 
-def export_chosen_concept_as_csv(request: HttpRequest, 
+def export_chosen_concept_as_csv(request: HttpRequest,
                                  queryset : QuerySet,
                                  selected_fields : List[str],
                                  field_mapping: Dictionary):
@@ -104,7 +89,7 @@ def export_chosen_concept_as_csv(request: HttpRequest,
                 worksheet.write(row_idx, col_index, row_data)
             else:
                 if hasattr(obj, field.lower()):
-                    row_data = getattr(obj, field.lower(), "")                
+                    row_data = getattr(obj, field.lower(), "")
                 else:
                     matching_attr = next((attr for attr in obj.attributes.all() if attr.attribute.display_name == field), None)
                     row_data = matching_attr.get_value() if matching_attr else ""
@@ -117,7 +102,7 @@ def export_chosen_concept_as_csv(request: HttpRequest,
     # Prepare Response
     response = HttpResponse(output, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = f'attachment; filename="exporterad_begrepp_{datetime.datetime.now().strftime("%Y_%m_%d-%H:%M:%S")}.xlsx"'
-    
+
     return response
 
 def delete_allowed_objects(
@@ -127,7 +112,6 @@ def delete_allowed_objects(
 ):
     opts = modeladmin.model._meta
     app_label = opts.app_label
-    accessible_dictionaries = modeladmin.get_accessible_dictionaries(request)
 
     # Use provided permission checker or fallback to modeladmin
     if permission_check is None:
@@ -162,7 +146,6 @@ def delete_allowed_objects(
             )
         return redirect(request.get_full_path())
 
-    using = router.db_for_write(modeladmin.model)
     deletable_objects, model_count, perms_needed, protected = get_deleted_objects(
         objs=deletable,
         request=request,
@@ -227,23 +210,23 @@ def export_chosen_concepts_action(modeladmin, request, queryset):
     for field in queryset.first()._meta.get_fields()
     if field.name not in ['concept_fk', 'conceptcomment', 'conceptexternalfiles', 'attributes']
     ]
-    
+
     attribute_names = Attribute.objects.filter(
         attributevalue__term__in=queryset
     ).values_list('display_name', flat=True).distinct()
 
     db_table_attrs.extend(attribute_names)
     chosen_concepts = [{'pk': i[0], 'term': i[1]} for i in queryset.values_list('pk', 'term')]
-    
+
     return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
                                                                             "chosen_concepts" : chosen_concepts})
 
 export_chosen_concepts_action.short_description = "Exportera valde begrepp"
 
 def ändra_status_till_översättning(queryset):
-    
+
     queryset.update(status='Översättning')
-    
+
 
 def skicka_epost_till_beställaren_status(queryset):
 
@@ -255,11 +238,11 @@ def skicka_epost_till_beställaren_status(queryset):
         text_content = f'''Hej!<br>Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
         <br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
 
-        
+
 
         <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Klicka här för att komma direkt till ditt efterfrågade begrepp</a></p>
-        
-        
+
+
 <br>Med vänlig hälsning <br>
 
 Projekt för informatik inom vård och omsorg i Västra Götaland
@@ -283,18 +266,18 @@ def skicka_epost_till_beställaren_validate(queryset):
         subject, from_email, to = 'Begrepp för validering i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
         text_content = f'''Hej! <br>
 
-Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikprojektet och vi önskar validering från verksamheten innan det beslutas. Du som framfört önskemål om begreppet ansvarar för förankring i verksamheten och vi ber dig därför gå igenom begreppet i OLLI och kontrollera om du tycker att det stämmer överens med hur verksamheten vill använda begreppet. 
+Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikprojektet och vi önskar validering från verksamheten innan det beslutas. Du som framfört önskemål om begreppet ansvarar för förankring i verksamheten och vi ber dig därför gå igenom begreppet i OLLI och kontrollera om du tycker att det stämmer överens med hur verksamheten vill använda begreppet.
 
-<br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>  
+<br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
 
-Eventuella synpunkter lämnas som svar på detta mejl. 
+Eventuella synpunkter lämnas som svar på detta mejl.
 
 
 <p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p>
 
 Tack för din hjälp! <br>
 
- 
+
 
 Med vänlig hälsning <br>
 
@@ -315,20 +298,20 @@ def skicka_epost_till_beställaren_beslutad(queryset):
     for enskilda_term in queryset.select_related():
         beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
         subject, from_email, to = 'Beslutat begrepp i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
-        text_content = f'''  
+        text_content = f'''
 
 Hej! <br>
 
-Begreppet {enskilda_term.term} har definierats och beslutats i OLLI. 
+Begreppet {enskilda_term.term} har definierats och beslutats i OLLI.
 
 <br><br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br><br>
 Om ni har synpunkter på definitionen vänligen återkoppla till informatik genom att svara på detta mail.<br>
 
-<p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p> 
+<p><a href="https://vgrinformatik.se/begreppstjanst/begrepp_forklaring/?q={enskilda_term.id}">Länk till begreppet</a></p>
  <br>
 Med vänlig hälsning <br>
 
-Projekt för informatik inom vård och omsorg i Västra Götaland 
+Projekt för informatik inom vård och omsorg i Västra Götaland
         '''
         html_content = f'<p>{text_content}</p>'
         msg = EmailMultiAlternatives(subject, text_content, from_email, [to])

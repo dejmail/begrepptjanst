@@ -1,0 +1,59 @@
+.field-beställare.nowrap {
+    white-space: unset;
+}
+
+.requester-info {
+    margin-top: 1rem;
+    padding: 0.6rem 0.8rem;
+    border-left: 3px solid #1c5d7c;
+    background: #f7fbfd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    line-height: 1.35;
+    box-sizing: border-box;
+    width: 90%;
+
+}
+
+.aligned .form-row .help.requester-info-wrapper {
+    margin-left: 9.8rem;  /* left offset */
+    margin-top: 0.4rem;   /* top spacing */
+    width: calc(100% - 180px);
+    max-width: 600px;
+}
+
+.requester-label {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: #1c5d7c;
+    margin-bottom: 0.2rem;
+}
+
+.requester-name {
+    font-weight: 600;
+    color: #1f2933;
+}
+
+.requester-files {
+    margin-top: 1rem;
+}
+
+.module .requester-file-list {
+    padding-left: 0.8rem;
+    margin-left: 0%;
+}
+
+
+.requester-email {
+    color: #005ea5;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.requester-email:hover,
+.requester-email:focus {
+    text-decoration: underline;
+}

@@ -1,22 +1,19 @@
-{% load crispy_forms_filters %}
-
 {% load i18n %}
+{% load crispy_forms_filters %}
 
 
 <div class="modal" id="commentModal" tabindex="-1" role="dialog" aria-labelledby="commentModalLabel" aria-modal="true">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="commentModalLabel">{% translate "Comment on a concept" %}</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="{% translate 'Close' %}">
+				<h5 class="modal-title" id="commentModalLabel">{% translate "Kommentera ett begrepp" %}</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="{% translate 'Stäng' %}">
                     <span aria-hidden="true">&times;</span>
                 </button>
 			</div>
 			<div class="modal-body">
 				<p style="font-size: 15px;">
-					{% blocktrans %}
-					Fill in your contact details and then submit your comments about the concept. The comment should clearly state what is meant and must be justified. Also indicate the context from which your comment originates. The comments will be processed by the backoffice.
-					{% endblocktrans %}
+					{% translate "Fyll i dina kontaktuppgifter och skicka sedan in dina kommentarer om begreppet. Kommentaren ska tydligt beskriva vad som avses och måste motiveras. Ange även i vilket sammanhang kommentaren uppkommit. Kommentarerna kommer att behandlas av backoffice." %}
 				</p>
 				<form id="comment_term_form" action="{% url 'comment_term' %}" method='POST' novalidate>{% csrf_token %}
 					{{ comment|crispy }}
@@ -32,7 +29,7 @@
 {% block extra_javascript %}
 <script>
 	$("#comment_term_form").submit(function (event) {
-		event.preventDefault(); //prevent default action 
+		event.preventDefault(); //prevent default action
 		var post_url = $(this).attr("action"); //get form action url
 		var request_method = $(this).attr("method"); //get form GET/POST method
 		var formdata = new FormData($(this)[0]);

@@ -1,7 +1,8 @@
 
-from django.urls import include, path
-from term_list import views, admin_functions
+from django.urls import path
+
 from term_list import admin as admin_views
+from term_list import admin_functions, views
 
 urlpatterns = [
     path('', views.main_search_view, name="concept"),
@@ -19,7 +20,7 @@ urlpatterns = [
     path('json/begrepp/all/', views.all_accepted_terms, name='get_all_accepted_terms_as_json'),
     path('json/synonymer/', views.all_synonyms, name='all_synonyms'),
 
-    
+
     path('export/attrs/', admin_views.ConceptAdmin.export_chosen_attrs_view, name='export_chosen_attrs'),
     path('fetch-attributes/', admin_functions.fetch_attributes, name='fetch_attributes'),
 

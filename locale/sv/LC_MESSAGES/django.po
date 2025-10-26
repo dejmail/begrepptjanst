@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-16 21:42+0200\n"
+"POT-Creation-Date: 2025-10-26 14:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,55 +18,30 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/admin/base_original.html:33
-msgid "Skip to main content"
-msgstr "Hoppa över till huvudinnehåll"
-
-#: templates/admin/base_original.html:48
-msgid "Welcome,"
-msgstr "Välkommen"
-
-#: templates/admin/base_original.html:53
-msgid "View site"
-msgstr "Visa på webbplatsen"
-
-#: templates/admin/base_original.html:58
-msgid "Documentation"
-msgstr "Dokumentation"
-
-#: templates/admin/base_original.html:62
-msgid "Change password"
-msgstr "Ändra lösenord"
-
-#: templates/admin/base_original.html:66
-msgid "Log out"
-msgstr "Logga ut"
-
-#: templates/admin/base_original.html:81 templates/admin/change_form.html:21
-#: templates/admin/change_list.html:34
-#: templates/admin/delete_selected_intermediate.html:15
-msgid "Home"
-msgstr "Hem"
-
 #: templates/admin/begrepp_change_form.html:7
 msgid "Add"
-msgstr "Lägg till"
+msgstr ""
 
 #: templates/admin/begrepp_change_form.html:9
 msgid "Change"
-msgstr "Ändra"
+msgstr ""
 
 #: templates/admin/change_dictionary_action.html:12
 msgid "Select Dictionaries to apply to the selected concept"
-msgstr "Välja Ordböcker som Begrepp ska ingå i "
+msgstr ""
 
 #: templates/admin/change_dictionary_action.html:13
 msgid "Dictionaries"
-msgstr "Ordböcker"
+msgstr ""
 
 #: templates/admin/change_dictionary_action.html:19
 msgid "Select Dictionary"
-msgstr "Välja Ordböcker"
+msgstr ""
+
+#: templates/admin/change_form.html:21
+#: templates/admin/delete_selected_intermediate.html:15
+msgid "Home"
+msgstr ""
 
 #: templates/admin/change_form.html:27
 #, python-format
@@ -88,67 +63,50 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/admin/change_list.html:54
-msgid "Please correct the error below."
-msgid_plural ""
-"Please\n"
-"    correct the errors below."
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/admin/change_list.html:81
-msgid "Filter"
-msgstr "Filtrera"
-
-#: templates/admin/change_list.html:83
-msgid "Clear all filters"
-msgstr "Nollställa alla filtrar"
-
 #: templates/admin/column_mapping.html:9
 msgid "Suggested mapping of Excel columns to model attribute"
-msgstr "Mappnings förslag av Excel kolumnar och model attribut"
+msgstr ""
 
 #: templates/admin/column_mapping.html:11
 msgid "Adjust where suggestion is wrong"
-msgstr "Anpassa där förslaget är fel"
+msgstr ""
 
 #: templates/admin/column_mapping.html:15
 msgid ""
 "If you do not provide the target field, the column will not be imported."
 msgstr ""
-"Om du inte välja ett motsvarande attribut, kommer inte kolumnen importeras"
 
 #: templates/admin/column_mapping.html:16
 msgid "Columns without values are ignored."
-msgstr "Kolumnar utan värden ignoreras."
+msgstr ""
 
 #: templates/admin/column_mapping.html:27
 msgid "Excel column"
-msgstr "Excel-kolumn"
+msgstr ""
 
 #: templates/admin/column_mapping.html:28
 msgid "Model attribute"
-msgstr "Model-attribut"
+msgstr ""
 
 #: templates/admin/column_mapping.html:51
 msgid "Choose dictionary:"
-msgstr "Välj ordbok:"
+msgstr ""
 
 #: templates/admin/column_mapping.html:62
 msgid "Chosen dictionary:"
-msgstr "Vald ordbok:"
+msgstr ""
 
 #: templates/admin/column_mapping.html:71
 msgid "Send mapping"
-msgstr "Skicka mappning"
+msgstr ""
 
 #: templates/admin/confirm_mapping.html:7
 msgid "Confirm concepts that will be imported or updated"
-msgstr "Bekräfta begrepp som ska importeras eller uppdateras"
+msgstr ""
 
 #: templates/admin/delete_selected_intermediate.html:18
 msgid "Delete multiple objects"
-msgstr "Radera flera objekt"
+msgstr ""
 
 #: templates/admin/delete_selected_intermediate.html:24
 #, python-format
@@ -164,8 +122,6 @@ msgid ""
 "Deleting the selected %(objects_name)s would require deleting the following "
 "protected related objects:"
 msgstr ""
-"Att ta bort valda %(objects_name)s skulle kräva att följande skyddade "
-"relaterade objekt tas bort:"
 
 #: templates/admin/delete_selected_intermediate.html:31
 #, python-format
@@ -173,96 +129,54 @@ msgid ""
 "Are you sure you want to delete the selected %(objects_name)s? All of the "
 "following objects and their related items will be deleted:"
 msgstr ""
-"Är du säker på att du vill ta bort de valda %(objects_name)s? Alla följande "
-"objekt och deras relaterade poster kommer att tas bort:"
 
 #: templates/admin/delete_selected_intermediate.html:33
 msgid "Objects"
-msgstr "Objekt"
+msgstr ""
 
 #: templates/admin/delete_selected_intermediate.html:54
 msgid "Yes, I’m sure"
-msgstr "Ja, jag är säker"
+msgstr ""
 
 #: templates/admin/delete_selected_intermediate.html:55
 msgid "No, take me back"
-msgstr "Nej, gå tillbaka"
+msgstr ""
 
-#: templates/admin/edit_inline/stacked.html:47
+#: templates/admin/edit_inline/stacked.html:58
 msgid "View on site"
-msgstr "Visa på webbplatsen"
+msgstr ""
 
 #: templates/admin/multiple_status_filter.html:2
 #, python-format
 msgid " By %(filter_title)s "
-msgstr " Efter %(filter_title)s "
+msgstr ""
 
 #: templates/no_search_result.html:4
-msgid "The concept is not current within the OLLI concept list."
-msgstr "Begreppet finns för närvarande inte i OLLI Begreppssystem."
+msgid "The concept is not currently within the OLLI concept list."
+msgstr ""
 
 #: templates/no_search_result.html:6
 msgid ""
 "To request this concept, click on \"Request concept\", and you will be "
 "presented with a form that can be filled in and sent to us."
 msgstr ""
-"För att efterfråga detta begrepp tryck på \"Efterfråga begrepp\", så får du "
-"ett formulär som kan skickas in till oss."
 
 #: templates/no_search_result.html:11
 msgid "Request concept"
-msgstr "Efterfråga begrepp"
+msgstr ""
+
+#: templates/term_list/comment_term.html:9
+msgid "Comment on a concept"
+msgstr ""
 
 #: templates/term_list/comment_term.html:10
-msgid "Comment on a concept"
-msgstr "Kommentera ett begrepp"
-
-#: templates/term_list/comment_term.html:11
 msgid "Close"
-msgstr "Stäng"
-
-#: templates/term_list/comment_term.html:17
-#, fuzzy
-#| msgid ""
-#| "Fill in your contact details and then submit your comments about the "
-#| "concept. The comment should clearly state what is meant and must be "
-#| "justified. Also indicate the context from which your comment originates. "
-#| "The comments will be processed by the backoffice."
-msgid ""
-"\n"
-"\t\t\t\t\tFill in your contact details and then submit your comments about "
-"the concept. The comment should clearly state what is meant and must be "
-"justified. Also indicate the context from which your comment originates. The "
-"comments will be processed by the backoffice.\n"
-"\t\t\t\t\t"
 msgstr ""
-"Fyll i dina kontaktuppgifter och skicka sedan in dina kommentarer om "
-"begreppet.Kommentaren bör tydligt ange vad som avses och vara motiverad.Ange "
-"även den kontext som din kommentar härrör från.Kommentarerna kommer att "
-"behandlas av Begrepps Bureau."
 
-#~ msgid "The concept is not currently in the OLLI Concept system."
-#~ msgstr "Begreppet finns för närvarande inte i OLLI Begreppssystem."
-
-#~ msgid ""
-#~ "To request a concept, click on \"Request concept\", and you will be "
-#~ "presented with a form that will be sent to us"
-#~ msgstr ""
-#~ "För att efterfråga detta begrepp tryck på \"Efterfråga begrepp\", så får "
-#~ "du ett formulär som kan skickas in till oss."
-
-#~ msgid "Please correct the errors below."
-#~ msgstr "Vänligen korrigera nedanför felen"
-
-#~ msgid "Om du INTE ange ett motsvarande fält, så importeras inte fältet."
-#~ msgstr ""
-#~ "If you do not provide the target field, the column will not be imported."
-
-#~ msgid "From date"
-#~ msgstr "Från datum"
-
-#~ msgid "To date"
-#~ msgstr "Till datum"
-
-#~ msgid "dictionaries"
-#~ msgstr "ordböcker"
+#: templates/term_list/comment_term.html:16
+msgid ""
+"Fill in your contact details and then submit your comments about the "
+"concept. The comment should clearly state what is meant and must be "
+"justified. Also indicate the context from which your comment originates. The "
+"comments will be processed by the backoffice."
+msgstr ""

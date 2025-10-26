@@ -9,13 +9,13 @@
     {% for item in selected_action %}
     <input type="hidden" name="_selected_action" value="{{ item }}">
     {% endfor %}
-    <h2>{% translate "Select Dictionaries to apply to the selected concept" %}</h2>
-    <label for="dictionaries">{% translate "Dictionaries" %}:</label>
+    <h2>{% translate "Välj vilka ordlistor begreppet ska tillhöra." %}</h2>
+    <label for="dictionaries">{% translate "Ordböcker" %}:</label>
     <select name="dictionaries" multiple>
         {% for dictionary in dictionaries %}
         <option value="{{ dictionary.dictionary_id }}">{{ dictionary.dictionary_name }}</option>
         {% endfor %}
     </select>
-    <button type="submit" name="apply">{% translate "Select Dictionary" %}</button>
+    <button type="submit" name="apply">{% translate "Välj orbok" %}</button>
 </form>
 {% endblock %}

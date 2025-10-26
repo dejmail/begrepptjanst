@@ -1,12 +1,12 @@
 .text-danger {
     color: #dc3545 !important;
   }
-  
+
   a.text-danger:hover, a.text-danger:focus {
     color: #bd2130 !important;
   }
 
-  
+
   .text_highlight_yellow {
     background-color: rgb(233, 233, 171)
   }

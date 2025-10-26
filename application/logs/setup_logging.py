@@ -1,7 +1,7 @@
-import socket
-import os
 import logging
 import logging.config
+import os
+import socket
 
 if socket.gethostname() == 'suijin.oderland.com':
     FILENAME = './logs.log'
@@ -37,7 +37,7 @@ logging_schema = {
         # Name of handler
         "console": {
             # The class of logger. A mixture of logging.config.dictConfig() and
-            # logger class-specific keyword arguments (kwargs) are passed in here. 
+            # logger class-specific keyword arguments (kwargs) are passed in here.
             "class": "logging.StreamHandler",
             # This is the formatter name declared above
             "formatter": "standard",
@@ -48,7 +48,7 @@ logging_schema = {
         },
         # Same as the StreamHandler example above, but with different
         # handler-specific kwargs.
-        # "file": {  
+        # "file": {
         #     "class": "logging.handlers.RotatingFileHandler",
         #     "formatter": "standard",
         #     "level": "ERROR",

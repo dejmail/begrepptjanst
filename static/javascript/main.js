@@ -146,7 +146,7 @@ $("#user-input").keyup(function (event) {
 });
 
 
-// 
+//
 document.getElementById('dictionary-select').addEventListener('change', function () {
     document.getElementById('display-middle-column').innerHTML = '';
     document.getElementById('display-right-column').innerHTML = '';

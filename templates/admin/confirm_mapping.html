@@ -4,7 +4,7 @@
 {% load i18n %}
 
 {% block content %}
-<h1>{% translate "Confirm concepts that will be imported or updated" %}</h1>
+<h1>{% translate "Bekärfta begrepp som kommer importeras eller uppdateras" %}</h1>
 
 <form method="POST" id="confirm-form">
     {% csrf_token %}
@@ -17,7 +17,7 @@
             <tr>
                 <th>Status</th>
                 {% for header in column_headers %}
-                <th>{{ header }}</th>
+                <th>{{ header.label }}</th>
                 {% endfor %}
             </tr>
         </thead>
@@ -34,7 +34,7 @@
 
                 <!-- Render the dynamic data fields corresponding to the headers -->
                 {% for header in column_headers %}
-                <td>{{ concept|get_item:header }}</td>
+                <td>{{ concept|get_item:header.key }}</td>
                 {% endfor %}
             </tr>
             {% endfor %}

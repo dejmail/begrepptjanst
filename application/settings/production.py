@@ -1,6 +1,8 @@
-from application.settings.base import *
 import locale
+import os
 import sys
+
+from application.settings.base import *  # noqa: F401,F403
 
 sys.stdout.reconfigure(encoding='utf-8')  # Ensure stdout is UTF-8
 locale.setlocale(locale.LC_ALL, "sv_SE.UTF-8")  # Set Swedish locale
@@ -15,7 +17,7 @@ DB_USER = os.getenv('DB_USER')
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django', 
+        'ENGINE': 'mysql.connector.django',
         'NAME': DB_NAME,
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,
@@ -23,7 +25,7 @@ DATABASES = {
         'PORT': '3306',
         'OPTIONS': {
             'sql_mode' : 'traditional',
-            'charset': 'utf8mb4', 
+            'charset': 'utf8mb4',
             'init_command': "SET NAMES 'utf8mb4' COLLATE 'utf8mb4_swedish_ci'"
 
         },
@@ -40,7 +42,7 @@ STATIC_ROOT = '/home/vgrinfor/public_html/begrepptjanst/static'
 STATICFILES_DIRS = ['/home/vgrinfor/begrepptjanst/static',]
 STATIC_URL = '/begrepptjanst/static/'
 
-# media files 
+# media files
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
 

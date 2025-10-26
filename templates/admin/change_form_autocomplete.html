@@ -35,20 +35,20 @@
 
             term_elem = document.getElementById("id_term")
             if(term_elem){
-                term_elem.addEventListener('input', function() { 
+                term_elem.addEventListener('input', function() {
                 suggestPreviousValues('id_term');
                 })
-            };           
+            };
 
             källa_elem = document.getElementById("id_källa")
             if(källa_elem){
-                källa_elem.addEventListener('input', function() { 
+                källa_elem.addEventListener('input', function() {
                 suggestPreviousValues('id_källa');
                 })
-            };            
+            };
 
             function suggestPreviousValues(id_attr) {
-            
+
             $(`#${id_attr}`).autocomplete({source: function (request, response) {
 
                 var attribute = this.bindings[0].id.split('_')[1];
@@ -59,18 +59,18 @@
                 var url = url.replace('%3Csearch_term%3E', request.term);
                 console.log('getting suggestions from - ' + url);
                 var req = new XMLHttpRequest();
-                req.responseType = 'json';                                         
+                req.responseType = 'json';
                 req.open('GET', url, true);
                 // req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                 req.send(null);
                 req.onload  = function() {
-                    response(req.response);                      
-                }                                             
+                    response(req.response);
+                }
             }});
-        };        
-        
+        };
+
         });
-        
+
     })(django.jQuery);
 </script>
 {% endblock responsive %}

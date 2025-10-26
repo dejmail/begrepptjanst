@@ -1,14 +1,9 @@
-from django.contrib import admin
-from django.db import models
-from pdb import set_trace
-from django.conf import settings
-from simple_history.models import HistoricalRecords
-from django.contrib.auth.models import User, Group
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
 
-import json
-from django.utils.safestring import mark_safe
+from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+from simple_history.models import HistoricalRecords
 
 DEFAULT_STATUS = "Ej Påbörjad"
 
@@ -18,19 +13,19 @@ CONCEPT_STATUS = (('Avråds', "Avråds"),
 
 STATUS_CHOICES = (('Avråds', "Avråds"),
               ('Avställd', "Avställd"),
-              ('Beslutad', 'Beslutad'), 
+              ('Beslutad', 'Beslutad'),
               ('Publicera ej', 'Publicera ej'),
-              ('Pågår', 'Pågår'), 
+              ('Pågår', 'Pågår'),
               (DEFAULT_STATUS, DEFAULT_STATUS))
 
 class Dictionary(models.Model):
 
     """The dictionary that a term belongs to. The same term can belong
     to more than one dictionary"""
-    
-    class Meta:     
-        verbose_name_plural = _("Dictionaries")
-        verbose_name = _("Dictionary")
+
+    class Meta:
+        verbose_name_plural = _("Ordböcker")
+        verbose_name = _("Orbok")
         app_label = 'term_list'
 
     dictionary_id = models.AutoField(primary_key=True)
@@ -47,21 +42,21 @@ class Dictionary(models.Model):
 class ConceptExternalFiles(models.Model):
 
     """When a user requests a new term for definition they are able to upload
-    files that give context. Those files are stored in thos model, and each 
+    files that give context. Those files are stored in thos model, and each
     term can have many files connected to it.
     """
 
     class Meta:
-        verbose_name = _('Uploaded File')
-        verbose_name_plural = _("Uploaded Files")
+        verbose_name = _('Uppladdad fil')
+        verbose_name_plural = _("Uppladdade filer")
         app_label = 'term_list'
 
     concept = models.ForeignKey("Concept", to_field='id', on_delete=models.CASCADE)
     comment = models.ForeignKey("ConceptComment", to_field='id', null=True, blank=True, on_delete=models.CASCADE)
     support_file = models.FileField(blank=True, null=True, upload_to='')
-    
+
     def __str__(self):
-        
+
         """Return the name of the file
         """
         return str(self.support_file)
@@ -73,17 +68,19 @@ class TaskOrderer(models.Model):
     """
 
     class Meta:
-        verbose_name = _("Requester")
-        verbose_name_plural = _("Requesters")
+        verbose_name = _("Beställare")
+        verbose_name_plural = _("Beställaren")
         app_label = 'term_list'
 
     name = models.CharField(max_length=255, blank=True)
     create_date = models.DateTimeField(auto_now_add=True)
     finished_by_date = models.DateTimeField(null=True, blank=True)
     email = models.EmailField()
+    concept = models.ForeignKey("Concept", to_field="id", on_delete=models.CASCADE, blank=True, null=False, related_name="task_requester")
+
 
     def __str__(self):
-        
+
         """Return the requesters name
         """
         return self.name
@@ -102,7 +99,6 @@ class Synonym(models.Model):
         verbose_name = _("Synonym")
         app_label = 'term_list'
 
-    #begrepp = models.ForeignKey("Begrepp", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name="legacy_synonyms")
     concept = models.ForeignKey("Concept", to_field="id", on_delete=models.CASCADE, blank=True, null=True, related_name="synonyms")
     synonym = models.CharField(max_length=255, blank=True, null=True)
     synonym_status = models.CharField(max_length=255, choices=SYNONYM_STATUS, default='Inte angiven')
@@ -116,12 +112,13 @@ class Synonym(models.Model):
 
 class ConceptComment(models.Model):
 
-    """Model containing comments that are submitted by users against a 
+    """Model containing comments that are submitted by users against a
     particular term.
     """
 
     class Meta:
-        verbose_name_plural = _('Concept comments')
+        verbose_name_plural = _('Begrepp kommentarer')
+        verbose_name = _('Begrepp kommentar')
         app_label = 'term_list'
 
     concept = models.ForeignKey("Concept", to_field="id", on_delete=models.CASCADE, blank=True, null=True)
@@ -130,20 +127,20 @@ class ConceptComment(models.Model):
     email = models.EmailField()
     name = models.CharField(max_length=255)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default=DEFAULT_STATUS)
-    
+
     def __str__(self):
 
         """Retrun the term that is the synonym"""
-        return f"{self.concept} den {self.date} av {self.name}" 
+        return f"{self.concept} den {self.date} av {self.name}"
 
 class SearchTrack(models.Model):
 
-    """Table that collects the IP address, the term search for and the 
+    """Table that collects the IP address, the term search for and the
     timestamp.
     """
 
     class Meta:
-        verbose_name_plural = _('Search data')
+        verbose_name_plural = _('Sök data')
         app_label = 'term_list'
 
     sök_term = models.CharField(max_length=255)
@@ -160,8 +157,8 @@ class MetadataSearchTrack(models.Model):
     """
 
     class Meta:
-        verbose_name = _('Search Metadata')
-        verbose_name_plural = _('Search Metadata')
+        verbose_name = _('Sök Metadata')
+        verbose_name_plural = _('Sök Metadata')
         app_label = 'term_list'
 
     sök_term = models.CharField(max_length=255)
@@ -170,22 +167,22 @@ class MetadataSearchTrack(models.Model):
 
     def __str__(self):
         return self.sök_term
-    
+
 class ConfigurationOptions(models.Model):
 
     class Meta:
-        verbose_name = _('Settings')
-        verbose_name_plural = _("Settings")
+        verbose_name = _('inställning')
+        verbose_name_plural = _("Inställningar")
         app_label = 'term_list'
-    
-    name = models.CharField(max_length=255)     
+
+    name = models.CharField(max_length=255)
     description = models.TextField()
     visible = models.BooleanField()
     config = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return self.name
-    
+
     @classmethod
     def get_status_choices(cls, name="status-and-colour"):
         try:
@@ -193,7 +190,7 @@ class ConfigurationOptions(models.Model):
             return ((s["label"], s["label"]) for s in config.get("statuses", []))
         except cls.DoesNotExist:
             return []
-        
+
     @classmethod
     def get_excluded_statuses(cls, name="status-exclude"):
         try:
@@ -205,8 +202,8 @@ class ConfigurationOptions(models.Model):
 class Concept(models.Model):
 
     class Meta:
-        verbose_name = _('Concept')
-        verbose_name_plural = _('Concepts')
+        verbose_name = _('Begrepp')
+        verbose_name_plural = _('Begrepp')
         app_label = 'term_list'
 
     term = models.CharField(max_length=255)  # The word itself
@@ -222,7 +219,7 @@ class Concept(models.Model):
 
     def __str__(self):
         return self.term
-    
+
     def get_ordered_fields(self):
         # Default field order with fallback positions
         default_fields = {
@@ -236,19 +233,19 @@ class GroupAttribute(models.Model):
 
     class Meta:
         unique_together = ('group', 'attribute')
-        verbose_name = _("Attribute Group")
-        verbose_name_plural = _("Attribute Groups")
+        verbose_name = _("Attribut Grupp")
+        verbose_name_plural = _("Attribut Grupper")
 
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     attribute = models.ForeignKey('Attribute', on_delete=models.CASCADE)
-    position = models.PositiveIntegerField(default=0)    
+    position = models.PositiveIntegerField(default=0)
 
 # Attribute Model
 class Attribute(models.Model):
 
     class Meta:
-        verbose_name = _("Attribute")
-        verbose_name_plural = _("Attributes")
+        verbose_name = _("Attribut")
+        verbose_name_plural = _("Attribut")
 
     name = models.CharField(max_length=255)
     display_name = models.CharField(max_length=255)
@@ -270,8 +267,8 @@ class Attribute(models.Model):
 class AttributeValue(models.Model):
 
     class Meta:
-        verbose_name = _("Attribute Value")
-        verbose_name_plural = _("Attribute Values")
+        verbose_name = _("Attribut Värde")
+        verbose_name_plural = _("Attribute Värden")
 
     term = models.ForeignKey(Concept, on_delete=models.CASCADE, related_name='attributes')
     attribute = models.ForeignKey(Attribute, on_delete=models.CASCADE)
@@ -311,12 +308,12 @@ class AttributeValue(models.Model):
             return self.value_decimal
         elif self.attribute.data_type == 'boolean':
             return self.value_boolean
-        return 
+        return
     get_value.short_description = "Värde"
 
     def get_attribute_name(self):
         return self.attribute.name
-    get_attribute_name.short_description = "Attribute"
+    get_attribute_name.short_description = "Attribut"
 
     def __str__(self):
         value = self.get_value()
@@ -327,8 +324,8 @@ class AttributeValue(models.Model):
 class GroupHierarchy(models.Model):
 
     class Meta:
-        verbose_name = _("Group Hierarchy")
-        verbose_name_plural = _("Group Hierarchy")
+        verbose_name = _("Grupp Hierarki")
+        verbose_name_plural = _("Group Hierarki")
 
     parent = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='subgroups')
     child = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='parent_groups')

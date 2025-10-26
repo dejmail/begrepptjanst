@@ -1,23 +1,18 @@
-from django import forms
-from .models import (
-    Dictionary, 
-    Concept, 
-    ConceptExternalFiles, 
-    AttributeValue,
-    ConfigurationOptions
-)
+import json
+import logging
+import os
 
 from django import forms
 from django.core.exceptions import ValidationError
-from pdb import set_trace
-
-import logging
-import json
-from .models import ConfigurationOptions
+from django.forms.widgets import HiddenInput
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
+from .models import (AttributeValue, Concept, ConceptExternalFiles,
+                     ConfigurationOptions, Dictionary)
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 class CustomDateInput(forms.DateInput):
     input_type = 'date'
@@ -56,7 +51,7 @@ class GroupFilteredModelForm(forms.ModelForm):
         # Pass the request user to the form
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        
+
         if self.user and not self.user.is_superuser:
             # Filter queryset for fields that need group-based filtering
             self.filter_queryset()
@@ -77,41 +72,41 @@ class TermRequestForm(forms.Form):
 
 
     def clean(self):
-        cleaned_data = super().clean()        
+        cleaned_data = super().clean()
         return cleaned_data
 
     def clean_name(self):
-        namn =  self.cleaned_data.get('namn')
+        namn =  self.cleaned_data.get('name')
         return namn
 
     def clean_email(self):
-        epost = self.cleaned_data.get('epost')
+        epost = self.cleaned_data.get('email')
         return epost
-    
+
     def clean_dictionary(self):
-        
+
         dictionary = Dictionary.objects.filter(dictionary_long_name=self.cleaned_data.get('dictionary')).first()
                 # Assuming you're checking if the dictionary exists in the database
         if not dictionary:
-            raise ValidationError(_("The dictionary does not exist."))
+            raise ValidationError(_("Ordboken existerar inte."))
 
         return dictionary
 
     def clean_context(self):
-        kontext = self.cleaned_data.get('kontext')
-        return kontext
+        context = self.cleaned_data.get('context')
+        return context
 
     def clean_concept(self):
-        begrepp = self.cleaned_data.get('begrepp')
-        return begrepp
+        concept = self.cleaned_data.get('concept')
+        return concept
 
-    begrepp = forms.CharField(max_length=254, label=_("Term som representerar begreppet"), widget = forms.TextInput)
-    dictionary = forms.CharField(max_length=64, label="Ordlista")
-    kontext = forms.CharField(widget=forms.Textarea, label=_("Beskriv hur begreppet används:"))
-    namn = forms.CharField(max_length=100)
-    epost =  forms.EmailField(max_length=254, label=_("E-post"))
-    file_field = MultipleFileField(label=_("Bifogar en/flera skärmklipp eller filer som kan hjälpa oss"), required=False)
-      
+    concept = forms.CharField(max_length=254, label=_("Term som representerar begreppet"), widget = forms.TextInput)
+    dictionary = forms.CharField(max_length=64, label=_("Ordlista"))
+    context = forms.CharField(widget=forms.Textarea, label=_("DesBeskriva hur begreppet används:"))
+    name = forms.CharField(max_length=100, label=_("Namn"))
+    email =  forms.EmailField(max_length=254, label=_("Epost"))
+    file_field = MultipleFileField(label=_("Bifogar en eller flera skärmklipp eller filer som kan hjälpa oss"), required=False)
+
 class PrettyDecodedJSONWidget(forms.Textarea):
     def format_value(self, value):
         try:
@@ -121,7 +116,7 @@ class PrettyDecodedJSONWidget(forms.Textarea):
             return json.dumps(value, indent=2, ensure_ascii=False)
         except Exception:
             return value
-        
+
 class ConfigurationOptionsForm(forms.ModelForm):
     class Meta:
         model = ConfigurationOptions
@@ -135,9 +130,9 @@ class CommentTermForm(forms.Form):
     name = forms.CharField(
         widget=forms.TextInput(attrs={
             "class": "form-control",
-            "aria-label": "Ange ditt namn"  # ARIA label added
+            "aria-label": "Ange ditt namn"
         }),
-        label="Namn",  # Ensures proper label in crispy forms
+        label="Namn",
         max_length=255
     )
     epost = forms.EmailField(label="E-postadress", widget=forms.EmailInput(attrs={
@@ -151,12 +146,12 @@ class CommentTermForm(forms.Form):
     comment = forms.CharField(
         widget=forms.Textarea(attrs={
             "class": "form-control",
-            "aria-label": "Skriv din kommentar här",  # ARIA label added
+            "aria-label": "Skriv din kommentar här",
         }),
         max_length=2000,
         label="Kommentar"
     )
-    
+
     term = forms.CharField(
         widget=forms.HiddenInput(attrs={
             "aria-hidden": "true"  # Hidden input does not need a visible label
@@ -174,8 +169,8 @@ class ExternalFilesForm(forms.ModelForm):
         model = ConceptExternalFiles
         exclude = ()
 
-    begrepp = forms.CharField(widget=forms.HiddenInput())  
-    kommentar = forms.CharField(widget=forms.HiddenInput())  
+    begrepp = forms.CharField(widget=forms.HiddenInput())
+    kommentar = forms.CharField(widget=forms.HiddenInput())
     support_file = forms.FileField()
 
 class ExcelImportForm(forms.Form):
@@ -184,37 +179,32 @@ class ExcelImportForm(forms.Form):
 class ColumnMappingForm(forms.Form):
 
     excel_file = forms.CharField(widget=forms.HiddenInput())
-    dictionary = forms.ChoiceField(label=_("Select Dictionary"), required=False)  # Add dictionary field here
+    dictionary = forms.ChoiceField(label=_("Välja ordbok"), required=False)  # Add dictionary field here
 
     def __init__(self, *args, **kwargs):
         columns = kwargs.pop('columns')
         model_fields = kwargs.pop('model_fields')
         available_dictionaries = kwargs.pop('available_dictionaries', [])  # Pass available dictionaries
         super().__init__(*args, **kwargs)
-        
+
         # Dynamically create form fields for mapping columns to model fields
-        
+
         for col in columns:
             self.fields[col] = forms.ChoiceField(
                 choices=[(None, '---')] + [(field, field) for field in model_fields],
                 required=False,
                 label=f"{col}"
             )
-        
+
         # If dictionaries are available, allow the user to choose one
         if available_dictionaries:
             self.fields['dictionary'].choices = [(None, '---')] + [(dict_id, dict_name) for dict_id, dict_name in available_dictionaries]
 
-from django import forms
-from .models import AttributeValue
-from django.forms.widgets import HiddenInput
-
-
 class AttributeValueInlineForm(forms.ModelForm):
     class Meta:
         model = AttributeValue
-        fields = ['value_string', 'value_text', 
-                  'value_integer', 'value_decimal', 
+        fields = ['value_string', 'value_text',
+                  'value_integer', 'value_decimal',
                   'value_boolean', 'value_url'
                   ]
 
@@ -225,6 +215,7 @@ class AttributeValueInlineForm(forms.ModelForm):
             attribute = self.instance.attribute
             data_type = attribute.data_type
             display_name = attribute.display_name
+            concept = getattr(self.instance, "term", None)
 
             field_map = {
                 'string': 'value_string',
@@ -237,12 +228,66 @@ class AttributeValueInlineForm(forms.ModelForm):
 
             for field_name, field in self.fields.items():
                 if field_name != field_map.get(data_type, ''):
-                    self.fields[field_name].widget = HiddenInput() 
+                    self.fields[field_name].widget = HiddenInput()
                 else:
                     self.fields[field_name].label = ''
+                    if (
+                        concept
+                        and concept.task_requester.all()[0].id
+                        and display_name == _("Begrepp kontext")
+                    ):
+                        uploaded_files = concept.conceptexternalfiles_set.all()
+
+                        file_list = []
+                        for f in uploaded_files:
+                            filename = os.path.basename(f.support_file.name)
+                            stem, ext = os.path.splitext(filename)
+                            url = f.support_file.url
+                            max_chars = 15
+                            if len(stem) > max_chars:
+                                stem = stem[:max_chars] + "…"
+
+                            file_list.append([url, stem, ext])
+
+                        file_links = [
+                            format_html(
+                                '<li><a href="{url}" target="_blank" rel="noopener">{name}</a></li>',
+                                url=url,
+                                name=f"{stem}{ext}"
+                            )
+                            for f in uploaded_files if f.support_file
+                        ]
+
+                        log.debug('Requester present, adding extra field')
+                        req = concept.task_requester.all()[0]
+                        help_chunks = [
+                            '<span class="requester-label">{label}</span>',
+                            '<div class="requester-name">{name}</div>',
+                            '<a class="requester-email" href="mailto:{email}">{email}</a>',
+                        ]
+
+                        if file_links:
+                            help_chunks.append(
+                                '<div class="requester-files">'
+                                '<span class="requester-label">{files_label}</span>'
+                                '<ol class="requester-file-list">{links}</ol>'
+                                '</div>'.format(
+                                    files_label=_("Bifogade filer"),
+                                    links="".join(file_links),
+                                )
+                            )
+
+                        self.fields[field_name].help_text = mark_safe(
+                            format_html("".join(help_chunks),
+                                        label=_("Beställare"),
+                                        name=req.name or _("Okänd namn"),
+                                        email=req.email,
+                                        files=file_links
+                            ))
+
 
 class ConceptForm(GroupFilteredModelForm):
-    
+
     class Meta:
         model = Concept
         exclude = ()
@@ -250,12 +295,12 @@ class ConceptForm(GroupFilteredModelForm):
         help_texts = {'term': _('Rullistan visar termer redan i DB'),
                       'definition': _('Visas som HTML på framsidan'),
                       'källa': _('Rullistan visar termer redan i DB')}
-    
+
     def use_required_attribute(self, *args):
         return False
-    
+
     def __init__(self, *args, user=None, **kwargs):
-        
+
         super().__init__(*args, **kwargs)
         self.user = user
         self.fields['status'] = forms.ChoiceField(
@@ -265,7 +310,7 @@ class ConceptForm(GroupFilteredModelForm):
         if user and not user.is_superuser and 'dictionaries' in self.fields:
             self.fields['dictionaries'].queryset = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
 
-        
+
         if "dictionaries" in self.fields:
             self.fields["dictionaries"].required = True
 
@@ -273,23 +318,23 @@ class ConceptForm(GroupFilteredModelForm):
                 self.fields["dictionaries"].queryset = Dictionary.objects.filter(
                     groups__in=user.groups.all()
                 ).distinct()
-        
+
     def clean(self):
-        
+
         cleaned_definition = self.cleaned_data.get('definition')
         cleaned_data = super().clean()
-        
+
         if any((c in ['{', '}', '½']) for c in cleaned_definition):
             raise forms.ValidationError({'definition' : _('Får inte ha { } eller ½ i texten')})
-        
+
         if (not hasattr(self, 'user')) or (self.user is None):
-            raise Exception(_("Form is missing 'user'. Make sure it's passed from the admin."))
+            raise Exception(_("Formuläret sakner 'användare'. Var säkert att den skickas från admin."))
 
         selected_dictionaries = cleaned_data.get("dictionaries")
         if not selected_dictionaries:
                 # field-specific error mapping if you prefer it here
                 raise forms.ValidationError({"dictionaries": _("Välj minst en ordlista innan du sparar.")})
-        
+
         user = self.user
         if user and not user.is_superuser:
             selected_dictionaries = cleaned_data.get("dictionaries")
@@ -300,11 +345,11 @@ class ConceptForm(GroupFilteredModelForm):
                 raise ValidationError(_("Du har inte behörighet att koppla detta begrepp till en eller flera av de valda ordlistorna."))
 
         return cleaned_data
-        
+
 class ConceptExternalFilesForm(forms.ModelForm):
 
-    support_file = forms.FileField(label=_('Attached file'))
-    
+    support_file = forms.FileField(label=_('Bifogad fil'))
+
     class Meta:
         model = ConceptExternalFiles
         exclude = ()

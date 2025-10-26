@@ -1,42 +1,31 @@
-from django.contrib import admin, messages
-from django.db.models import Q, Count
-from django.utils.safestring import mark_safe
-from django.contrib.auth.models import Group
-from term_list.models import (Dictionary, 
-                              Concept, 
-                              Attribute, 
-                              Synonym, 
-                              AttributeValue,
-                              DEFAULT_STATUS,
-                              STATUS_CHOICES)
-from django.core.exceptions import ObjectDoesNotExist
-
-from term_list.forms import (ExcelImportForm,
-                          ColumnMappingForm)
-from django.core.exceptions import ValidationError
-from django.utils.encoding import force_str
-
-from django.urls import path, reverse
-from django.shortcuts import render, redirect
-from django.utils.html import format_html
-from django.contrib.admin.actions import delete_selected
-from django.contrib.admin.utils import model_ngettext
-
-
-import pandas as pd
-import io
 import base64
-import json
 import difflib
 import html
-
+import io
+import json
 import logging
+from pdb import set_trace
+
+import pandas as pd
+from django.contrib import admin, messages
+from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
+from django.urls import path, reverse
+from django.utils.encoding import force_str
+from django.utils.safestring import mark_safe
+
+from term_list.forms import ColumnMappingForm, ExcelImportForm
+from term_list.models import (DEFAULT_STATUS, STATUS_CHOICES, Attribute,
+                              AttributeValue, Concept, Dictionary, Synonym)
+
 logger = logging.getLogger(__name__)
 
-from django.http import JsonResponse
 
 
-from pdb import set_trace
+
 
 def add_non_breaking_space_to_status(status_item):
 
@@ -121,7 +110,7 @@ class DictionaryRestrictedInlineMixin:
         obj_dicts = self._get_dictionary_from_obj(request, obj)
         accessible = self.get_accessible_dictionaries(request)
         return obj_dicts in accessible
-    
+
     def _has_permission(self, request, obj=None):
     # Django calls inline perms early (before parent is injected).
     # Be permissive until we have both an object and a parent.
@@ -149,10 +138,11 @@ class DictionaryRestrictedInlineMixin:
      # Optionally: only allow Add if the user has access to at least one dictionary
      return self.get_accessible_dictionaries(request).exists()
 
-    def get_readonly_fields(self, request, obj=None):
-        if obj and not self.has_change_permission(request, obj):
-            return [f.name for f in self.model._meta.fields]
-        return super().get_readonly_fields(request, obj)
+    # def get_readonly_fields(self, request, obj=None):
+    #     if obj and not self.has_change_permission(request, obj):
+    #         return [f.name for f in self.model._meta.fields]
+    #     return super().get_readonly_fields(request, obj)
+
     def get_readonly_fields(self, request, obj=None):
     # Call the internal checker to avoid recursion/early parent requirement
         if obj and not self._has_permission(request, obj):
@@ -161,9 +151,8 @@ class DictionaryRestrictedInlineMixin:
 
     def _get_dictionary_from_obj(self, request, obj):
         # Delegate to the parent admin’s helper
-        # self._require_parent_admin()
         return self.parent_model_admin._get_dictionary_from_obj(request, obj)
-    
+
     def get_max_num(self, request, obj=None, **kwargs):
         # Hide the “Add another …” row when user can’t change this obj
         if obj and not self._has_permission(request, obj):
@@ -219,8 +208,8 @@ class ConceptFileImportMixin:
 
         logger.info('Prepending ConceptFileImportMixin urls to admin urls')
         custom_urls = [
-            path('importera-excel/', 
-                 self.admin_site.admin_view(self.import_excel_view), 
+            path('importera-excel/',
+                 self.admin_site.admin_view(self.import_excel_view),
                  name="import_excel_view"),
         ]
         urls = super().get_urls()
@@ -232,23 +221,23 @@ class ConceptFileImportMixin:
         extra_context = extra_context or {}
         extra_context['import_excel_url'] = reverse('admin:import_excel_view')  # Dynamically add the URL to the context
         return super().changelist_view(request, extra_context=extra_context)
-    
+
     def get_draft_mappings(self, excel_columns, dictionary_ids):
 
         """
         Function to get draft mappings by matching Excel columns to model fields.
         """
         draft_mapping = {}
-        
+
         groups = Group.objects.filter(dictionaries__dictionary_id__in=dictionary_ids).distinct()
 
 
         # Get the static fields from the Concept model
         concept_fields = [f.name for f in Concept._meta.get_fields() if f.name not in ['id', 'concept_fk']]
-        
+
         # Get the dynamic fields from the Attribute model for the selected dictionary
         attributes = Attribute.objects.filter(groups__in=groups).distinct()
-        
+
         attribute_names = [attr.display_name for attr in attributes]
 
         # Combine the model fields with the attribute names
@@ -268,7 +257,7 @@ class ConceptFileImportMixin:
 
         logger.debug(f'Draft mapping: {draft_mapping}')
         return draft_mapping
-    
+
     def import_excel_view(self, request):
 
         CONCEPT_FIELDS = {field.name.lower() for field in Concept._meta.get_fields() if not field.is_relation}
@@ -285,7 +274,7 @@ class ConceptFileImportMixin:
 
                 # Read the Excel file
                 df = pd.read_excel(io.BytesIO(file_data), engine='openpyxl')
-                
+
                 # clean up the import data
                 empty_cols = [col for col in df.columns if df[col].isnull().all()]
                 logger.warning(f"Empty columns in import file: {empty_cols}..dropping from import")
@@ -303,10 +292,10 @@ class ConceptFileImportMixin:
                         dictionary_in_excel = True
                         chosen_dictionary = unique_dicts[0]
                         try:
-                            Dictionary.objects.get(dictionary_long_name=chosen_dictionary)                        
-                        except Dictionary.DoesNotExist as e:
+                            Dictionary.objects.get(dictionary_long_name=chosen_dictionary)
+                        except Dictionary.DoesNotExist:
                             messages.error(request, f"Ordbok '{chosen_dictionary}' från filen finns inte i DB, vänligen dubbelkolla stavningen.")
-                            return redirect("admin:import_excel_view")            
+                            return redirect("admin:import_excel_view")
                     else:
                         messages.error(request, "Flera ordböcker hittades i Excel-filen. Vänligen välj en från listan istället.")
                         return redirect("admin:import_excel_view")
@@ -321,12 +310,12 @@ class ConceptFileImportMixin:
                 }
 
                 # Merge with the initial_mapping
-                initial_data.update(draft_mapping)               
+                initial_data.update(draft_mapping)
 
                 mapping_form = ColumnMappingForm(
                     columns=columns,
                     model_fields=draft_mapping.values(),
-                    available_dictionaries=[(dict.dictionary_id, 
+                    available_dictionaries=[(dict.dictionary_id,
                                              dict.dictionary_name) for dict in available_dictionaries],
                     initial=initial_data,
               )
@@ -340,7 +329,7 @@ class ConceptFileImportMixin:
         # Step 2: Handle intermediate confirmation page
         if 'apply_mapping' in request.POST:
             # Assume form contains the parsed data from the uploaded file
-            logger.debug(f"Mapping accepted, creating new terms and attributes in DB")
+            logger.debug("Mapping accepted, creating new terms and attributes in DB")
             json_column_mapping = json.loads(request.POST.get('column_mapping_json'))
 
             if request.POST.get('dictionary-in-file'):
@@ -351,25 +340,26 @@ class ConceptFileImportMixin:
             elif request.POST.get('dictionary') is not None:
                 chosen_dictionary = request.POST.get('dictionary')
 
-            # the mapping of this is not quite right...I want the sqwedish headers in the 
+            # the mapping of this is not quite right...I want the sqwedish headers in the
             # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
             logger.debug(f'adding key - {json_column_mapping=}')
             column_mapping = {k: force_str(v) for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
-            
+
             df = pd.read_excel(io.BytesIO(base64.b64decode(request.POST.get('excel_file'))), engine='openpyxl')
 
             available_dictionaries = self.get_accessible_dictionaries(request)
-    
-            updated_records = []
+            dictionary_names = set(Dictionary.objects.values_list("dictionary_long_name", flat=True))
+            dictionary_names.add(force_str(Dictionary._meta.verbose_name_plural))
+
             concept_data_list = []
             invalid_status_values = set()
-            
-            for _, row in df.iterrows():                
+
+            for _, row in df.iterrows():
                 data = {force_str(column_mapping[col]): row[col] for col in df.columns if column_mapping.get(col)}
                 data = {k: None if pd.isna(v) else v for k, v in data.items()}
                 data['term'] = conditional_lowercase(data.get('term'))
                 if data.get('definition'):
-                    data['definition'] = data.get('definition').replace('\u200b','').strip()            
+                    data['definition'] = data.get('definition').replace('\u200b','').strip()
                 status_value = data.get('status')
                 if status_value is not None:
                     normalised_status, is_valid_status = normalize_choice_value(status_value, STATUS_CHOICES)
@@ -378,13 +368,12 @@ class ConceptFileImportMixin:
                     else:
                         invalid_status_values.add(force_str(status_value).strip())
                         data['status'] = DEFAULT_STATUS
-                
+
                 data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary
-                
-                try:        
-                    
+                try:
+
                     existing_begrepp = Concept.objects.get(term=data.get('term'), dictionaries__in=available_dictionaries)
-                                            
+
                     is_changed = False
                     for field, value in data.items():
                         # Get the corresponding field value from the existing object
@@ -392,16 +381,16 @@ class ConceptFileImportMixin:
                         if str(existing_value) != str(value):  # Convert both to string for safe comparison
                             is_changed = True
                             continue
-                    
-                    data['is_changed'] = is_changed        
+
+                    data['is_changed'] = is_changed
                     data['is_new'] = True
                     concept_data_list.append(data)
 
                 except Concept.DoesNotExist:
 
                     # Create a new Concept if it doesn't exist
-                    data['is_changed'] = False 
-                    data['is_new'] = True   
+                    data['is_changed'] = False
+                    data['is_new'] = True
                     concept_data_list.append(data)
             if invalid_status_values:
                 messages.warning(
@@ -409,11 +398,20 @@ class ConceptFileImportMixin:
                     "Ogiltiga statusvärden hittades i importfilen och ersattes med standardstatus: "
                     f"{', '.join(sorted(invalid_status_values))}."
                 )
+
+            set_trace()
+            column_headers = [
+                {
+                    "key": header,
+                    "label": "Ordbok" if header in dictionary_names else header,
+                }
+                for header in column_mapping.values()
+            ]
             #Render the confirmation page
             return render(request, 'admin/confirm_mapping.html', {
                 'concept_data_list': concept_data_list,
                 'concept_data_list_json': json.dumps(concept_data_list, ensure_ascii=False),
-                'column_headers': column_mapping.values(),
+                'column_headers': column_headers,
             })
 
         # Step 3: Final creation or update after confirmation
@@ -428,28 +426,32 @@ class ConceptFileImportMixin:
                 return redirect("admin:term_list_concept_changelist")
 
             for data in concept_data_list:
-                # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create, 
+                # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create,
                 # additionally is_update is not part of the Concept model.
-                
+
                 dictionary_id = data.pop(Dictionary._meta.verbose_name_plural, [])
                 data.pop('is_changed', None)
                 data.pop('is_new', None)
 
-                    # ✅ Separate Concept Fields dynamically
+                # Separate Concept Fields dynamically
                 concept_data = {k.lower(): v for k, v in data.items() if k.lower() in CONCEPT_FIELDS}
 
                 synonym_data = data.get('synonyms', [])
                 if data.get('synonyms'):
                     data.pop('synonyms')
-                # ✅ Separate Attribute Fields (EAV fields)
-                attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS}
+
+                # Separate Attribute Fields (EAV fields)
+                dictionary_names = set(
+                    Dictionary.objects.values_list("dictionary_long_name", flat=True)
+                )
+                attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS and k not in dictionary_names}
 
                 concept_instance, created = Concept.objects.update_or_create(term=data.get('term'), defaults=concept_data)
-                
+
                 if synonym_data:
                     split_synonyms = [synonym for synonym in synonym_data.split(',') if synonym not in ['', None]]
                     synonyms = [Synonym(synonym=synonym, concept=concept_instance) for synonym in split_synonyms]
-                    Synonym.objects.bulk_create(synonyms)  
+                    Synonym.objects.bulk_create(synonyms)
 
                 # Handle the M2M relation (dictionaries)
                 if dictionary_id:
@@ -468,15 +470,41 @@ class ConceptFileImportMixin:
                 for attr_name, attr_value in attribute_data.items():
                     attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
                     # Get the correct field to update
+                    if attr_value in [None, "", [], {}, set()]:
+                        continue
+                    attribute_obj = Attribute.objects.filter(display_name__iexact=attr_name).first()
+                    if attribute_obj is None:
+                        logger.warning(
+                            "Skipping attribute '%s' because it does not exist in DB",
+                            attr_name,
+                        )
+                        continue
+
                     value_field = value_field_map.get(attribute_obj.data_type, "value_string")
                     # Prepare the data dynamically
                     defaults = {value_field: attr_value}
 
-                    attribute_value, _ = AttributeValue.objects.update_or_create(
-                    term=concept_instance, 
-                    attribute=attribute_obj,
-                    defaults=defaults
-                )
+                    if not attribute_obj.groups.exists():
+                        logger.warning(
+                            "Skipping attribute '%s' because it is missing group assignments",
+                            attr_name,
+                        )
+                        continue
+                    AttributeValue.objects.update_or_create(
+                        term=concept_instance,
+                        attribute=attribute_obj,
+                        defaults=defaults,
+                    )
+
+                # for attr_name, attr_value in attribute_data.items():
+                #     attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
+                #     # Get the correct field to update
+
+                #     attribute_value, _ = AttributeValue.objects.update_or_create(
+                #     term=concept_instance,
+                #     attribute=attribute_obj,
+                #     defaults=defaults
+                # )
 
             messages.success(request, "Data från filen importerad!")
             return redirect("admin:term_list_concept_changelist")
@@ -499,7 +527,7 @@ def fetch_attributes(request):
     except ObjectDoesNotExist:
         return JsonResponse({'error': 'Dictionary with that ID not found'}, status=404)
 
-    
+
     # Fetch attributes linked to the dictionary's groups
     attributes = Attribute.objects.filter(groups__dictionaries__dictionary_id=dictionary_id).distinct()
 

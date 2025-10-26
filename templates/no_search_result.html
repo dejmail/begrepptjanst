@@ -1,14 +1,14 @@
 {% load i18n %}
 
 <div class="text-center" id="no-concept-found">
-    <h5>{% trans "The concept is not current within the OLLI concept list." %}</h5>
+    <h5>{% translate "Begreppet finns för närvarande inte i OLLI Begreppssystemet." %}</h5>
     <div>
-        <p>{% translate 'To request this concept, click on "Request concept", and you will be presented with a form that can be filled in and sent to us.' %}</p>
+        <p>{% translate 'För att begära detta begrepp, klicka på "Eferfråga begrepp", så visas ett formulär som kan fyllas i och skickas till oss.' %}</p>
     </div>
 
     <button class="btn btn-light-blue text-center"
         onclick="populate_request_form('{{searched_for_term}}','{{chosen_dictionary}}')"
-        id="request-term-button">{% translate "Request concept" %}</a>
+        id="request-term-button">{% translate "Efterfråga begrepp" %}</a>
     </button>
 
 </div>

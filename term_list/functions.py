@@ -1,10 +1,8 @@
-from pdb import set_trace
-from .models import SearchTrack, MetadataSearchTrack, TaskOrderer
-
+import re
 from collections import OrderedDict
 
-import re
-import datetime
+from .models import MetadataSearchTrack, SearchTrack
+
 
 def besökare_ip_adress(request):
 
@@ -45,11 +43,11 @@ def sort_concept_keys(begrepp_dict):
                           'annan referens',
                           'kod',
                           'term id']
-    
+
     return OrderedDict([(v, begrepp_dict[v]) for v in desired_dict_order])
 
 def replace_nbs_with_normal_space(string_with_bad_values):
-    
+
     '''
     Replace a nonbreaking space (nbs) (Latin) with a normal space. The nbs can cause problems
     in html rendering.
@@ -68,14 +66,14 @@ class Xlator(dict):
     def _make_regex(self):
         # Define common suffixes for pluralization or word forms
         suffixes = r"(en|ens|er|ar|et|s)?\b"
-        
+
         # Escape the keys and join them with word boundaries
         escaped_keys = self.escape_keys()
         joined_keys = r'\b(' + r'|'.join(escaped_keys) + r')' + suffixes
-        
+
         # Compile the regular expression with the flexible word boundary
         compiled_re = re.compile(joined_keys, re.IGNORECASE)
-        
+
         return compiled_re
 
     def __call__(self, match):
@@ -83,7 +81,7 @@ class Xlator(dict):
         base_word = match.group(1)  # This captures the base word before the suffix
         suffix = match.group(2) or ""  # This captures the suffix (if any)
         tooltip = self.get(base_word, base_word)  # Lookup the base word in the dictionary
-        
+
         # Return the tooltip with the original suffix added back
         return tooltip.strip() + suffix
 
@@ -95,8 +93,8 @@ class Xlator(dict):
 HTML_TAGS = ['a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside',
 'audio', 'b', 'base', 'basefont', 'bb', 'bdo', 'big', 'blockquote', 'body', 'br /', 'br',
 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'command',
-'datagrid', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'dir', 'div', 'dl', 
-'dt', 'em', 'embed', 'eventsource', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 
+'datagrid', 'datalist', 'dd', 'del', 'details', 'dfn', 'dialog', 'dir', 'div', 'dl',
+'dt', 'em', 'embed', 'eventsource', 'fieldset', 'figcaption', 'figure', 'font', 'footer',
 'form', 'frame', 'frameset', 'h1 to h6', 'head', 'header', 'hgroup', 'hr /', 'html',
 'i', 'iframe', 'img', 'input', 'ins', 'isindex', 'kbd', 'keygen', 'label', 'legend',
 'li', 'link', 'map', 'mark', 'menu', 'meta', 'meter', 'nav', 'noframes', 'noscript',

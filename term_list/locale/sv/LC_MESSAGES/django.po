@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-15 21:49+0200\n"
+"POT-Creation-Date: 2025-10-26 07:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,65 +18,93 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: term_list/admin.py:437 term_list/models.py:32
+#: term_list/admin.py:428 term_list/models.py:32
 msgid "Dictionaries"
 msgstr "Ordböcker"
 
-#: term_list/forms.py:96
+#: term_list/forms.py:99
 msgid "The dictionary does not exist."
-msgstr ""
+msgstr "Ordboken existerar inte"
 
-#: term_list/forms.py:108
+#: term_list/forms.py:111
 msgid "Term som representerar begreppet"
 msgstr ""
 
-#: term_list/forms.py:110
-msgid "Beskriv hur begreppet används:"
-msgstr ""
-
 #: term_list/forms.py:112
-msgid "E-post"
+msgid "Ordlista"
 msgstr ""
 
-#: term_list/forms.py:113 term_list/forms.py:167
+#: term_list/forms.py:113
+msgid "Describe how the concept is used:"
+msgstr "Beskriver hur begreppet används"
+
+#: term_list/forms.py:114
+msgid "Name"
+msgstr "Namn"
+
+#: term_list/forms.py:115
+msgid "Email"
+msgstr "Epost"
+
+#: term_list/forms.py:116
+msgid "Attach one or more screenshot or files that can help us"
+msgstr "Befogar en eller flera skärmklipp eller filer som kan hjälpa oss."
+
+#: term_list/forms.py:170
 msgid "Bifogar en/flera skärmklipp eller filer som kan hjälpa oss"
 msgstr ""
 
-#: term_list/forms.py:187
+#: term_list/forms.py:190
 msgid "Select Dictionary"
 msgstr "Välja ordbok"
 
-#: term_list/forms.py:250 term_list/forms.py:252
+#: term_list/forms.py:250
+msgid "Begrepp kontext"
+msgstr ""
+
+#: term_list/forms.py:288
+msgid "Bifogade filer"
+msgstr ""
+
+#: term_list/forms.py:295
+msgid "Beställare"
+msgstr ""
+
+#: term_list/forms.py:296
+msgid "Unknown name"
+msgstr ""
+
+#: term_list/forms.py:308 term_list/forms.py:310
 msgid "Rullistan visar termer redan i DB"
 msgstr ""
 
-#: term_list/forms.py:251
+#: term_list/forms.py:309
 msgid "Visas som HTML på framsidan"
 msgstr ""
 
-#: term_list/forms.py:283
+#: term_list/forms.py:341
 msgid "Får inte ha { } eller ½ i texten"
 msgstr ""
 
-#: term_list/forms.py:286
+#: term_list/forms.py:344
 msgid "Form is missing 'user'. Make sure it's passed from the admin."
 msgstr ""
 
-#: term_list/forms.py:291
+#: term_list/forms.py:349
 msgid "Välj minst en ordlista innan du sparar."
 msgstr ""
 
-#: term_list/forms.py:300
+#: term_list/forms.py:358
 msgid ""
 "Du har inte behörighet att koppla detta begrepp till en eller flera av de "
 "valda ordlistorna."
 msgstr ""
 
-#: term_list/forms.py:306
+#: term_list/forms.py:364
 msgid "Attached file"
 msgstr "Bifogad fil"
 
-#: term_list/forms.py:311
+#: term_list/forms.py:369
 msgid "Kan länkas till en kommentar också, men behövs inte"
 msgstr ""
 
@@ -94,75 +122,80 @@ msgstr "Bifogad fil"
 
 #: term_list/models.py:76
 msgid "Requester"
-msgstr ""
+msgstr "Beställare"
 
 #: term_list/models.py:77
 msgid "Requesters"
-msgstr ""
+msgstr "Beställare"
 
-#: term_list/models.py:101
+#: term_list/models.py:103
 msgid "Synonyms"
 msgstr "Syonymer"
 
-#: term_list/models.py:102
+#: term_list/models.py:104
 msgid "Synonym"
 msgstr "Synonym"
 
-#: term_list/models.py:124
+#: term_list/models.py:126
 msgid "Concept comments"
 msgstr "Begrepp kommentar"
 
-#: term_list/models.py:146
+#: term_list/models.py:148
 msgid "Search data"
 msgstr "Söka data"
 
-#: term_list/models.py:163 term_list/models.py:164
+#: term_list/models.py:165 term_list/models.py:166
 msgid "Search Metadata"
 msgstr "Söa metadata"
 
-#: term_list/models.py:177 term_list/models.py:178
+#: term_list/models.py:179 term_list/models.py:180
 msgid "Settings"
 msgstr "inställningar"
 
-#: term_list/models.py:208
+#: term_list/models.py:210
 msgid "Concept"
 msgstr "Begrepp"
 
-#: term_list/models.py:209
+#: term_list/models.py:211
 msgid "Concepts"
 msgstr "Begrepp"
 
-#: term_list/models.py:239
+#: term_list/models.py:241
 msgid "Attribute Group"
 msgstr "Atttribut grupp"
 
-#: term_list/models.py:240
+#: term_list/models.py:242
 msgid "Attribute Groups"
 msgstr "Attribut grupper"
 
-#: term_list/models.py:250
+#: term_list/models.py:252
 msgid "Attribute"
 msgstr "Attribut"
 
-#: term_list/models.py:251
+#: term_list/models.py:253
 msgid "Attributes"
 msgstr "Attributer"
 
-#: term_list/models.py:273
+#: term_list/models.py:275
 msgid "Attribute Value"
 msgstr "Attribut värde"
 
-#: term_list/models.py:274
+#: term_list/models.py:276
 msgid "Attribute Values"
 msgstr "Attribut värden"
 
-#: term_list/models.py:330 term_list/models.py:331
+#: term_list/models.py:332 term_list/models.py:333
 msgid "Group Hierarchy"
 msgstr "Grupp hierarki"
 
-#: term_list/views.py:929
+#: term_list/views.py:930
 msgid "Request for a new term"
 msgstr "Efterfråga en ny term"
+
+#, fuzzy
+#~| msgid "Concept comments"
+#~ msgid "concept_context"
+#~ msgstr "Begrepp kontext"
 
 #~ msgid "From date"
 #~ msgstr "Från datum"

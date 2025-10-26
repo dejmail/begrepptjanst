@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 from pathlib import Path
 
-from application.logs import setup_logging
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 # BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -41,7 +40,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'django_admin_multiple_choice_list_filter',
     'rangefilter',
-    'simple_history',    
+    'simple_history',
     'django_extensions'
 ]
 

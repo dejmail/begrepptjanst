@@ -1,11 +1,10 @@
-from application.settings.base import *
-from django.conf import settings
-from django.urls import include, path
-import os 
 import logging
-from dotenv import load_dotenv
+import os
 from pathlib import Path
-from pdb import set_trace
+
+from dotenv import load_dotenv
+
+from application.settings.base import MIDDLEWARE
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +25,7 @@ INTERNAL_IPS = ['127.0.0.1',]
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql', 
+        'ENGINE': 'django.db.backends.mysql',
         'NAME': 'vgrinfor_olli_test',
         'USER': 'vgrinfor_admin',
         'PASSWORD': 'YqvyYGm5cJMLmzt',
@@ -34,7 +33,7 @@ DATABASES = {
         'PORT': '3306',
 
         'OPTIONS': {
-            # Tell MySQLdb to connect with 'utf8mb4' character set  
+            # Tell MySQLdb to connect with 'utf8mb4' character set
             'sql_mode' : 'traditional',
         },
          'TEST': {
@@ -70,7 +69,7 @@ MEDIA_ROOT = 'media'
 
 STATICFILES_DIRS = [
     "static",
-    
+
 ]
 
 STATIC_URL = '/static/'

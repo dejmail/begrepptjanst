@@ -229,4 +229,3 @@ document.addEventListener("DOMContentLoaded", function () {
 updateDefinitionsPosition();
 window.addEventListener('scroll', updateDefinitionsPosition);
 window.addEventListener('resize', updateDefinitionsPosition);
-

@@ -1,7 +1,7 @@
-from application.settings.base import *
-from django.urls import include, path  # For django versions from 2.0 and up
-from django.conf import settings
 import logging
+import os
+
+from application.settings.base import INSTALLED_APPS, MIDDLEWARE
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ logger.debug(f'DB login credentials - {DB_NAME}, {DB_USER}, {DB_PASSWORD}')
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django', 
+        'ENGINE': 'mysql.connector.django',
         'NAME': DB_NAME,
         'USER': DB_USER,
         'PASSWORD': DB_PASSWORD,
@@ -42,6 +42,6 @@ STATIC_ROOT = '/home/vgrinfor/public_html/begreppstjanst-eav/static'
 STATICFILES_DIRS = ['/home/vgrinfor/begreppstjanst-eav/static',]
 STATIC_URL = '/begreppstjanst-eav/static/'
 
-# media files 
+# media files
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst-eav/media'

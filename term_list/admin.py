@@ -1,67 +1,45 @@
-import re
-from pdb import set_trace
+import json
 import logging
 
 from django import forms
 from django.conf import settings
 from django.contrib import admin
-from django.db.models import Case, IntegerField, Q, Value, When, Count
-from django.db.models.functions import Lower
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-
-
+from django.contrib.admin.actions import delete_selected
+from django.contrib.admin.filters import RelatedFieldListFilter
+from django.db.models import Case, IntegerField, Q, Value, When
+from django.http import HttpResponseRedirect
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from django.contrib.admin.filters import RelatedFieldListFilter
-
-from django_admin_multiple_choice_list_filter.list_filters import (
+from django.utils.translation import gettext_lazy as _
+from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
-)
-from django.core.exceptions import PermissionDenied
-
-from django.contrib import messages
-
-
 from rangefilter.filters import DateRangeFilterBuilder
 from simple_history.admin import SimpleHistoryAdmin
-from django.http import HttpResponseRedirect
-
-from term_list.forms import (
-    ConceptForm, 
-    AttributeValueInlineForm,
-    ConfigurationOptionsForm
-    # AttributeValueInlineFormSet
-    )
-from term_list.models import *
-from django.conf import settings
 
 from term_list import admin_actions
-from term_list.forms import ConceptExternalFilesForm, ChooseExportAttributes
-from term_list.admin_actions import (
-    change_dictionaries, 
-    export_chosen_concepts_action,
-    delete_allowed_objects
-)
-from django.contrib.admin.actions import delete_selected
+from term_list.admin_actions import (delete_allowed_objects,
+                                     export_chosen_concepts_action)
+from term_list.admin_functions import (ConceptFileImportMixin,
+                                       DictionaryFilter,
+                                       DictionaryRestrictedAdminMixin,
+                                       DictionaryRestrictedInlineMixin,
+                                       DuplicateTermFilter,
+                                       add_non_breaking_space_to_status)
+from term_list.forms import (AttributeValueInlineForm, ChooseExportAttributes,
+                             ConceptExternalFilesForm, ConceptForm,
+                             ConfigurationOptionsForm)
+from term_list.models import (STATUS_CHOICES, Attribute, AttributeValue,
+                              Concept, ConceptComment, ConceptExternalFiles,
+                              ConfigurationOptions, Dictionary, GroupAttribute,
+                              GroupHierarchy, MetadataSearchTrack, SearchTrack,
+                              Synonym, TaskOrderer)
 
-
-from django.core.files.uploadedfile import InMemoryUploadedFile
-
-admin.site.site_header = """OLLI Begreppstjänst Admin - 
+admin.site.site_header = """OLLI Begreppstjänst Admin -
  För fakta i livet"""
 admin.site.site_title = "OLLI Begpreppstjänst Admin Portal"
 admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
-from term_list.admin_functions import (
-    DictionaryRestrictedAdminMixin,
-    DictionaryRestrictedInlineMixin,
-    ConceptFileImportMixin,
-    DictionaryFilter,
-    DuplicateTermFilter,
-    add_non_breaking_space_to_status
-    )
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +53,7 @@ class SynonymInlineForm(forms.ModelForm):
 
     def clean(self):
         super(SynonymInlineForm, self).clean()
-        if self.cleaned_data.get('synonym') == None:
+        if self.cleaned_data.get('synonym') is None:
             self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
 
 class SynonymInline(admin.TabularInline):
@@ -108,7 +86,7 @@ class StatusListFilter(MultipleChoiceListFilter):
     title = 'Status'
     template = "admin/multiple_status_filter.html"
     parameter_name = 'status__in'
-    
+
     def lookups(self, request, model_admin):
         return STATUS_CHOICES
 
@@ -122,17 +100,8 @@ class TaskOrdererAdmin(
                     'email',
                     'create_date',
                     'finished_by_date',
-                    'term')
-    search_fields = ("term__term","name", "email") 
-
-    def term(self, obj):
-        
-        display_text = [
-        f"<a href='{reverse('admin:{}_{}_change'.format(obj._meta.app_label, obj._meta.related_objects[0].name), args=(concept.id,))}'>{concept.term}</a>"
-        for concept in obj.concepts.all()
-        ]        
-        if display_text:
-            return mark_safe(", ".join(display_text))   
+                    'concept__term')
+    search_fields = ("term__term","name", "email")
 
 class DictionaryAdmin(
     admin.ModelAdmin):
@@ -146,13 +115,13 @@ class DictionaryAdmin(
     #search_fields = ('begrepp__term',)
 
     def _get_dictionary_from_obj(self,  request, obj):
-        print("✅ DictionaryAdmin._get_dictionary_from_obj called")
+        print("DictionaryAdmin._get_dictionary_from_obj called")
         return Dictionary.objects.filter(pk=obj.pk)
 
 
 class SynonymAdmin(
     admin.ModelAdmin):
-    
+
     ordering = ['concept__term']
     list_display = ('concept',
                     'synonym',
@@ -168,16 +137,16 @@ class SynonymAdmin(
     def _get_dictionary_from_obj(self, request, obj):
         return obj.concept.dictionaries.all() if obj and obj.concept else Dictionary.objects.none()
 
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        return actions
+    # def get_actions(self, request):
+    #     actions = super().get_actions(request)
+    #     return actions
 
     def get_actions(self, request):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']
         return actions
-    
+
     @admin.action(description="Radera valda synonymer")
     def delete_synonyms(modeladmin, request, queryset):
 
@@ -188,16 +157,16 @@ class SynonymAdmin(
             object_label="synonymer",
             permission_check=modeladmin._user_has_dictionary_access
         )
-    
+
     actions = [delete_synonyms]
-  
+
 
     def has_delete_permission(self, request, obj=None):
         return True
 
     def get_dictionaries(self, obj):
         # Assuming term has a many-to-many relationship to dictionaries
-        
+
         return ", ".join(d.dictionary_long_name for d in obj.concept.dictionaries.all())
     get_dictionaries.short_description = "Ordböcker"
 
@@ -218,7 +187,6 @@ class ContextFilesInline(admin.StackedInline):
 
 
 class ConceptCommentsAdmin(
-    # DictionaryRestrictedAdminMixin, 
     admin.ModelAdmin):
 
     class Media:
@@ -246,8 +214,8 @@ class ConceptCommentsAdmin(
 
     fieldsets = [
         ['Main', {
-        'fields': [('concept', 'date'), 
-        ('usage_context',), 
+        'fields': [('concept', 'date'),
+        ('usage_context',),
         ('email','name','status'),]},
         ]]
 
@@ -259,13 +227,13 @@ class ConceptCommentsAdmin(
                                     </i>
                                     </a>''')
         else:
-            return format_html(f'''<span style="color: red;">            
+            return format_html('''<span style="color: red;">
                                        <i class="far fa-times-circle"></i>
                                     </span>''')
     attached_files.short_description = "Bifogade filer"
 
-    def save_formset(self, request, form, formset, change):
-        
+    def save_formset(self, request, form, formset):
+
         if request.method == 'POST':
             instances = formset.save(commit=False)
             for instance in instances:
@@ -288,7 +256,6 @@ class SearchTrackAdmin(admin.ModelAdmin):
                     'records_returned')
 
 class ConceptExternalFilesAdmin(
-    # DictionaryRestrictedAdminMixin, 
     admin.ModelAdmin):
 
     model = ConceptExternalFiles
@@ -307,22 +274,19 @@ class ConceptExternalFilesAdmin(
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 class ConfigurationOptionsAdmin(admin.ModelAdmin):
-    
+
     model = ConfigurationOptions
     form = ConfigurationOptionsForm
 
     list_display = ['name', 'description', 'pretty_json']
 
     def pretty_json(self, obj):
-        # value = json.loads(obj.config)
         pretty = json.dumps(obj.config, indent=2, ensure_ascii=False)
-        # pretty = json.dumps(obj.config, indent=2, ensure_ascii=False)
-        # Wrap in <pre> for formatting
         return mark_safe(f'<pre>{pretty}</pre>')
     pretty_json.short_description = "Config"
 
 class AttributeValueInline(
-    DictionaryRestrictedInlineMixin, 
+    DictionaryRestrictedInlineMixin,
     admin.StackedInline
     ):
     model = AttributeValue
@@ -330,14 +294,10 @@ class AttributeValueInline(
     fk_name = "term"
     extra = 0
     can_delete = False
-    # template = "admin/edit_inline/stacked.html" 
+    template = "admin/edit_inline/stacked.html"
 
     def get_parent_object(self, request):
         return getattr(request, '_admin_form_parent_instance', None)
-
-    # def get_formset(self, request, obj=None, **kwargs):
-    #     self.parent_model_admin = self.admin_site._registry.get(obj.__class__)
-    #     return super().get_formset(request, obj, **kwargs)
 
     def get_formset(self, request, obj=None, **kwargs):
         """
@@ -374,7 +334,7 @@ class AttributeValueInline(
 
 
     def has_add_permission(self, request, obj=None):
-        return False  # ✅ Prevents the 'Add another' button from appearing
+        return False  # Prevents the 'Add another' button from appearing
 
     def has_change_permission(self, request, obj=None):
         if obj is None:
@@ -386,13 +346,13 @@ class AttributeValueInline(
 
         return p.has_change_permission(request, obj=obj)
 
-    # ✅ Make the inline read-only if parent says “no change” on this Concept
+    # Make the inline read-only if parent says “no change” on this Concept
     def get_readonly_fields(self, request, obj=None):
         if obj and not self.has_change_permission(request, obj):
             return tuple(self.get_fields(request, obj))
         return super().get_readonly_fields(request, obj)
 
-    # ✅ Hide “add another” row when read-only (belt & braces)
+    # Hide “add another” row when read-only (belt & braces)
     def get_max_num(self, request, obj=None, **kwargs):
         if obj and not self.has_change_permission(request, obj):
             return 0
@@ -405,7 +365,6 @@ class AttributeValueInline(
         if not obj:
             return ["attribute"]  # Default when no instance is selected
 
-        # Get the term's groups (or another relevant relation)
         term_groups = obj.dictionaries.values_list("groups", flat=True)
 
         attributes = Attribute.objects.filter(groups__in=term_groups).distinct()
@@ -434,7 +393,7 @@ class AllDictionaryFilter(RelatedFieldListFilter):
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         super().__init__(field, request, params, model, model_admin, field_path)
-        self.title = _("Dictionaries")
+        self.title = _("Ordböcker")
 
 
     def field_choices(self, field, request, model_admin):
@@ -454,10 +413,10 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         css = {
         'all': (
             f'{settings.STATIC_URL}css/main.css',
-            f'{settings.STATIC_URL}css/begrepp_custom.css',
+            f'{settings.STATIC_URL}css/requester_custom.css',
            )
          }
-        
+
     change_form_template = 'begrepp_change_form.html'
     change_list_template = "begrepp_changelist.html"
 
@@ -466,7 +425,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
                     'definition',
                     'synonyms__synonym',
                     )
-    
+
     list_filter = (StatusListFilter,
                    ('changed_at', DateRangeFilterBuilder()),
                    ("dictionaries", AllDictionaryFilter),
@@ -476,7 +435,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     # --- defaults for the first page load ---
     DICT_PARAM = "dictionaries__dictionary_id__exact"
     DEFAULT_SUPERUSER_DICT_NAME = "VGR gemensam"
-    
+
     inlines = [AttributeValueInline, SynonymInline]
 
     def _default_dictionary_id(self, request):
@@ -504,7 +463,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
                 params[self.DICT_PARAM] = str(default_id)
                 return HttpResponseRedirect(f"{request.path}?{params.urlencode()}")
         return super().changelist_view(request, extra_context)
-    
+
     def has_view_permission(self, request, obj=None):
         # Let any authenticated staff view terms (even outside their dictionaries).
         return request.user.is_active and request.user.is_staff
@@ -519,11 +478,11 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
 
     def _get_dictionary_from_obj(self, request, obj):
         return obj.dictionaries.all() if obj else Dictionary.objects.none()
-    
+
 
     def _get_dictionary_lookup(self):
         return 'dictionaries__in'
-    
+
     @admin.action(description="Radera valda begrepp")
     def delete_concepts(modeladmin, request, queryset):
         return delete_allowed_objects(
@@ -532,7 +491,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
             queryset,
             object_label="begrepp",
         )
-    
+
     def get_actions(self, request):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
@@ -547,7 +506,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         for inline in instances:
             inline.parent_model_admin = self
         return instances
-    
+
     def status_button(self, obj):
         status_classes = {
         'Avråds': 'tag tag-red text-monospace',
@@ -560,23 +519,23 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         }
 
         css_class = status_classes.get(obj.status, 'tag btn-white dark-text text-monospace')
-        
+
         display_text = f'<span class="{css_class}">{add_non_breaking_space_to_status(obj.status)}</span>'
         return mark_safe(display_text)
 
     status_button.short_description = 'Status'
-    
+
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         concept = self.get_object(request, object_id)
-        
+
         if concept:
             # Filter attributes based on the Concept's dictionary
-            
+
             extra_context['filtered_attributes'] = Attribute.objects.filter(
             groups__dictionaries__in=concept.dictionaries.all()
             )
-        
+
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
 
@@ -614,7 +573,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
                 )
             ).order_by('position')
         return queryset
-    
+
     def save_model(self, request, obj, form, change):
         """
         Save the Concept instance first.
@@ -630,22 +589,22 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         super().save_related(request, form, formsets, change)
 
         # # Now that ManyToMany relationships are saved, proceed with AttributeValues
-        concept = form.instance  # Get the current Concept instance                
+        concept = form.instance  # Get the current Concept instance
 
         if concept.dictionaries.exists():
             # Step 1: Get all related Group IDs from the selected Dictionaries
             group_ids = concept.dictionaries.values_list('groups__id', flat=True)
-            
+
             # Step 2: Fetch all Attributes linked to those Groups
             relevant_attributes = Attribute.objects.filter(groups__id__in=group_ids).distinct()
-            
+
             # Step 3: Create AttributeValue objects for each Attribute
             for attribute in relevant_attributes:
                 AttributeValue.objects.get_or_create(
                     term=concept,  # Link to the current Concept instance
                     attribute=attribute
                 )
-    
+
     def list_dictionaries(self, obj):
         return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
 
@@ -658,7 +617,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         # Required default fields
         default_fields = ["Id", "Term", "Definition", "Status"]
 
-        if request.method == 'GET':   
+        if request.method == 'GET':
             chosen_concepts = [int(i) for i in request.GET.get('selected_concepts').split("&")]
             logger.debug(f"Exporting the following - {chosen_concepts}")
             queryset = Concept.objects.filter(id__in=chosen_concepts)
@@ -678,13 +637,13 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         # Combine: First four in order, rest alphabetically
         sorted_fields = default_fields + other_fields
         # selected_attributes = [field_mapping.get(attr, attr) for attr in selected_attributes_verbose]
-        
+
         form = ChooseExportAttributes(request.GET)
         if form.is_valid():
             response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, selected_fields=sorted_fields, field_mapping=field_mapping)
         return response
-    
-    export_chosen_concepts_action.short_description = "Exportera valde begrepp"    
+
+    export_chosen_concepts_action.short_description = "Exportera valde begrepp"
     actions = [export_chosen_concepts_action, delete_concepts]
 
 class AttributeAdmin(admin.ModelAdmin):
@@ -701,7 +660,7 @@ class AttributeAdmin(admin.ModelAdmin):
         return ", ".join([group.name for group in obj.groups.all()])
 
 class AttributeValueAdmin(
-    #  DictionaryRestrictedAdminMixin, 
+    #  DictionaryRestrictedAdminMixin,
     admin.ModelAdmin):
 
     model = AttributeValue
@@ -726,11 +685,11 @@ class AttributeValueAdmin(
 
     def _get_dictionary_lookup(self):
         return 'term__dictionaries__in'
-    
+
     def get_queryset(self, request):
 
         """
-        Assign a rank to the search so that the most relevant are presented 
+        Assign a rank to the search so that the most relevant are presented
         first
         """
 
@@ -768,11 +727,11 @@ class GroupAttributeAdmin(admin.ModelAdmin):
 
     list_display = ['group__name', 'attribute__display_name', 'position']
 
-# admin.site.register(TaskOrderer, TaskOrdererAdmin)
+admin.site.register(TaskOrderer, TaskOrdererAdmin)
 admin.site.register(Dictionary, DictionaryAdmin)
 admin.site.register(Synonym, SynonymAdmin)
 admin.site.register(ConceptComment, ConceptCommentsAdmin)
-admin.site.register(SearchTrack, SearchTrackAdmin)
+
 admin.site.register(MetadataSearchTrack, MetadataSearchTrackAdmin)
 admin.site.register(ConceptExternalFiles,ConceptExternalFilesAdmin)
 admin.site.register(ConfigurationOptions, ConfigurationOptionsAdmin)
@@ -780,3 +739,7 @@ admin.site.register(Concept, ConceptAdmin)
 admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(GroupHierarchy)
 admin.site.register(GroupAttribute, GroupAttributeAdmin)
+
+if not settings.DEBUG:
+    admin.site.register(AttributeValue, AttributeValueAdmin)
+    admin.site.register(SearchTrack, SearchTrackAdmin)

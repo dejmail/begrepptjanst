@@ -1,6 +1,5 @@
-from django import template
-from pdb import set_trace
-register = template.Library()
+from django.template.defaulttags import register
+
 
 @register.filter
 def status_colour(status_label, config):

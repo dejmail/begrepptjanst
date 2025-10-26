@@ -1,14 +1,10 @@
-from application.settings.base import *
-from django.conf import settings
-from django.urls import include, path
-import os 
-import term_list
 import logging
+import os
+
+from application.settings.base import *  # noqa: F401,F403
+from application.settings.base import INSTALLED_APPS, MIDDLEWARE
 
 logger = logging.getLogger(__name__)
-
-# Database
-# https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -17,15 +13,15 @@ INTERNAL_IPS = ['127.0.0.1',]
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mysql.connector.django', 
-        'NAME': 'vgrinfor_olli_eva_test',
+        'ENGINE': 'mysql.connector.django',
+        'NAME': 'vgrinfor_olli_eav_prod',
         'USER': 'vgrinfor_admin',
         'PASSWORD': 'YqvyYGm5cJMLmzt',
-        'HOST': 'suijin.oderland.com',   # Or an IP Address that your DB is hosted on
+        'HOST': '127.0.0.1',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
 
         'OPTIONS': {
-            # Tell MySQLdb to connect with 'utf8mb4' character set  
+            # Tell MySQLdb to connect with 'utf8mb4' character set
             'sql_mode' : 'traditional',
         },
          'TEST': {
@@ -33,7 +29,7 @@ DATABASES = {
         },
     },
     'target' : {
-        'ENGINE': 'mysql.connector.django', 
+        'ENGINE': 'mysql.connector.django',
         'NAME': 'vgrinfor_begrepp_prod',
         'USER': 'vgrinfor_admin',
         'PASSWORD': 'YqvyYGm5cJMLmzt',
@@ -65,7 +61,6 @@ DEBUG_TOOLBAR_PANELS = ['debug_toolbar.panels.headers.HeadersPanel',
 
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
-TEMPLATE_DIRS = ['/templates/',]
 
 MEDIA_URL = '/application/media/'
 MEDIA_ROOT = 'media'

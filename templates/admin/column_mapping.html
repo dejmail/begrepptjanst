@@ -8,12 +8,12 @@
 
     <h3>{% blocktranslate %}Suggested mapping of Excel columns to model attribute{% endblocktranslate %}</h3>
 
-    <h4>{% trans "Adjust where suggestion is wrong" %}</h4>
+    <h4>{% trans "Justera där förslaget är fel" %}</h4>
 
     <h4>
         <ul>
-            <li>{% trans "If you do not provide the target field, the column will not be imported." %}</li>
-            <li>{% trans "Columns without values are ignored." %}</li>
+            <li>{% trans "Om du inte anger mål­fältet kommer kolumnen inte att importeras" %}</li>
+            <li>{% trans "Kolumner utan värden ignoreras." %}</li>
         </ul>
     </h4>
 
@@ -24,8 +24,8 @@
 
             <fieldset class="module aligned">
                 <div class="row font-weight-bold border-bottom pb-2 mb-2">
-                    <div class="col-md-6">{% translate "Excel column" %}</div>
-                    <div class="col-md-6">{% translate "Model attribute" %}</div>
+                    <div class="col-md-6">{% translate "Excel kolumn" %}</div>
+                    <div class="col-md-6">{% translate "Modell attribut" %}</div>
                 </div>
 
                 {% for field in mapping_form %}
@@ -48,7 +48,7 @@
             <div class="form-row">
                 <div class="label">
                     <label for="{{ mapping_form.dictionary.id_for_label }}" class="required">
-                        {% translate 'Choose dictionary:' %}
+                        {% translate 'Välj ordbok:' %}
                     </label>
                 </div>
                 <div class="field">
@@ -59,7 +59,7 @@
 
         {% else %}
         <p class="form-info">
-            <strong>{% translate 'Chosen dictionary:' %}</strong> {{ chosen_dictionary }}
+            <strong>{% translate 'Vald ordok:' %}</strong> {{ chosen_dictionary }}
         </p>
         <input type="hidden" id="dictionary-in-file" name="dictionary-in-file" value="{{chosen_dictionary}}">
         {% endif %}
@@ -68,7 +68,7 @@
         <input type="hidden" name="apply_mapping" id="apply_mapping_hidden" value="">
 
         <div class="submit-row submit-row-left">
-            <input type="submit" name="apply_mapping" class="default" value="{% translate 'Send mapping' %}">
+            <input type="submit" name="apply_mapping" class="default" value="{% translate 'Skicka mappning' %}">
         </div>
 
 </div>

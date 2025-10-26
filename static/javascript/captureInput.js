@@ -18,4 +18,3 @@ dictionarySelect.addEventListener('change', function() {
     });
 
 });
-
