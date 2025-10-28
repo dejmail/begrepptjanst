@@ -48,16 +48,16 @@ logging_schema = {
         },
         # Same as the StreamHandler example above, but with different
         # handler-specific kwargs.
-        # "file": {
-        #     "class": "logging.handlers.RotatingFileHandler",
-        #     "formatter": "standard",
-        #     "level": "ERROR",
-        #     "filename": "logs.log",
-        #     "mode": "a",
-        #     "encoding": "utf-8",
-        #     "maxBytes": 500000,
-        #     "backupCount": 4
-        # }
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "standard",
+            "level": "ERROR",
+            "filename": "./logs.log",
+            "mode": "a",
+            "encoding": "utf-8",
+            "maxBytes": 500000,
+            "backupCount": 4
+        }
     },
     # Loggers use the handler names declared above
     "loggers" : {
@@ -81,7 +81,7 @@ logging_schema = {
     # Just a standalone kwarg for the root logger
     "root" : {
         "level": "DEBUG",
-        "handlers": ["console"]
+        "handlers": ["file"]
     }
 }
 
