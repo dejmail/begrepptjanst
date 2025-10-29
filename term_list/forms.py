@@ -231,9 +231,9 @@ class AttributeValueInlineForm(forms.ModelForm):
                     self.fields[field_name].widget = HiddenInput()
                 else:
                     self.fields[field_name].label = ''
+                    requester = concept.task_requester.first() if concept else None
                     if (
-                        concept
-                        and concept.task_requester.all()[0].id
+                        requester
                         and display_name == _("Begrepp kontext")
                     ):
                         uploaded_files = concept.conceptexternalfiles_set.all()
@@ -259,7 +259,7 @@ class AttributeValueInlineForm(forms.ModelForm):
                         ]
 
                         log.debug('Requester present, adding extra field')
-                        req = concept.task_requester.all()[0]
+                        req = requester
                         help_chunks = [
                             '<span class="requester-label">{label}</span>',
                             '<div class="requester-name">{name}</div>',
