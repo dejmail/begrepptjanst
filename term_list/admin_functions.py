@@ -5,6 +5,7 @@ import io
 import json
 import logging
 from pdb import set_trace
+from typing import Any
 
 import pandas as pd
 from django.contrib import admin, messages
@@ -17,9 +18,11 @@ from django.urls import path, reverse
 from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 
-from term_list.forms import ColumnMappingForm, ExcelImportForm
+from term_list.forms import (ColumnMappingForm, ConceptExternalFilesInlineForm,
+                             ExcelImportForm)
 from term_list.models import (DEFAULT_STATUS, STATUS_CHOICES, Attribute,
-                              AttributeValue, Concept, Dictionary, Synonym)
+                              AttributeValue, Concept, ConceptExternalFiles,
+                              Dictionary, Synonym)
 
 logger = logging.getLogger(__name__)
 
@@ -72,9 +75,45 @@ def normalize_choice_value(raw_value, choices):
         return matched, True
     return normalised, False
 
+# class ReadOnlyFileWidget(AdminFileWidget):
+#     """
+#     Render only a link to the existing file (no file input, no 'clear' checkbox).
+#     Used for inline rows that already have a file uploaded.
+#     """
+#     def render(self, name, value, attrs=None, renderer=None):
+#         import os
+#         if not value:
+#             # fallback to default widget when there's no file
+#             return super().render(name, value, attrs=attrs, renderer=renderer)
+#         try:
+#             url = value.url
+#         except Exception:
+#             url = ""
+#         filename = os.path.basename(force_str(value))
+#         return_string = mark_safe(f'<a href="{url}" target="_blank" rel="noopener noreferrer">{filename}</a>')
+
+#         return return_string #mark_safe(f'<a href="{url}" target="_blank" rel="noopener noreferrer">{filename}</a>')
+
+class ConceptExternalFilesInline(admin.TabularInline):
+    model = ConceptExternalFiles
+    form = ConceptExternalFilesInlineForm
+    fk_name = "concept"
+    extra = 1
+    fields = ("support_file",)
+    verbose_name = "Externt kontextfil"
+    verbose_name_plural = "Externa kontextfiler"
+
+    def get_readonly_fields(self, request, obj=None):
+        # If the instance already has a file, make it read-only
+        readonly = list(super().get_readonly_fields(request, obj))
+        readonly.append('support_file')
+        return readonly
+
+
 class DictionaryRestrictedInlineMixin:
 
-    parent_model_admin = None  # Assigned by the parent ModelAdmin
+    parent_model_admin: Any = None  # Assigned by the parent ModelAdmin
+    model: Any = None
 
     def get_formset(self, request, obj=None, **kwargs):
         self.parent_model_admin = kwargs.pop('parent_model_admin', None)
@@ -102,18 +141,9 @@ class DictionaryRestrictedInlineMixin:
             groups__in=request.user.groups.all()
         ).distinct()
 
-    def _has_permission(self, request, obj):
-        self._require_parent_admin()
-        if obj is None or request.user.is_superuser:
-            return True
-
-        obj_dicts = self._get_dictionary_from_obj(request, obj)
-        accessible = self.get_accessible_dictionaries(request)
-        return obj_dicts in accessible
-
-    def _has_permission(self, request, obj=None):
-    # Django calls inline perms early (before parent is injected).
-    # Be permissive until we have both an object and a parent.
+    def _has_permission(self, request, obj=None) -> Any:
+        # Django calls inline perms early (before parent is injected).
+        # Be permissive until we have both an object and a parent.
         if obj is None or request.user.is_superuser:
             return True
         if not getattr(self, "parent_model_admin", None):
@@ -200,8 +230,10 @@ class DictionaryRestrictedAdminMixin:
 
 class ConceptFileImportMixin:
 
+    admin_site: Any = None
+
     def __init__(self, *args, **kwargs):
-        logger.info("ConceptFileImportMixin initialized")  # Debug message
+        logger.info("ConceptFileImportMixin initialized")
         super().__init__(*args, **kwargs)
 
     def get_urls(self):
@@ -221,6 +253,13 @@ class ConceptFileImportMixin:
         extra_context = extra_context or {}
         extra_context['import_excel_url'] = reverse('admin:import_excel_view')  # Dynamically add the URL to the context
         return super().changelist_view(request, extra_context=extra_context)
+
+    def get_accessible_dictionaries(self, request):
+        if request.user.is_superuser:
+            return Dictionary.objects.all()
+        return Dictionary.objects.filter(
+            groups__in=request.user.groups.all()
+        ).distinct()
 
     def get_draft_mappings(self, excel_columns, dictionary_ids):
 

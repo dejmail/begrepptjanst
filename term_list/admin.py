@@ -24,10 +24,11 @@ from term_list.admin_functions import (ConceptFileImportMixin,
                                        DictionaryRestrictedAdminMixin,
                                        DictionaryRestrictedInlineMixin,
                                        DuplicateTermFilter,
+                                       ConceptExternalFilesInline,
                                        add_non_breaking_space_to_status)
 from term_list.forms import (AttributeValueInlineForm, ChooseExportAttributes,
                              ConceptExternalFilesForm, ConceptForm,
-                             ConfigurationOptionsForm)
+                             ConfigurationOptionsForm, SynonymInlineForm)
 from term_list.models import (STATUS_CHOICES, Attribute, AttributeValue,
                               Concept, ConceptComment, ConceptExternalFiles,
                               ConfigurationOptions, Dictionary, GroupAttribute,
@@ -42,19 +43,6 @@ admin.site.index_title = "Välkommen till OLLI Begreppstjänst Portalen"
 
 
 logger = logging.getLogger(__name__)
-
-class SynonymInlineForm(forms.ModelForm):
-
-    class Meta:
-        model = Synonym
-        fields = "__all__"
-        labels = {"synonym": "Synonym"}
-
-
-    def clean(self):
-        super(SynonymInlineForm, self).clean()
-        if self.cleaned_data.get('synonym') is None:
-            self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
 
 class SynonymInline(admin.TabularInline):
 
@@ -75,12 +63,13 @@ class SynonymInline(admin.TabularInline):
         return super().get_formset(request, obj, **kwargs)
         # return formset
 
-class ConceptExternalFilesInline(admin.StackedInline):
+# class ConceptExternalFilesInline(admin.StackedInline):
 
-    model = ConceptExternalFiles
-    extra = 1
-    verbose_name = "Externt Kontext Fil"
-    verbose_name_plural = "Externa Kontext Filer"
+#     model = ConceptExternalFiles
+#     form = ConceptExternalFileForm
+#     extra = 1
+#     verbose_name = "Uppladdade Kontext Fil"
+#     verbose_name_plural = "Upladdade Kontext Filer"
 
 class StatusListFilter(MultipleChoiceListFilter):
     title = 'Status'
@@ -89,9 +78,6 @@ class StatusListFilter(MultipleChoiceListFilter):
 
     def lookups(self, request, model_admin):
         return STATUS_CHOICES
-
-class ExcelImportForm(forms.Form):
-    excel_file = forms.FileField()
 
 class TaskOrdererAdmin(
     admin.ModelAdmin):
@@ -170,24 +156,17 @@ class SynonymAdmin(
         return ", ".join(d.dictionary_long_name for d in obj.concept.dictionaries.all())
     get_dictionaries.short_description = "Ordböcker"
 
-
-class ConceptExternalFileForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.label_suffix = ""  # Removes the ":" after the label
-
 class ContextFilesInline(admin.StackedInline):
 
     model = ConceptExternalFiles
-    form = ConceptExternalFileForm
+    form = ConceptExternalFilesForm
     extra = 1
     verbose_name = "Externt Kontext Fil"
     verbose_name_plural = "Externa Kontext Filer"
     readonly_fields = ['concept',]
 
 
-class ConceptCommentsAdmin(
-    admin.ModelAdmin):
+class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
 
     class Media:
         css = {
@@ -222,24 +201,48 @@ class ConceptCommentsAdmin(
     def attached_files(self, obj):
 
         if (obj.conceptexternalfiles_set.exists()) and (obj.conceptexternalfiles_set.name != ''):
-            return format_html(f'''<a href={obj.conceptexternalfiles_set}>
+            return mark_safe(f'''<a href={obj.conceptexternalfiles_set}>
                                     <i class="fas fa-file-download">
                                     </i>
                                     </a>''')
         else:
-            return format_html('''<span style="color: red;">
+            return mark_safe('''<span style="color: red;">
                                        <i class="far fa-times-circle"></i>
                                     </span>''')
     attached_files.short_description = "Bifogade filer"
 
-    def save_formset(self, request, form, formset):
+    def _get_dictionary_from_obj(self, request, obj):
+        """Return the dictionaries related to a ConceptComment's concept.
 
-        if request.method == 'POST':
-            instances = formset.save(commit=False)
-            for instance in instances:
-                if not instance.begrepp_id:
-                    instance.begrepp_id = form.cleaned_data.get('concept').pk
-                instance.save()
+        This implements the abstract helper used by DictionaryRestrictedAdminMixin
+        so permission checks work as expected.
+        """
+        if obj and getattr(obj, 'concept', None):
+            return obj.concept.dictionaries.all()
+        return Dictionary.objects.none()
+
+    def get_queryset(self, request):
+        """Limit the changelist to comments whose concept is in an accessible dictionary."""
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        accessible = self.get_accessible_dictionaries(request)
+        return qs.filter(concept__dictionaries__in=accessible).distinct()
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        # Restrict the 'concept' FK choices to concepts in dictionaries the user can access
+        if db_field.name == 'concept' and not request.user.is_superuser:
+            accessible = self.get_accessible_dictionaries(request)
+            kwargs['queryset'] = Concept.objects.filter(dictionaries__in=accessible).distinct()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_formset(self, request, form, formset, change):
+        """Save formset instances, linking them to the parent concept if needed."""
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if not instance.concept_id:
+                instance.concept_id = form.cleaned_data.get('concept').pk
+            instance.save()
         formset.save_m2m()
 
 class MetadataSearchTrackAdmin(admin.ModelAdmin):
@@ -255,8 +258,7 @@ class SearchTrackAdmin(admin.ModelAdmin):
                     'sök_timestamp',
                     'records_returned')
 
-class ConceptExternalFilesAdmin(
-    admin.ModelAdmin):
+class ConceptExternalFilesAdmin(admin.ModelAdmin):
 
     model = ConceptExternalFiles
     form = ConceptExternalFilesForm
@@ -436,7 +438,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     DICT_PARAM = "dictionaries__dictionary_id__exact"
     DEFAULT_SUPERUSER_DICT_NAME = "VGR gemensam"
 
-    inlines = [AttributeValueInline, SynonymInline]
+    inlines = [AttributeValueInline, SynonymInline, ConceptExternalFilesInline]
 
     def _default_dictionary_id(self, request):
         """Pick the default dictionary id for this user."""

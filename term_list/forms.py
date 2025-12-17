@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from .models import (AttributeValue, Concept, ConceptExternalFiles,
-                     ConfigurationOptions, Dictionary)
+                     ConfigurationOptions, Dictionary, Synonym)
 
 log = logging.getLogger(__name__)
 
@@ -52,17 +52,18 @@ class GroupFilteredModelForm(forms.ModelForm):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
 
-        if self.user and not self.user.is_superuser:
-            # Filter queryset for fields that need group-based filtering
-            self.filter_queryset()
+        # if self.user and not self.user.is_superuser:
+        #     from pdb import set_trace; set_trace()
+        #     self.filter_queryset()
 
-    def filter_queryset(self):
-        user = self.user
-        if user and not user.is_superuser:
-            user_groups = user.groups.all()
-            domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('dictionary_id', flat=True)
-            begrepp_ids = Concept.objects.filter(begrepp_fk__dictionary_id__in=domain_ids).values_list('id', flat=True)
-            self.fields['begrepp'].queryset = Concept.objects.filter(id__in=begrepp_ids)
+    # def filter_queryset(self):
+    #     user = self.user
+    #     if user and not user.is_superuser:
+    #         user_groups = user.groups.all()
+    #         domain_ids = Dictionary.objects.filter(groups__in=user_groups).values_list('dictionary_id', flat=True)
+    #         begrepp_ids = Concept.objects.filter(begrepp_fk__dictionary_id__in=domain_ids).values_list('id', flat=True)
+    #         from pdb import set_trace; set_trace()
+    #         self.fields['begrepp'].queryset = Concept.objects.filter(id__in=begrepp_ids)
 
 class TermRequestForm(forms.Form):
 
@@ -163,7 +164,51 @@ class CommentTermForm(forms.Form):
         required=False
     )
 
+class SynonymInlineForm(forms.ModelForm):
+
+    class Meta:
+        model = Synonym
+        fields = "__all__"
+        labels = {"synonym": "Synonym"}
+
+
+    def clean(self):
+        super(SynonymInlineForm, self).clean()
+        if self.cleaned_data.get('synonym') is None:
+            self.add_error('synonym', 'Kan inte radera synonym med bak knappen, använder checkbox till höger')
+
+class ConceptExternalFilesInlineForm(forms.ModelForm):
+    class Meta:
+        model = ConceptExternalFiles
+        fields = ("support_file",)  # explicit tuple
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # remove trailing ":" label suffix and set a friendly label
+        self.label_suffix = ""
+        fld = self.fields.get("support_file")
+        if fld is not None:
+            pass
+            # fld.label = "Bifogad fil"
+            # optional: tweak widget attrs to match admin styling
+            # fld.widget.attrs.update({"class": "vFileField"})
+
 class ExternalFilesForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.label_suffix = ""
+        fld = self.fields.get("support_file")
+        if fld is not None:
+            fld.label = "Bifogad fil"
+
+        # self.label_suffix = ""
+        # If this form is bound to an existing instance with a file, disable the field
+        if self.instance and self.instance.pk and self.instance.support_file:
+            self.fields['support_file'].disabled = False
+            self.fields['support_file'].help_text = "Fil redan uppladdad"
+        self.fields['support_file'].label = "Bifogad fil"
 
     class Meta:
         model = ConceptExternalFiles

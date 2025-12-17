@@ -1,7 +1,7 @@
 import logging
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import unquote
 
 from django.conf import settings
@@ -146,7 +146,8 @@ def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
     """
     Filter concepts where the term starts with a specific letter.
     """
-    queryset = Concept.objects.exclude(status="Publicera ej").filter(
+    excluded_statuses = ConfigurationOptions.get_excluded_statuses()
+    queryset = Concept.objects.exclude(status__in=excluded_statuses).filter(
         term__istartswith=letter
     ).distinct()
 
@@ -352,7 +353,7 @@ def concatenate_all_dictionary_values_to_single_string(dictionary: Dict,
 
     return concatenated_text
 
-def creating_tooltip_hover_substitution_object(all_terms_and_definitions : QuerySet):
+def creating_tooltip_hover_substitution_object(all_terms_and_definitions : QuerySet) -> Xlator:
 
     """ Manipulate an incoming dictionary that has a 'term' and 'definition'
      key:value so that when a definition has references to other term/s
@@ -390,7 +391,7 @@ def creating_tooltip_hover_substitution_object(all_terms_and_definitions : Query
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all
     # the occurrences of concept in definitions with a hover tooltip text.
 
-def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instance, key):
+def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instance, key) -> List[dict]:
     joined_definitions = concatenate_all_dictionary_values_to_single_string(search_results, key)
 
     joined_definitions_minus_nbsp = replace_nbs_with_normal_space(joined_definitions)
@@ -416,7 +417,7 @@ def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instanc
 
     return search_results
 
-def find_all_angular_brackets(bracket_string):
+def find_all_angular_brackets(bracket_string) -> Tuple[List[int], List[int]]:
 
     """ Definitions of terms often include < > brackets within the definitions which
     are interpreted as HTML which confused the template engine. This function finds
@@ -438,7 +439,7 @@ def find_all_angular_brackets(bracket_string):
 
     return gt_brackets, lt_brackets
 
-def replace_str_index(text,index, index_shifter, replacement):
+def replace_str_index(text,index, index_shifter, replacement) -> str:
 
     """ Return a string where string formatting was used to replace a
     certain character at a certain index with a different string. The shifter
@@ -457,11 +458,7 @@ def replace_str_index(text,index, index_shifter, replacement):
 
     return f"{text[:index+index_shifter]}{replacement}{text[index+1+index_shifter:]}"
 
-def replace_non_html_brackets(
-    edit_string : str,
-    gt_brackets: List[int],
-    lt_brackets: List[int]
-    ) -> str:
+def replace_non_html_brackets(edit_string : str, gt_brackets: List[int], lt_brackets: List[int]) -> str:
 
     """ Iterate through a string and replace the < and > characters with the
     corresponding HTML equivalent.
@@ -546,7 +543,7 @@ def determine_search_strategy(url_parameter: str, dictionary: str) -> QuerySet[C
         return search_concepts_with_attributes(url_parameter, dictionary=dictionary), True
 
 
-def assemble_search_results_view(url_parameter, dictionary):
+def assemble_search_results_view(url_parameter, dictionary) -> Tuple[str, List[dict]]:
 
     """
     Main method that couples together all the submethods needed to
@@ -606,7 +603,7 @@ def assemble_search_results_view(url_parameter, dictionary):
         )
     return html, styled_results
 
-def main_search_view(request : HttpRequest):
+def main_search_view(request : HttpRequest) -> HttpResponse | JsonResponse:
 
     """ The view that processes the initial search from the user
 
@@ -639,7 +636,7 @@ def main_search_view(request : HttpRequest):
         'html' : html
         })
 
-def term_metadata_view(request: HttpRequest) -> HttpResponse:
+def term_metadata_view(request: HttpRequest) -> HttpResponse | JsonResponse:
 
     """ View that processes the request for detailed information about a certain term
 
@@ -681,7 +678,7 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse:
 
     return render(request, "term_list/base.html", context={})
 
-def concept_detail_view(concept_id: str) -> Dictionary:
+def concept_detail_view(concept_id: str) -> List[dict]:
     """
     Fetch concept details along with its attributes and their values, including position
     from the GroupAttribute through table.
