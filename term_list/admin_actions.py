@@ -1,7 +1,7 @@
 import datetime
 import io
 import logging
-from typing import List
+from typing import Any, Dict, List
 
 import xlsxwriter
 from django.contrib import messages
@@ -57,7 +57,7 @@ def get_synonym_set(obj):
 def export_chosen_concept_as_csv(request: HttpRequest,
                                  queryset : QuerySet,
                                  selected_fields : List[str],
-                                 field_mapping: Dictionary):
+                                 field_mapping: Dict[str, Any]):
 
     output = io.BytesIO()
     workbook = xlsxwriter.Workbook(output)
@@ -82,7 +82,8 @@ def export_chosen_concept_as_csv(request: HttpRequest,
                 worksheet.write_url(row=row_idx, col=col_index, url=link, string=row_data)
             elif (field in field_mapping.keys()) and (field in ['Senaste ändring', 'Datum skapat']):
                 logger.debug('Found date, fixing format')
-                row_data = getattr(obj, field_mapping.get(field))
+                field_name = field_mapping.get(field, '')
+                row_data = getattr(obj, str(field_name), None)
                 worksheet.write(row_idx, col_index, row_data, date_format)
             elif field.lower() == 'dictionaries':
                 row_data = ', '.join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
@@ -200,7 +201,7 @@ def change_dictionaries(modeladmin, request, queryset):
     }
     return render(request, 'admin/change_dictionary_action.html', context)
 
-change_dictionaries.short_description = "Change Dictionaries of selected Begrepp"
+change_dictionaries.short_description = "Change Dictionaries of selected Begrepp"  # type: ignore[attr-defined]
 
 
 def export_chosen_concepts_action(modeladmin, request, queryset):
@@ -221,7 +222,7 @@ def export_chosen_concepts_action(modeladmin, request, queryset):
     return render(request, "choose_export_attrs_intermediate.html", context={"db_table_attrs" : db_table_attrs,
                                                                             "chosen_concepts" : chosen_concepts})
 
-export_chosen_concepts_action.short_description = "Exportera valde begrepp"
+export_chosen_concepts_action.short_description = "Exportera valde begrepp"  # type: ignore[attr-defined]
 
 def ändra_status_till_översättning(queryset):
 
@@ -234,7 +235,9 @@ def skicka_epost_till_beställaren_status(queryset):
 
     for enskilda_term in queryset.select_related():
         beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
-        subject, from_email, to = 'Uppdatering av term status i Olli', 'info@vgrinformatik.se', beställare.beställare_email
+        to_email = getattr(beställare, 'beställare_email', None) or getattr(beställare, 'email', None)
+        to_email_str = str(to_email) if to_email else ''
+        subject, from_email, to = 'Uppdatering av term status i Olli', 'info@vgrinformatik.se', to_email_str
         text_content = f'''Hej!<br>Begreppet <strong>{enskilda_term.term}</strong> du skickade in har ändrats sin status. Det står nu som <strong>{enskilda_term.status}</strong>.<br>
         <br>Kommentar från informatik:<br> {enskilda_term.email_extra}<br><br>
 
@@ -263,7 +266,9 @@ def skicka_epost_till_beställaren_validate(queryset):
 
     for enskilda_term in queryset.select_related():
         beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
-        subject, from_email, to = 'Begrepp för validering i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
+        to_email = getattr(beställare, 'beställare_email', None) or getattr(beställare, 'email', None)
+        to_email_str = str(to_email) if to_email else ''
+        subject, from_email, to = 'Begrepp för validering i OLLI', 'info@vgrinformatik.se', to_email_str
         text_content = f'''Hej! <br>
 
 Begreppet <strong>{enskilda_term.term}</strong> har nu hanterats av informatikprojektet och vi önskar validering från verksamheten innan det beslutas. Du som framfört önskemål om begreppet ansvarar för förankring i verksamheten och vi ber dig därför gå igenom begreppet i OLLI och kontrollera om du tycker att det stämmer överens med hur verksamheten vill använda begreppet.
@@ -297,7 +302,9 @@ def skicka_epost_till_beställaren_beslutad(queryset):
 
     for enskilda_term in queryset.select_related():
         beställare = TaskOrderer.objects.get(id=enskilda_term.beställare_id)
-        subject, from_email, to = 'Beslutat begrepp i OLLI', 'info@vgrinformatik.se', beställare.beställare_email
+        to_email = getattr(beställare, 'beställare_email', None) or getattr(beställare, 'email', None)
+        to_email_str = str(to_email) if to_email else ''
+        subject, from_email, to = 'Beslutat begrepp i OLLI', 'info@vgrinformatik.se', to_email_str
         text_content = f'''
 
 Hej! <br>

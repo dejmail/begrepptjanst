@@ -1,7 +1,8 @@
 import logging
 import re
 from collections import defaultdict
-from typing import Dict, List, Optional, Tuple
+from typing import (Any, DefaultDict, Dict, Iterable, List, Optional, Tuple,
+                    Union)
 from urllib.parse import unquote
 
 from django.conf import settings
@@ -9,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.storage import FileSystemStorage
+from django.core.files.uploadedfile import UploadedFile
 from django.core.mail import send_mail
 from django.db.models import Prefetch, Q, QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseRedirect,
@@ -16,6 +18,7 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseRedirect,
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.urls import get_script_prefix, reverse
+from django.utils.datastructures import MultiValueDict
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
@@ -68,11 +71,17 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
     logger.debug('Building list of results, including synonyms')
 
     # Step 1: Group attributes by concept ID
-    attribute_map = defaultdict(dict)
+    attribute_map: DefaultDict[int, Dict[str, Any]] = defaultdict(dict)
     for attr_value in matched_attribute_values:
-            attribute_map[attr_value.term_id
-                          ][attr_value.attribute.name
-                            ] = attr_value.get_value()
+        # Safely obtain the related concept id and attribute name to satisfy type checkers
+        term_pk = getattr(attr_value, "term_id", None)
+        if term_pk is None:
+            term_obj = getattr(attr_value, "term", None)
+            term_pk = getattr(term_obj, "id", None) if term_obj is not None else None
+        if term_pk is None:
+            continue
+        attr_name = getattr(getattr(attr_value, "attribute", None), "name", "")
+        attribute_map[int(term_pk)][attr_name] = attr_value.get_value()
 
     # Step 2: Build result list with attributes
     results = []
@@ -88,9 +97,11 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
             d.dictionary_name for d in concept.dictionaries.all()
         )
 
-        concept_data['synonyms'] = list(concept.synonyms.all())
+        synonyms_qs = getattr(concept, 'synonyms', None)
+        concept_data['synonyms'] = list(synonyms_qs.all()) if synonyms_qs is not None else []
 
-        attributes = attribute_map.get(concept.id)
+        concept_pk = getattr(concept, 'id', None) or getattr(concept, 'pk', None)
+        attributes = attribute_map.get(int(concept_pk)) if concept_pk is not None else None
         if attributes:
             for attr_key, value in attributes.items():
                 concept_data[attr_key] = value
@@ -99,7 +110,7 @@ def enrich_serialised_concepts_with_attributes(queryset: QuerySet[Concept],
             results.append(concept_data)
     return results
 
-def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) -> List[dict]:
+def search_concepts_with_attributes(url_parameter: str, dictionary: Optional[str] = None) -> List[dict]:
 
     """
     Search for concepts based on attributes or related data.
@@ -141,7 +152,7 @@ def search_concepts_with_attributes(url_parameter: str, dictionary: str = None) 
     return enrich_serialised_concepts_with_attributes(queryset, matched_attribute_values)
 
 
-def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
+def filter_by_first_letter(letter: str, dictionary: Optional[str]) -> List[dict]:
 
     """
     Filter concepts where the term starts with a specific letter.
@@ -157,13 +168,15 @@ def filter_by_first_letter(letter: str, dictionary: str) -> List[dict]:
     return enrich_serialised_concepts_with_attributes(queryset, AttributeValue.objects.none())
 
 
-def filter_by_dictionary(queryset: QuerySet, dictionary: List) -> QuerySet:
+
+
+def filter_by_dictionary(queryset: QuerySet[Any], dictionary: Optional[Union[str, List[str]]]) -> QuerySet[Any]:
     """
     Filters a queryset of Concept objects by the specified Dictionary.
 
     Args:
         queryset (QuerySet): The queryset to filter.
-        dictionary (Dictionary): The dictionary to filter by.
+        dictionary (Union[str, List[str]]): The dictionary to filter by.
 
     Returns:
         QuerySet: The filtered queryset.
@@ -175,7 +188,7 @@ def filter_by_dictionary(queryset: QuerySet, dictionary: List) -> QuerySet:
 
 
 
-def return_single_term_by_id(id: int) -> QuerySet[Concept]:
+def return_single_term_by_id(id: Union[int, str]) -> Dict[str, Any]:  # returns dict with 'concept' or 'error'
 
     """Return a single match of :model:`term_list.Concept`
 
@@ -199,7 +212,9 @@ def return_single_term_by_id(id: int) -> QuerySet[Concept]:
         for attr_value in attribute_values:
             # Dynamically get the correct value field
             value = attr_value.get_value()
-            attributes[attr_value.attribute.name] = value
+            attr_name = getattr(getattr(attr_value, 'attribute', None), 'name', '')
+            if attr_name:
+                attributes[attr_name] = value
 
         # Combine core fields and dynamic attributes
         return {
@@ -212,41 +227,43 @@ def return_single_term_by_id(id: int) -> QuerySet[Concept]:
         }
 
 
-def filter_term_by_string(term: str) -> QuerySet[Concept]:
+def filter_term_by_string(term: Optional[str]) -> QuerySet[Concept]:
 
     """Return a filter list of :model:`term_list.Concept`
 
     Arguments:
-    term {str} -- string of the match requested by the user
+    term {Optional[str]} -- string of the match requested by the user
     :return: A queryset match
     :rtype: Queryset
 
-    >>>filter_term_by_string(1) #doctest: +ELLIPSIS
+    >>>filter_term_by_string('foo') #doctest: +ELLIPSIS
     [<Concept: doctest_unpredicatable.Concept>]
 
     """
 
+    if not term:
+        return Concept.objects.none()
+
     return Concept.objects.filter(term=term)
 
-def sort_results_according_to_search_term(queryset: QuerySet[Concept],
+def sort_results_according_to_search_term(items: List[Dict[str, Any]],
                                           url_parameter: str,
-                                          position: int = 1) -> QuerySet[Concept]:
-
-    """Returns a sorted list based on "column" from list-of-dictionaries data.
+                                          position: int = 1) -> List[Dict[str, Any]]:
+    """Sort a list of dictionaries containing 'term' keys according to the search parameter.
 
     Arguments:
-    queryset {queryset} -- queryset containing terms to be returned to the UI
-    url_parameter {str} -- The str with which to split each term with
-    :return: Sorted list
-    :rtype: list
+    items -- list of dictionaries (each representing a concept)
+    url_parameter -- substring to base the sort on
+    Returns:
+    A sorted list of dictionaries
     """
 
-    return sorted(queryset, key=lambda x: x.get('term').lower().split(url_parameter))
+    return sorted(items, key=lambda x: x.get('term', '').lower().split(url_parameter))
 
 
-def highlight_search_term_i_definition(search_term : str,
-                                       concept_dict_list: QuerySet[Dict[str, str]]
-                                       ) -> Dict:
+def highlight_search_term_i_definition(search_term: str,
+                                       concept_dict_list: List[Dict[str, str]]
+                                       ) -> List[Dict[str, str]]:
 
     """Encapsulate the search string with HTML <mark> tag in the definition of
     the term.
@@ -279,7 +296,7 @@ def highlight_search_term_i_definition(search_term : str,
     return concept_dict_list
 
 
-def return_list_of_term_and_definition(dictionary: str) -> QuerySet[Concept]:
+def return_list_of_term_and_definition(dictionary: Optional[str]) -> QuerySet[Any]:
 
 
     """Return values "term" and "definition" from a queryset of all terms in
@@ -317,7 +334,7 @@ def clean_dict_of_extra_characters(incoming_dict: dict) -> dict:
     logger.debug(f"After stripping and subst - patient : {clean_dict.get('patient')}")
     return clean_dict
 
-def concatenate_all_dictionary_values_to_single_string(dictionary: Dict,
+def concatenate_all_dictionary_values_to_single_string(dictionary: Iterable[Dict[str, Any]],
                                                        key: str = 'definition') -> str:
 
     """
@@ -338,10 +355,11 @@ def concatenate_all_dictionary_values_to_single_string(dictionary: Dict,
     definitions_list = []
 
     for entry in dictionary:
-        if entry.get('definition'):
-            if not entry.get('definition').strip():  # Check if the value is empty or contains only whitespace
+        val = entry.get('definition')
+        if val is not None:
+            if not val.strip():  # Check if the value is empty or contains only whitespace
                 logger.debug(f"Warning: The definition for key '{key}' is empty or contains only whitespace.")
-        definitions_list.append(entry.get("definition") or "")
+        definitions_list.append(val or "")
 
     concatenated_text = ' ½ '.join(definitions_list)
 
@@ -391,7 +409,7 @@ def creating_tooltip_hover_substitution_object(all_terms_and_definitions : Query
     # are not detected at the boundaries. Send this string to the Xlator instantiation, and replace all
     # the occurrences of concept in definitions with a hover tooltip text.
 
-def substitute_occurrence_of_terms_in_definitions(search_results, xlator_instance, key) -> List[dict]:
+def substitute_occurrence_of_terms_in_definitions(search_results: List[Dict[str, Any]], xlator_instance: Xlator, key: str) -> List[Dict[str, Any]]:
     joined_definitions = concatenate_all_dictionary_values_to_single_string(search_results, key)
 
     joined_definitions_minus_nbsp = replace_nbs_with_normal_space(joined_definitions)
@@ -497,7 +515,7 @@ def replace_non_html_brackets(edit_string : str, gt_brackets: List[int], lt_brac
     return edit_string
 
 
-def is_ajax(request: HttpRequest) -> HttpResponse:
+def is_ajax(request: HttpRequest) -> Optional[str]:
 
     return request.headers.get('X-Custom-Requested-With')
 
@@ -519,7 +537,7 @@ def mark_fields_as_safe_html(list_of_dict, fields):
 
     return list_of_dict
 
-def determine_search_strategy(url_parameter: str, dictionary: str) -> QuerySet[Concept]:
+def determine_search_strategy(url_parameter: str, dictionary: Optional[str]) -> Tuple[List[dict], bool]:
     """
     Determine the search strategy based on the given URL parameter.
 
@@ -535,12 +553,16 @@ def determine_search_strategy(url_parameter: str, dictionary: str) -> QuerySet[C
         QuerySet[Concept]:
             - A queryset of Concept objects matching the search criteria.
     """
-    if len(url_parameter) == 1 and url_parameter.isupper():
-        logger.info(f'Searching by single letter - {url_parameter}')
-        return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
-    else:
-        logger.info(f'Searching by entered term - {url_parameter}')
-        return search_concepts_with_attributes(url_parameter, dictionary=dictionary), True
+    if url_parameter:
+        if len(url_parameter) == 1 and url_parameter.isupper():
+            logger.info(f'Searching by single letter - {url_parameter}')
+            return filter_by_first_letter(letter=url_parameter, dictionary=dictionary), False
+        else:
+            logger.info(f'Searching by entered term - {url_parameter}')
+            return search_concepts_with_attributes(url_parameter, dictionary=dictionary), True
+
+    # If no url_parameter is provided, return an empty result and False for highlighting
+    return [], False
 
 
 def assemble_search_results_view(url_parameter, dictionary) -> Tuple[str, List[dict]]:
@@ -563,7 +585,7 @@ def assemble_search_results_view(url_parameter, dictionary) -> Tuple[str, List[d
         logger.debug(f'Searching within {dictionary=}')
     except Exception as e:
         logger.error(f"Error determing search strategy: {e}")
-        return render_to_string("term_list/error-page.html", context={})
+        return render_to_string("term_list/error-page.html", context={}), []
 
     # this is all the terms and definitions from this dictiomary in the DB
     all_terms_and_definitions = return_list_of_term_and_definition(dictionary)
@@ -678,7 +700,7 @@ def term_metadata_view(request: HttpRequest) -> HttpResponse | JsonResponse:
 
     return render(request, "term_list/base.html", context={})
 
-def concept_detail_view(concept_id: str) -> List[dict]:
+def concept_detail_view(concept_id: Union[int, str]) -> List[dict]:
     """
     Fetch concept details along with its attributes and their values, including position
     from the GroupAttribute through table.
@@ -714,29 +736,30 @@ def concept_detail_view(concept_id: str) -> List[dict]:
     attribute_fields = []
     for attr in attributes_with_values:
         logger.debug(f'Determining order of attribute {attr}')
-        position = (
-            attr.positions[0].position if hasattr(attr, 'positions') and attr.positions else 0
-        )
+        positions = getattr(attr, 'positions', [])
+        position = positions[0].position if positions else 0
         logger.debug(f'{attr} has order {position}')
         if position != 0: # Exclude attributes whose position is 0
+            values_for_concept = getattr(attr, 'values_for_concept', [])
+            value = values_for_concept[0].get_value() if values_for_concept else None
             attribute_fields.append(
             {
                 'name': attr.name,
                 'display_name': attr.display_name,
-                'value': attr.values_for_concept[0].get_value() if attr.values_for_concept else None,
+                'value': value,
                 'position': position,
             }
             )
 
     return attribute_fields
 
-def handle_file_uploads(request_files: HttpRequest) -> List[str]:
+def handle_file_uploads(request_files: 'MultiValueDict[str, UploadedFile]') -> List[str]:
 
     """ Generic function for handling file uploads
 
     Arguments:
-    request: {HttpRequest} -- The file component a request.FILES object. The individual files
-    if multiple will be saved and a list of filenames created
+    request: {MultiValueDict[str, UploadedFile]} -- The file component such as request.FILES.
+    The individual files if multiple will be saved and a list of filenames created
     :return:  A list of filenames
     :rtype: [List]
 
@@ -746,18 +769,17 @@ def handle_file_uploads(request_files: HttpRequest) -> List[str]:
     for file in request_files.getlist('file_field'):
         fs = FileSystemStorage()
         fs.save(content=file, name=file.name)
-        file_list.append(file.name)
+        file_list.append(str(file.name))
+
     return file_list
 
-def get_orderer(name: str, email: str) -> QuerySet:
-
+def get_orderer(name: str, email: str) -> Optional[TaskOrderer]:
     """ Return one and only one person if they already exist within the
     database """
 
     return TaskOrderer.objects.filter(
-                    Q(name__icontains=name) |
-                    Q(email__icontains=email)
-                ).first()
+        Q(name__icontains=name) | Q(email__icontains=email)
+    ).first()
 
 
 def create_attribute_value(term, attribute, raw_value):
@@ -841,7 +863,7 @@ def request_new_term(request: HttpRequest):
                 new_term.save()
 
                 existing_orderer = get_orderer(form.clean_name(),
-                                               form.clean_email)
+                                               form.clean_email())
 
                 if existing_orderer is not None:
                     new_order = existing_orderer
@@ -887,10 +909,11 @@ def request_new_term(request: HttpRequest):
 
     elif is_ajax(request):
 
-        if len(request.GET.get('q')) == 1:
+        q_val = request.GET.get('q') or ''
+        if len(q_val) == 1:
             term = ''
         else:
-            term = request.GET.get('q')
+            term = q_val
         form = TermRequestForm(initial={'concept' : term,
                                         'dictionary' : request.GET.get('dictionary')
                                         })
@@ -1168,7 +1191,7 @@ def add_related_terms(terms_with_definitions, all_terms_dict):
 
 def merge_term_and_synonym(qs, syn_qs):
 
-    synonym_list = {
+    synonym_list: Dict[str, List[str]] = {
         "prohibited_synonyms" : [],
         "approved_synonyms" : []
                 }
@@ -1238,10 +1261,12 @@ def all_accepted_terms(request):
 
     # Adding attributes and their values
     for attr_val in attribute_qs:
-        concept_id = attr_val.term_id
+        concept_id = getattr(attr_val, 'term_id', None)
+        if concept_id is None:
+            continue
         attribute = {
-            "attribute_name": attr_val.attribute.name,
-            "attribute_display_name": attr_val.attribute.display_name,
+            "attribute_name": getattr(getattr(attr_val, 'attribute', None), 'name', ''),
+            "attribute_display_name": getattr(getattr(attr_val, 'attribute', None), 'display_name', ''),
             "attribute_value": attr_val.get_value()
         }
         if "attributes" not in merged_result[concept_id]:

@@ -3,13 +3,40 @@ import logging.config
 import os
 import socket
 
-if socket.gethostname() == 'suijin.oderland.com':
-    FILENAME = './logs.log'
+if (socket.gethostname() == 'suijin.oderland.com') and ('eav' in os.getcwd()):
+        FILENAME = '/home/vgrinfor/begreppstjanst-eav/logs.log'
 elif socket.gethostname() == 'W450772':
     if os.path.isdir('/mnt/c'):
         FILENAME = '/mnt/c/Users/liath1/coding/begrepptjanst/logs.log'
     else:
         FILENAME = '/home/liath1/coding/begrepptjanst/logs.log'
+
+# Allow runtime configuration of logging level via environment or Django settings
+LOG_LEVEL = os.getenv("LOG_LEVEL", None)
+try:
+    # Prefer Django setting when available (useful in production)
+    from django.conf import settings as django_settings
+    if LOG_LEVEL is None:
+        LOG_LEVEL = getattr(django_settings, "LOG_LEVEL", None)
+except Exception:
+    # Not running under Django setup yet; ignore
+    pass
+if LOG_LEVEL is None:
+    LOG_LEVEL = "DEBUG"
+LOG_LEVEL = str(LOG_LEVEL).upper()
+# Validate level name
+if not hasattr(logging, LOG_LEVEL):
+    LOG_LEVEL = "DEBUG"
+
+# Ensure log directory exists for the file handler (create if missing)
+if "FILENAME" in locals():
+    log_dir = os.path.dirname(FILENAME) or ""
+    if log_dir:
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+        except Exception:
+            # If directory cannot be created, fallback to current working dir
+            FILENAME = os.path.join(os.getcwd(), os.path.basename(FILENAME))
 
 logging_schema = {
     # Always 1. Schema versioning may be added in a future release of logging
@@ -41,7 +68,7 @@ logging_schema = {
             "class": "logging.StreamHandler",
             # This is the formatter name declared above
             "formatter": "standard",
-            "level": "DEBUG",
+            "level": LOG_LEVEL,
             "filters": ["ignore_http_logs"],  # ✅ Ignore HTTP logs
             # The default is stderr
             "stream": "ext://sys.stdout"
@@ -51,8 +78,8 @@ logging_schema = {
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "standard",
-            "level": "ERROR",
-            "filename": "./logs.log",
+            "level": LOG_LEVEL,
+            "filename": FILENAME,
             "mode": "a",
             "encoding": "utf-8",
             "maxBytes": 500000,
@@ -80,10 +107,10 @@ logging_schema = {
     },
     # Just a standalone kwarg for the root logger
     "root" : {
-        "level": "DEBUG",
-        "handlers": ["file"]
+        "level": LOG_LEVEL,
+        "handlers": ["console","file"]
     }
 }
 
 logging.config.dictConfig(logging_schema)
-logging.info('logging has been set up')
+logging.debug('logging has been set up')

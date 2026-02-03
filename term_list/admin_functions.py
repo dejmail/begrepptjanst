@@ -4,7 +4,6 @@ import html
 import io
 import json
 import logging
-from pdb import set_trace
 from typing import Any
 
 import pandas as pd
@@ -117,7 +116,7 @@ class DictionaryRestrictedInlineMixin:
 
     def get_formset(self, request, obj=None, **kwargs):
         self.parent_model_admin = kwargs.pop('parent_model_admin', None)
-        return super().get_formset(request, obj, **kwargs)
+        return super().get_formset(request, obj, **kwargs)  # type: ignore[misc]
 
     def _require_parent_admin(self):
         if not self.parent_model_admin:
@@ -177,7 +176,7 @@ class DictionaryRestrictedInlineMixin:
     # Call the internal checker to avoid recursion/early parent requirement
         if obj and not self._has_permission(request, obj):
             return [f.name for f in self.model._meta.fields]
-        return super().get_readonly_fields(request, obj)
+        return super().get_readonly_fields(request, obj)  # type: ignore[misc]
 
     def _get_dictionary_from_obj(self, request, obj):
         # Delegate to the parent admin’s helper
@@ -187,7 +186,7 @@ class DictionaryRestrictedInlineMixin:
         # Hide the “Add another …” row when user can’t change this obj
         if obj and not self._has_permission(request, obj):
             return 0
-        return super().get_max_num(request, obj, **kwargs)
+        return super().get_max_num(request, obj, **kwargs)  # type: ignore[misc]
 
 class DictionaryRestrictedAdminMixin:
     """
@@ -244,7 +243,7 @@ class ConceptFileImportMixin:
                  self.admin_site.admin_view(self.import_excel_view),
                  name="import_excel_view"),
         ]
-        urls = super().get_urls()
+        urls = super().get_urls()  # type: ignore[misc]
 
         return custom_urls + urls
 
@@ -252,7 +251,7 @@ class ConceptFileImportMixin:
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         extra_context['import_excel_url'] = reverse('admin:import_excel_view')  # Dynamically add the URL to the context
-        return super().changelist_view(request, extra_context=extra_context)
+        return super().changelist_view(request, extra_context=extra_context)  # type: ignore[misc]
 
     def get_accessible_dictionaries(self, request):
         if request.user.is_superuser:
@@ -397,8 +396,9 @@ class ConceptFileImportMixin:
                 data = {force_str(column_mapping[col]): row[col] for col in df.columns if column_mapping.get(col)}
                 data = {k: None if pd.isna(v) else v for k, v in data.items()}
                 data['term'] = conditional_lowercase(data.get('term'))
-                if data.get('definition'):
-                    data['definition'] = data.get('definition').replace('\u200b','').strip()
+                if data.get('definition') is not None:
+                    definition_val = data.get('definition')
+                    data['definition'] = definition_val.replace('\u200b','').strip() if definition_val is not None else ''
                 status_value = data.get('status')
                 if status_value is not None:
                     normalised_status, is_valid_status = normalize_choice_value(status_value, STATUS_CHOICES)
@@ -438,7 +438,6 @@ class ConceptFileImportMixin:
                     f"{', '.join(sorted(invalid_status_values))}."
                 )
 
-            set_trace()
             column_headers = [
                 {
                     "key": header,
@@ -507,16 +506,12 @@ class ConceptFileImportMixin:
                 }
 
                 for attr_name, attr_value in attribute_data.items():
-                    attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
-                    # Get the correct field to update
-                    if attr_value in [None, "", [], {}, set()]:
-                        continue
+                    # Try to locate attribute; create if missing
                     attribute_obj = Attribute.objects.filter(display_name__iexact=attr_name).first()
                     if attribute_obj is None:
-                        logger.warning(
-                            "Skipping attribute '%s' because it does not exist in DB",
-                            attr_name,
-                        )
+                        attribute_obj, _ = Attribute.objects.get_or_create(display_name=attr_name)
+                    # Get the correct field to update
+                    if attr_value in [None, "", [], {}, set()]:
                         continue
 
                     value_field = value_field_map.get(attribute_obj.data_type, "value_string")
@@ -572,7 +567,7 @@ def fetch_attributes(request):
 
     # Serialize attributes
     attribute_data = [
-        {'id': attr.id, 'display_name': attr.display_name, 'data_type': attr.data_type}
+        {'id': getattr(attr, 'id', None), 'display_name': getattr(attr, 'display_name', ''), 'data_type': getattr(attr, 'data_type', '')}
         for attr in attributes
     ]
     return JsonResponse({'attributes': attribute_data})

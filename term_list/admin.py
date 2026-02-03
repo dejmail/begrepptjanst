@@ -1,30 +1,30 @@
 import json
 import logging
+from typing import Any, ClassVar, Type, cast
 
-from django import forms
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.actions import delete_selected
 from django.contrib.admin.filters import RelatedFieldListFilter
 from django.db.models import Case, IntegerField, Q, Value, When
-from django.http import HttpResponseRedirect
-from django.utils.html import format_html
+from django.forms import ModelForm
+from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django_admin_multiple_choice_list_filter.list_filters import \
     MultipleChoiceListFilter
 from rangefilter.filters import DateRangeFilterBuilder
-from simple_history.admin import SimpleHistoryAdmin
 
+from simple_history.admin import SimpleHistoryAdmin
 from term_list import admin_actions
 from term_list.admin_actions import (delete_allowed_objects,
                                      export_chosen_concepts_action)
-from term_list.admin_functions import (ConceptFileImportMixin,
+from term_list.admin_functions import (ConceptExternalFilesInline,
+                                       ConceptFileImportMixin,
                                        DictionaryFilter,
                                        DictionaryRestrictedAdminMixin,
                                        DictionaryRestrictedInlineMixin,
                                        DuplicateTermFilter,
-                                       ConceptExternalFilesInline,
                                        add_non_breaking_space_to_status)
 from term_list.forms import (AttributeValueInlineForm, ChooseExportAttributes,
                              ConceptExternalFilesForm, ConceptForm,
@@ -56,7 +56,7 @@ class SynonymInline(admin.TabularInline):
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
-        formset.form.user = request.user  # Pass the user to the form
+        formset.form.user = request.user  # type: ignore[attr-defined]  # Pass the user to the form
         parent = kwargs.pop('parent_model_admin', None)
         if parent is not None:
             self.parent_model_admin = parent
@@ -141,7 +141,7 @@ class SynonymAdmin(
             request,
             queryset,
             object_label="synonymer",
-            permission_check=modeladmin._user_has_dictionary_access
+            permission_check=modeladmin._user_has_dictionary_access  # type: ignore[attr-defined]
         )
 
     actions = [delete_synonyms]
@@ -154,7 +154,7 @@ class SynonymAdmin(
         # Assuming term has a many-to-many relationship to dictionaries
 
         return ", ".join(d.dictionary_long_name for d in obj.concept.dictionaries.all())
-    get_dictionaries.short_description = "Ordböcker"
+    get_dictionaries.short_description = "Ordböcker"  # type: ignore[attr-defined]
 
 class ContextFilesInline(admin.StackedInline):
 
@@ -192,11 +192,11 @@ class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
     readonly_fields = ['date',]
 
     fieldsets = [
-        ['Main', {
+        ('Main', {
         'fields': [('concept', 'date'),
         ('usage_context',),
         ('email','name','status'),]},
-        ]]
+        )]
 
     def attached_files(self, obj):
 
@@ -209,7 +209,7 @@ class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
             return mark_safe('''<span style="color: red;">
                                        <i class="far fa-times-circle"></i>
                                     </span>''')
-    attached_files.short_description = "Bifogade filer"
+    attached_files.short_description = "Bifogade filer"  # type: ignore[attr-defined]
 
     def _get_dictionary_from_obj(self, request, obj):
         """Return the dictionaries related to a ConceptComment's concept.
@@ -285,7 +285,7 @@ class ConfigurationOptionsAdmin(admin.ModelAdmin):
     def pretty_json(self, obj):
         pretty = json.dumps(obj.config, indent=2, ensure_ascii=False)
         return mark_safe(f'<pre>{pretty}</pre>')
-    pretty_json.short_description = "Config"
+    pretty_json.short_description = "Config"  # type: ignore[attr-defined]
 
 class AttributeValueInline(
     DictionaryRestrictedInlineMixin,
@@ -314,12 +314,13 @@ class AttributeValueInline(
         can_change = self.has_change_permission(request, obj=obj)
 
         if not can_change:
-            self.readonly_fields = tuple(self.get_fields(request, obj))
+            # self.readonly_fields = tuple(self.get_fields(request, obj))
             self.can_delete = False
             self.max_num = 0
             kwargs.setdefault("extra", 0)
         else:
-            self.readonly_fields = getattr(self, "readonly_fields", ())
+            pass
+            # self.readonly_fields = getattr(self, "readonly_fields", ())
 
         FormSet = super().get_formset(request, obj, **kwargs)
 
@@ -374,7 +375,7 @@ class AttributeValueInline(
         # Get sorted attributes based on GroupAttribute position
         group_attributes = GroupAttribute.objects.filter(attribute__in=attributes).order_by("position")
 
-        sorted_attributes = [ga.attribute for ga in group_attributes]
+        sorted_attributes = [cast(Attribute, ga.attribute) for ga in group_attributes]
 
         field_map = {
             'string': 'value_string',
@@ -428,11 +429,11 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
                     'synonyms__synonym',
                     )
 
-    list_filter = (StatusListFilter,
+    list_filter: ClassVar[Any] = [StatusListFilter,
                    ('changed_at', DateRangeFilterBuilder()),
                    ("dictionaries", AllDictionaryFilter),
                    DuplicateTermFilter
-    )
+    ]
 
     # --- defaults for the first page load ---
     DICT_PARAM = "dictionaries__dictionary_id__exact"
@@ -506,7 +507,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
             return []
         instances = super().get_inline_instances(request, obj)
         for inline in instances:
-            inline.parent_model_admin = self
+            inline.parent_model_admin = self  # type: ignore[attr-defined]
         return instances
 
     def status_button(self, obj):
@@ -525,7 +526,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         display_text = f'<span class="{css_class}">{add_non_breaking_space_to_status(obj.status)}</span>'
         return mark_safe(display_text)
 
-    status_button.short_description = 'Status'
+    status_button.short_description = 'Status'  # type: ignore[attr-defined]
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -541,16 +542,18 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
 
-    def get_form(self, request, obj=None, **kwargs):
-        form_class = super().get_form(request, obj, **kwargs)
+    def get_form(self, request: HttpRequest, obj: Any = None, change: bool = False, **kwargs: Any) -> Type[ModelForm]:
+        form_class = super().get_form(request, obj, change=change, **kwargs)
+        FormBase = form_class
 
-        class FormWithUser(form_class):
-            def __init__(self2, *args, **kwargs2):
+        class FormWithUser(FormBase):  # type: ignore[misc, valid-type]
+            def __init__(self, *args, **kwargs2):
                 logger.info(f"Injecting user: {request.user}")
                 kwargs2['user'] = request.user
                 super().__init__(*args, **kwargs2)
 
         return FormWithUser
+
 
     def get_queryset(self, request):
 
@@ -576,7 +579,7 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
             ).order_by('position')
         return queryset
 
-    def save_model(self, request, obj, form, change):
+    def save_model(self, request, obj, form, change) -> None:
         """
         Save the Concept instance first.
         """
@@ -610,11 +613,11 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
     def list_dictionaries(self, obj):
         return ", ".join([dictionary.dictionary_name for dictionary in obj.dictionaries.all()])
 
-    list_dictionaries.short_description = 'Ordbok'
-    list_dictionaries.verbose_name_plural = 'Ordböcker'
-    list_dictionaries.verbose_name = 'Ordbok'
+    list_dictionaries.short_description = 'Ordbok'  # type: ignore[attr-defined]
+    list_dictionaries.verbose_name_plural = 'Ordböcker'  # type: ignore[attr-defined]
+    list_dictionaries.verbose_name = 'Ordbok'  # type: ignore[attr-defined]
 
-    def export_chosen_attrs_view(request):
+    def export_chosen_attrs_view(self, request):
 
         # Required default fields
         default_fields = ["Id", "Term", "Definition", "Status"]
@@ -624,11 +627,15 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
             logger.debug(f"Exporting the following - {chosen_concepts}")
             queryset = Concept.objects.filter(id__in=chosen_concepts)
         # Step 1: Create a mapping from verbose_name to actual field names
-        field_mapping = {
-            field.verbose_name: field.name
-            for field in queryset.first()._meta.get_fields()
-            if hasattr(field, "verbose_name") and field.verbose_name
-        }
+        first_obj = queryset.first()
+        if first_obj is None:
+            field_mapping = {}
+        else:
+            field_mapping = {
+                field.verbose_name: field.name
+                for field in first_obj._meta.get_fields()
+                if hasattr(field, "verbose_name") and field.verbose_name
+            }
 
         # Step 2: Get user-selected attributes from request
         selected_attributes_verbose = request.GET.getlist("attributes")  # User selects verbose_name
@@ -642,10 +649,11 @@ class ConceptAdmin(DictionaryRestrictedAdminMixin,
 
         form = ChooseExportAttributes(request.GET)
         if form.is_valid():
-            response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, selected_fields=sorted_fields, field_mapping=field_mapping)
+            from typing import Any, cast
+            response = admin_actions.export_chosen_concept_as_csv(request=request, queryset=queryset, selected_fields=sorted_fields, field_mapping=cast(dict[str, Any], field_mapping))
         return response
 
-    export_chosen_concepts_action.short_description = "Exportera valde begrepp"
+    export_chosen_concepts_action.short_description = "Exportera valde begrepp"  # type: ignore[attr-defined]
     actions = [export_chosen_concepts_action, delete_concepts]
 
 class AttributeAdmin(admin.ModelAdmin):
@@ -742,6 +750,6 @@ admin.site.register(Attribute, AttributeAdmin)
 admin.site.register(GroupHierarchy)
 admin.site.register(GroupAttribute, GroupAttributeAdmin)
 
-if not settings.DEBUG:
-    admin.site.register(AttributeValue, AttributeValueAdmin)
-    admin.site.register(SearchTrack, SearchTrackAdmin)
+# if not settings.DEBUG:
+admin.site.register(AttributeValue, AttributeValueAdmin)
+admin.site.register(SearchTrack, SearchTrackAdmin)

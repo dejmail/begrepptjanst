@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from typing import Any, Dict, Optional, cast
 
 from django import forms
 from django.core.exceptions import ValidationError
@@ -243,7 +244,8 @@ class ColumnMappingForm(forms.Form):
 
         # If dictionaries are available, allow the user to choose one
         if available_dictionaries:
-            self.fields['dictionary'].choices = [(None, '---')] + [(dict_id, dict_name) for dict_id, dict_name in available_dictionaries]
+            field = cast(forms.ChoiceField, self.fields['dictionary'])
+            field.choices = [(None, '---')] + [(dict_id, dict_name) for dict_id, dict_name in available_dictionaries]
 
 class AttributeValueInlineForm(forms.ModelForm):
     class Meta:
@@ -260,7 +262,7 @@ class AttributeValueInlineForm(forms.ModelForm):
             attribute = self.instance.attribute
             data_type = attribute.data_type
             display_name = attribute.display_name
-            concept = getattr(self.instance, "term", None)
+            concept: Optional[Any] = getattr(self.instance, "term", None)
 
             field_map = {
                 'string': 'value_string',
@@ -280,6 +282,7 @@ class AttributeValueInlineForm(forms.ModelForm):
                     if (
                         requester
                         and display_name == _("Begrepp kontext")
+                        and concept is not None
                     ):
                         uploaded_files = concept.conceptexternalfiles_set.all()
 
@@ -341,8 +344,7 @@ class ConceptForm(GroupFilteredModelForm):
                       'definition': _('Visas som HTML på framsidan'),
                       'källa': _('Rullistan visar termer redan i DB')}
 
-    def use_required_attribute(self, *args):
-        return False
+    use_required_attribute = False
 
     def __init__(self, *args, user=None, **kwargs):
 
@@ -353,21 +355,21 @@ class ConceptForm(GroupFilteredModelForm):
                 required=True
         )
         if user and not user.is_superuser and 'dictionaries' in self.fields:
-            self.fields['dictionaries'].queryset = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
+            cast(forms.ModelMultipleChoiceField, self.fields['dictionaries']).queryset = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
 
 
         if "dictionaries" in self.fields:
             self.fields["dictionaries"].required = True
 
             if user and not user.is_superuser:
-                self.fields["dictionaries"].queryset = Dictionary.objects.filter(
+                cast(forms.ModelMultipleChoiceField, self.fields["dictionaries"]).queryset = Dictionary.objects.filter(
                     groups__in=user.groups.all()
                 ).distinct()
 
     def clean(self):
 
-        cleaned_definition = self.cleaned_data.get('definition')
-        cleaned_data = super().clean()
+        cleaned_definition = self.cleaned_data.get('definition') or ''
+        cleaned_data: Dict[str, Any] = super().clean() or {}
 
         if any((c in ['{', '}', '½']) for c in cleaned_definition):
             raise forms.ValidationError({'definition' : _('Får inte ha { } eller ½ i texten')})
@@ -383,6 +385,8 @@ class ConceptForm(GroupFilteredModelForm):
         user = self.user
         if user and not user.is_superuser:
             selected_dictionaries = cleaned_data.get("dictionaries")
+            if selected_dictionaries is None:
+                return cleaned_data
             allowed = Dictionary.objects.filter(groups__in=user.groups.all()).distinct()
 
             unauthorized = selected_dictionaries.exclude(pk__in=allowed.values_list("pk", flat=True))

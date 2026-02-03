@@ -1,10 +1,15 @@
 import locale
 import os
-import sys
+import signal
 
 from application.settings.base import *  # noqa: F401,F403
 
-sys.stdout.reconfigure(encoding='utf-8')  # Ensure stdout is UTF-8
+# Ignore SIGPIPE to prevent BrokenPipeError during logging in Passenger
+# This is a known issue with Passenger and logging during startup
+if hasattr(signal, 'SIGPIPE'):
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
+# sys.stdout.reconfigure(encoding='utf-8')  # Ensure stdout is UTF-8
 locale.setlocale(locale.LC_ALL, "sv_SE.UTF-8")  # Set Swedish locale
 
 DEBUG=False
