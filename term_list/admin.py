@@ -364,6 +364,9 @@ class AttributeValueInline(
     def get_fields(self, request, obj=None):
         """
         Retrieves the fields dynamically and sorts them based on GroupAttribute.position.
+
+        Ensures deterministic ordering and removes duplicates when an Attribute is present
+        in multiple groups (which previously could shift column positions between requests).
         """
         if not obj:
             return ["attribute"]  # Default when no instance is selected
@@ -372,10 +375,27 @@ class AttributeValueInline(
 
         attributes = Attribute.objects.filter(groups__in=term_groups).distinct()
 
-        # Get sorted attributes based on GroupAttribute position
-        group_attributes = GroupAttribute.objects.filter(attribute__in=attributes).order_by("position")
+        # Get sorted attributes based on GroupAttribute position; include attribute id for stable ordering
+        group_attributes = (
+            GroupAttribute.objects
+            .filter(attribute__in=attributes)
+            .order_by("position", "attribute__id")
+        )
 
-        sorted_attributes = [cast(Attribute, ga.attribute) for ga in group_attributes]
+        # Preserve order and remove duplicates when the same Attribute appears in multiple groups
+        seen: set[int] = set()
+        unique_sorted_attrs: list[Attribute] = []
+        for ga in group_attributes:
+            attr = cast(Attribute, ga.attribute)
+            pk = getattr(attr, "pk", None)
+            if pk is None or pk not in seen:
+                if pk is not None:
+                    seen.add(pk)
+                unique_sorted_attrs.append(attr)
+
+        # Fallback: if no GroupAttribute rows were found, order attributes deterministically
+        if not unique_sorted_attrs:
+            unique_sorted_attrs = list(attributes.order_by("display_name", "id"))
 
         field_map = {
             'string': 'value_string',
@@ -388,7 +408,7 @@ class AttributeValueInline(
 
         # Get the ordered fields (ensuring only one value field per attribute)
         sorted_fields = ["attribute"] + [
-            field_map[attr.data_type] for attr in sorted_attributes if attr.data_type in field_map
+            field_map[attr.data_type] for attr in unique_sorted_attrs if attr.data_type in field_map
         ]
         return sorted_fields
 
