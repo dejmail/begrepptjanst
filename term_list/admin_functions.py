@@ -26,9 +26,6 @@ from term_list.models import (DEFAULT_STATUS, STATUS_CHOICES, Attribute,
 logger = logging.getLogger(__name__)
 
 
-
-
-
 def add_non_breaking_space_to_status(status_item):
 
     if status_item:
@@ -74,25 +71,6 @@ def normalize_choice_value(raw_value, choices):
         return matched, True
     return normalised, False
 
-# class ReadOnlyFileWidget(AdminFileWidget):
-#     """
-#     Render only a link to the existing file (no file input, no 'clear' checkbox).
-#     Used for inline rows that already have a file uploaded.
-#     """
-#     def render(self, name, value, attrs=None, renderer=None):
-#         import os
-#         if not value:
-#             # fallback to default widget when there's no file
-#             return super().render(name, value, attrs=attrs, renderer=renderer)
-#         try:
-#             url = value.url
-#         except Exception:
-#             url = ""
-#         filename = os.path.basename(force_str(value))
-#         return_string = mark_safe(f'<a href="{url}" target="_blank" rel="noopener noreferrer">{filename}</a>')
-
-#         return return_string #mark_safe(f'<a href="{url}" target="_blank" rel="noopener noreferrer">{filename}</a>')
-
 class ConceptExternalFilesInline(admin.TabularInline):
     model = ConceptExternalFiles
     form = ConceptExternalFilesInlineForm
@@ -101,12 +79,6 @@ class ConceptExternalFilesInline(admin.TabularInline):
     fields = ("support_file",)
     verbose_name = "Externt kontextfil"
     verbose_name_plural = "Externa kontextfiler"
-
-    def get_readonly_fields(self, request, obj=None):
-        # If the instance already has a file, make it read-only
-        readonly = list(super().get_readonly_fields(request, obj))
-        readonly.append('support_file')
-        return readonly
 
 
 class DictionaryRestrictedInlineMixin:
@@ -167,10 +139,7 @@ class DictionaryRestrictedInlineMixin:
      # Optionally: only allow Add if the user has access to at least one dictionary
      return self.get_accessible_dictionaries(request).exists()
 
-    # def get_readonly_fields(self, request, obj=None):
-    #     if obj and not self.has_change_permission(request, obj):
-    #         return [f.name for f in self.model._meta.fields]
-    #     return super().get_readonly_fields(request, obj)
+
 
     def get_readonly_fields(self, request, obj=None):
     # Call the internal checker to avoid recursion/early parent requirement
@@ -366,6 +335,7 @@ class ConceptFileImportMixin:
                 })
         # Step 2: Handle intermediate confirmation page
         if 'apply_mapping' in request.POST:
+
             # Assume form contains the parsed data from the uploaded file
             logger.debug("Mapping accepted, creating new terms and attributes in DB")
             json_column_mapping = json.loads(request.POST.get('column_mapping_json'))
@@ -373,10 +343,10 @@ class ConceptFileImportMixin:
             if request.POST.get('dictionary-in-file'):
                 chosen_dictionary = Dictionary.objects.get(
                     dictionary_long_name=request.POST.get('dictionary-in-file')
-                    ).dictionary_long_name
+                    )
                 json_column_mapping['dictionary'] = chosen_dictionary
             elif request.POST.get('dictionary') is not None:
-                chosen_dictionary = request.POST.get('dictionary')
+                chosen_dictionary = Dictionary.objects.get(dictionary_long_name=request.POST.get('dictionary_in_file'))
 
             # the mapping of this is not quite right...I want the sqwedish headers in the
             # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
@@ -396,9 +366,10 @@ class ConceptFileImportMixin:
                 data = {force_str(column_mapping[col]): row[col] for col in df.columns if column_mapping.get(col)}
                 data = {k: None if pd.isna(v) else v for k, v in data.items()}
                 data['term'] = conditional_lowercase(data.get('term'))
+                # if data.get('term') == "korv": set_trace()
+
                 if data.get('definition') is not None:
-                    definition_val = data.get('definition')
-                    data['definition'] = definition_val.replace('\u200b','').strip() if definition_val is not None else ''
+                    data['definition'] = str(data.get('definition')).replace('\u200b','').strip() if data.get('definition') is not None else ''
                 status_value = data.get('status')
                 if status_value is not None:
                     normalised_status, is_valid_status = normalize_choice_value(status_value, STATUS_CHOICES)
@@ -410,8 +381,7 @@ class ConceptFileImportMixin:
 
                 data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary
                 try:
-
-                    existing_begrepp = Concept.objects.get(term=data.get('term'), dictionaries__in=available_dictionaries)
+                    existing_begrepp = Concept.objects.get(term=data.get('term'), dictionaries=chosen_dictionary)
 
                     is_changed = False
                     for field, value in data.items():
@@ -426,7 +396,6 @@ class ConceptFileImportMixin:
                     concept_data_list.append(data)
 
                 except Concept.DoesNotExist:
-
                     # Create a new Concept if it doesn't exist
                     data['is_changed'] = False
                     data['is_new'] = True

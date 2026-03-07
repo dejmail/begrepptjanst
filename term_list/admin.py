@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.actions import delete_selected
 from django.contrib.admin.filters import RelatedFieldListFilter
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db.models import Case, F, IntegerField, Min, Q, Value, When
 from django.forms import ModelForm
 from django.http import HttpRequest, HttpResponseRedirect
 from django.utils.safestring import mark_safe
@@ -184,10 +184,11 @@ class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
                     'date',
                     'email',
                     'name',
-                    'status'
+                    'status',
+                    'comment_dictionary'
                     )
 
-    list_filter = ('status',)
+    list_filter = ('status', 'concept__dictionaries__dictionary_name')
 
     readonly_fields = ['date',]
 
@@ -197,6 +198,10 @@ class ConceptCommentsAdmin(DictionaryRestrictedAdminMixin, admin.ModelAdmin):
         ('usage_context',),
         ('email','name','status'),]},
         )]
+
+    def comment_dictionary(self, obj):
+        return [i.dictionary_name for i in obj.concept.dictionaries.all()]
+    comment_dictionary.short_description = "Ordbok"  # type: ignore[attr-defined]
 
     def attached_files(self, obj):
 
@@ -265,6 +270,9 @@ class ConceptExternalFilesAdmin(admin.ModelAdmin):
 
     list_display = ('concept', 'comment', 'support_file')
 
+    def has_add_permission(self, request):
+        return False
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "kommentar":
             # Filter the queryset for the ForeignKey field based on the user's group
@@ -309,18 +317,18 @@ class AttributeValueInline(
         # Ensure the inline knows its parent admin (ConceptAdmin)
         if obj is not None and not getattr(self, "parent_model_admin", None):
             self.parent_model_admin = self.admin_site._registry.get(obj.__class__)
+        # Keep track of the active parent Concept so get_queryset can order rows correctly.
+        self._parent_obj = obj
 
         # If we cannot change the Concept, disable all inline fields
         can_change = self.has_change_permission(request, obj=obj)
 
         if not can_change:
-            # self.readonly_fields = tuple(self.get_fields(request, obj))
             self.can_delete = False
             self.max_num = 0
             kwargs.setdefault("extra", 0)
         else:
             pass
-            # self.readonly_fields = getattr(self, "readonly_fields", ())
 
         FormSet = super().get_formset(request, obj, **kwargs)
 
@@ -335,6 +343,32 @@ class AttributeValueInline(
 
         return FormSet
 
+    def get_queryset(self, request):
+        """
+        Order inline rows by GroupAttribute.position for the parent Concept's dictionaries.
+        """
+        qs = super().get_queryset(request).select_related("attribute")
+        parent = getattr(self, "_parent_obj", None)
+        if not parent:
+            return qs.order_by("id")
+
+        return (
+            qs.annotate(
+                group_position=Min(
+                    "attribute__groupattribute__position",
+                    filter=Q(
+                        attribute__groupattribute__group__dictionaries__in=parent.dictionaries.all()
+                    ),
+                ),
+                sort_position=Case(
+                    When(group_position__isnull=True, then=Value(999999)),
+                    default=F("group_position"),
+                    output_field=IntegerField(),
+                ),
+            )
+            .order_by("sort_position", "attribute__id", "id")
+        )
+
 
     def has_add_permission(self, request, obj=None):
         return False  # Prevents the 'Add another' button from appearing
@@ -346,8 +380,6 @@ class AttributeValueInline(
         if p is not None:
             return p.has_change_permission(request, obj=obj)
         return self._has_permission(request, obj)
-
-        return p.has_change_permission(request, obj=obj)
 
     # Make the inline read-only if parent says “no change” on this Concept
     def get_readonly_fields(self, request, obj=None):
@@ -371,15 +403,13 @@ class AttributeValueInline(
         if not obj:
             return ["attribute"]  # Default when no instance is selected
 
-        term_groups = obj.dictionaries.values_list("groups", flat=True)
-
-        attributes = Attribute.objects.filter(groups__in=term_groups).distinct()
-
-        # Get sorted attributes based on GroupAttribute position; include attribute id for stable ordering
+        # Fetch Attribute ordering directly from the through model for this Concept's dictionaries.
         group_attributes = (
             GroupAttribute.objects
-            .filter(attribute__in=attributes)
-            .order_by("position", "attribute__id")
+            .select_related("attribute")
+            .filter(group__dictionaries__in=obj.dictionaries.all())
+            .order_by("position", "attribute__id", "group_id")
+            .distinct()
         )
 
         # Preserve order and remove duplicates when the same Attribute appears in multiple groups
@@ -395,7 +425,12 @@ class AttributeValueInline(
 
         # Fallback: if no GroupAttribute rows were found, order attributes deterministically
         if not unique_sorted_attrs:
-            unique_sorted_attrs = list(attributes.order_by("display_name", "id"))
+            unique_sorted_attrs = list(
+                Attribute.objects
+                .filter(groups__dictionaries__in=obj.dictionaries.all())
+                .distinct()
+                .order_by("display_name", "id")
+            )
 
         field_map = {
             'string': 'value_string',
@@ -410,6 +445,7 @@ class AttributeValueInline(
         sorted_fields = ["attribute"] + [
             field_map[attr.data_type] for attr in unique_sorted_attrs if attr.data_type in field_map
         ]
+
         return sorted_fields
 
 class AllDictionaryFilter(RelatedFieldListFilter):
@@ -755,7 +791,7 @@ class AttributeValueAdmin(
 
 class GroupAttributeAdmin(admin.ModelAdmin):
 
-    list_display = ['group__name', 'attribute__display_name', 'position']
+    list_display = ['group__name', 'attribute__display_name', 'position', 'visible']
 
 admin.site.register(TaskOrderer, TaskOrdererAdmin)
 admin.site.register(Dictionary, DictionaryAdmin)

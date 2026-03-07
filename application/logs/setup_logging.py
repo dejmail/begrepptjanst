@@ -1,15 +1,23 @@
 import logging
 import logging.config
 import os
-import socket
 
-if (socket.gethostname() == 'suijin.oderland.com') and ('eav' in os.getcwd()):
-        FILENAME = '/home/vgrinfor/begreppstjanst-eav/logs.log'
-elif socket.gethostname() == 'W450772':
-    if os.path.isdir('/mnt/c'):
-        FILENAME = '/mnt/c/Users/liath1/coding/begrepptjanst/logs.log'
-    else:
-        FILENAME = '/home/liath1/coding/begrepptjanst/logs.log'
+
+def _resolve_log_filename() -> str:
+    # 1) Explicit override from environment.
+    env_path = os.getenv("LOG_FILE")
+    if env_path:
+        return env_path
+
+    # 2) Optional directory override.
+    log_dir = os.getenv("LOG_DIR")
+    if log_dir:
+        return os.path.join(log_dir, "logs.log")
+
+    # 3) Safe default (project root).
+    return os.path.join(os.getcwd(), 'logs.log')
+
+FILENAME = _resolve_log_filename()
 
 # Allow runtime configuration of logging level via environment or Django settings
 LOG_LEVEL = os.getenv("LOG_LEVEL", None)
@@ -28,15 +36,18 @@ LOG_LEVEL = str(LOG_LEVEL).upper()
 if not hasattr(logging, LOG_LEVEL):
     LOG_LEVEL = "DEBUG"
 
+# Rotation parameters are configurable via env vars.
+LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", "500000"))
+LOG_BACKUP_COUNT = int(os.getenv("LOG_BACKUP_COUNT", "4"))
+
 # Ensure log directory exists for the file handler (create if missing)
-if "FILENAME" in locals():
-    log_dir = os.path.dirname(FILENAME) or ""
-    if log_dir:
-        try:
-            os.makedirs(log_dir, exist_ok=True)
-        except Exception:
-            # If directory cannot be created, fallback to current working dir
-            FILENAME = os.path.join(os.getcwd(), os.path.basename(FILENAME))
+log_dir = os.path.dirname(FILENAME) or ""
+if log_dir:
+    try:
+        os.makedirs(log_dir, exist_ok=True)
+    except Exception:
+        # If directory cannot be created, fallback to current working dir
+        FILENAME = os.path.join(os.getcwd(), os.path.basename(FILENAME))
 
 logging_schema = {
     # Always 1. Schema versioning may be added in a future release of logging
@@ -82,8 +93,8 @@ logging_schema = {
             "filename": FILENAME,
             "mode": "a",
             "encoding": "utf-8",
-            "maxBytes": 500000,
-            "backupCount": 4
+            "maxBytes": LOG_MAX_BYTES,
+            "backupCount": LOG_BACKUP_COUNT
         }
     },
     # Loggers use the handler names declared above
@@ -114,3 +125,4 @@ logging_schema = {
 
 logging.config.dictConfig(logging_schema)
 logging.debug('logging has been set up')
+logging.info("file logging enabled: %s", FILENAME)

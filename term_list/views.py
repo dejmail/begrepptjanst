@@ -739,7 +739,11 @@ def concept_detail_view(concept_id: Union[int, str]) -> List[dict]:
         positions = getattr(attr, 'positions', [])
         position = positions[0].position if positions else 0
         logger.debug(f'{attr} has order {position}')
-        if position != 0: # Exclude attributes whose position is 0
+        is_visible = attr.groupattribute_set.filter(  # type: ignore[attr-defined]
+            group__in=related_groups,
+            visible=True
+            ).exists()
+        if is_visible:
             values_for_concept = getattr(attr, 'values_for_concept', [])
             value = values_for_concept[0].get_value() if values_for_concept else None
             attribute_fields.append(
