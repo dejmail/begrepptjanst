@@ -17,4 +17,3 @@ dependencies:
   - wheel=0.33.6=py38_0
   - wincertstore=0.2=py38_0
 prefix: C:\Users\liath1\AppData\Local\Continuum\miniconda3\envs\django
-

@@ -7,45 +7,54 @@
 
 <link rel="stylesheet" type="text/css" href="{% static '/css/admin_bootstrap_text_danger.css' %}">
 
+<link rel="stylesheet" type="text/css" href="{% static '/css/main.css' %}">
+
 <script>
-
-window.addEventListener("load", function() {
-
-	if (document.body.innerHTML.search("Välkommen till OLLI Begreppstjänst Portalen") > -1) {
+window.addEventListener('load', function () {
+	// Only run this code on the admin landing page
+	if (document.body.innerHTML.indexOf('Välkommen till OLLI Begreppstjänst Portalen') === -1) {
+		return;
+	}
 
 	function change_link_anchor_text(data) {
-		
-		var inner_html = document.querySelectorAll( 'a' );
+		if (!data || typeof data.unreadcomments === 'undefined') return;
 
-		const element = [...inner_html].filter(elem => {
-			return elem.innerHTML == 'Kommenterade Begrepp'
-		});
+		// Find the first anchor whose text starts with 'Begrepp kommentarer' (case-insensitive)
+		const anchors = Array.from(document.querySelectorAll('a'));
+		const anchor = anchors.find(a => a.textContent && a.textContent.trim().toLowerCase().startsWith('begrepp kommentarer'));
+		if (!anchor) return;
 
-		if (data.unreadcomments == 0) {
-			return element[0]
-		} else if (data.unreadcomments == 1) {
-			return element[0].innerHTML += '<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetad kommentar</span>";
-		} else if (data.unreadcomments > 1) {
-			return element[0].innerHTML += '<span class="text-danger"> - ' + data.unreadcomments + " Oberarbetade kommentarer</span>";
-		};
+		// Remove any existing badge we added earlier
+		const existing = anchor.querySelector('.oci-unread-badge');
+		if (existing) existing.remove();
+
+		if (Number(data.unreadcomments) > 0) {
+			const count = Number(data.unreadcomments);
+			const span = document.createElement('span');
+			span.className = 'text-danger oci-unread-badge';
+			span.style.marginLeft = '6px';
+			span.textContent = `- ${count} ${count === 1 ? 'Oberarbetad kommentar' : 'Oberarbetade kommentarer'}`;
+			anchor.appendChild(span);
+		}
 	}
 
-	function check_number_of_recent_comments() {
-			
-		var req = new XMLHttpRequest();
-		req.responseType = 'json';
-		req.open('GET', "{% url 'unread_comments' %}", true);
-		req.onload  = function() {
-			change_link_anchor_text(req.response);
-		};
-		req.send(null);
-			
-		};
-
-		check_number_of_recent_comments();
-		
+	async function check_number_of_recent_comments() {
+		try {
+			const resp = await fetch("{% url 'unread_comments' %}", { credentials: 'same-origin' });
+			if (!resp.ok) return;
+			const data = await resp.json();
+			change_link_anchor_text(data);
+		} catch (e) {
+			// Fail silently but log to console during development
+			console.error('Error fetching unread comments', e);
+		} finally {
+			// Poll every 60 seconds
+			setTimeout(check_number_of_recent_comments, 60000);
+		}
 	}
-})
+
+	// initial run
+	check_number_of_recent_comments();
+});
 </script>
 {% endblock responsive %}
-

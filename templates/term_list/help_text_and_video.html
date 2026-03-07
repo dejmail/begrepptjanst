@@ -1,0 +1,138 @@
+{% block endbody %}
+{% load static %}
+
+<div id="helpInfo" class="hidden">
+  <div class="container-fluid">
+
+    <div class="row" style="text-align: center;">
+    <div class="col-sm-5 col-5"></div>
+
+  <div class="col-sm-2 col-2">
+    <h4>Kontakta oss</h4>
+    <div class="card">
+      <div class="card-body text-justify" style="font-family: Calibri;">
+        Om ni har frågor eller funderingar gällande OLLI begreppstjänst
+        får ni gärna mejla oss på <span style="color:blue">informatik@vgregion.se</span>
+      </div>
+    </div>
+    </div>
+
+    <div class="col-sm-5 col-5"></div>
+</div>
+
+
+<div class="row mt-4" style="text-align: center;">
+    <div class="col-sm-3 col-3"></div>
+
+  <div class="col-sm-6 col-6">
+    <h4>Använda OLLI</h4>
+    <div class="card">
+      <div class="card-body text-justify" style="font-family: Calibri;" ><p>
+        <p class="p">Det finns flera olika ordlistor i OLLI och sökning görs i en enskild ordlista. Förvald ordlista är alltid ”VGR gemensam” som innehåller termer och begrepp som är gemensamma för hela VGR. Andra ordlistor representerar innehåll för specifika verksamheter och de termer med definitioner/beskrivningar som används i respektive verksamhet.</p>
+
+        <p class="p">Skriv in början på den textsträng du söker i sökfältet eller klicka på en bokstav i kartoteket. En lista med begrepp som innehåller söksträngen visas under sökfältet. Använder du kartoteket visas alla termer som börjar på vald bokstav. När ett begrepp dyker upp kan man se begreppets rekommenderade term, eventuella synonymer och definition.</p>
+
+        <p class="p">När man söker i OLLI får man träffar om söksträngen finns med i rekommenderad term, synonym eller del av en definition.</p>
+
+            <p class="p">Om det finns blåmarkerade ord i en definition i sökresultatet innebär det att de representerar begrepp som finns i den valda ordlistan i OLLI. Dessa ord går att klicka på för att få upp definitionen av det begreppet.</p>
+
+            <p class="p">När man klickar på en rekommenderad term i sökresultatet visas all information om begreppet. Följande rubriker används:
+
+        <table class="table table-bordered table-help">
+          <tbody>
+              <tr>
+                  <td class="w-30">
+                      Status
+                  </td>
+                  <td>
+                    <div class="row justify-content-center">
+                        <table class="table table-bordered table-help table-sm">
+                            <tbody>
+                            <tr>
+                                <td class="table-success">Beslutad</td>
+                                <td>Begreppsposten beslutad</td>
+                            </tr>
+
+                            <tr>
+                                <td class="table-danger">Avråds</td>
+                                <td>Termen avråds för användning i VGR</td>
+                            </tr>
+                            <tr>
+                                <td class="table-danger">Avställd</td>
+                                <td>Begrepp som är inaktuell och inte ska användas</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                  </td>
+              </tr>
+              <tr>
+                  <td class="w-30">
+                      Rekommenderad term
+                  </td>
+                  <td>
+                      Den rekommenderade term som representerar begreppet
+                  </td>
+              </tr>
+              <tr>
+                  <td class="w-30">
+                      Synonym
+                  </td>
+                  <td>
+                    Ord som har samma betydelse som visst annat ord. Eventuella synonymer som är tillåtna som alternativ term. Här anges även synonymer som avråds med en röd bakgrund, dessa ska inte användas.</td>
+              </tr>
+              <tr>
+                  <td class="w-30">
+                      Definition
+                  </td>
+                  <td>
+                    En formell definition av begreppets innebörd. Inleds en definition med &lt<em>domän</em>&gt betyder det att definitionen som följer begränsas till en viss domän eller sammanhang.
+
+                    Ett begrepp kan ha flera definitioner, en s.k. homonym. Det anges med en siffra före respektive definition. Om vi inte definierar ett begrepp kan här hänvisas till anmärkningar.
+
+                    <p class="p">I verksamhetsspecifika ordlistor kan detta fält även användas för att beskriva termen används i arbetet.</p>
+                  </td>
+              </tr>
+              <tr>
+                  <td class="w-30">
+                      Källa
+                  </td>
+                  <td>
+                      Källa för definitionen
+                  </td>
+              </tr>
+              <tr>
+                  <td class="w-30">
+                      Anmärkning
+                  </td>
+                  <td>
+                      Eventuella anmärkningar, kommentarer, exempel och hänvisningar som förtydligar eller avgränsar begreppets användning
+                  </td>
+              </tr>
+          </tbody>
+      </table>
+
+
+
+      </div>
+  </div>
+</div>
+<div class="col-sm-3 col-3"></div>
+</div>
+
+
+  </div>
+
+</div>
+</div>
+</body>
+</html>
+<style>
+    .hidden {
+        display: none;
+    }
+</style>
+
+{% endblock endbody %}

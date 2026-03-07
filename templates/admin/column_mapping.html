@@ -1,0 +1,137 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+<div id="content" class="">
+
+    <h3>{% blocktranslate %}Suggested mapping of Excel columns to model attribute{% endblocktranslate %}</h3>
+
+    <h4>{% trans "Justera där förslaget är fel" %}</h4>
+
+    <h4>
+        <ul>
+            <li>{% trans "Om du inte anger mål­fältet kommer kolumnen inte att importeras" %}</li>
+            <li>{% trans "Kolumner utan värden ignoreras." %}</li>
+        </ul>
+    </h4>
+
+    <form method="POST" id="column-mapping-form" class="admin-form">
+        <div class="form-container">
+
+            {% csrf_token %}
+
+            <fieldset class="module aligned">
+                <div class="row font-weight-bold border-bottom pb-2 mb-2">
+                    <div class="col-md-6">{% translate "Excel kolumn" %}</div>
+                    <div class="col-md-6">{% translate "Modell attribut" %}</div>
+                </div>
+
+                {% for field in mapping_form %}
+                {% if field.name != 'dictionary' and field.name|lower != 'Excel file' %}
+                <div class="row align-items-center mb-2">
+                    <div class="col-md-6">
+                        {{field.label}}
+                    </div>
+                    <div class="col-md-6">
+                        {{field}}
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </fieldset>
+
+
+            <!-- Render the dictionary field only if it's not present in the Excel file -->
+            {% if not dictionary_in_excel %}
+            <div class="form-row">
+                <div class="label">
+                    <label for="{{ mapping_form.dictionary.id_for_label }}" class="required">
+                        {% translate 'Välj ordbok:' %}
+                    </label>
+                </div>
+                <div class="field">
+                    {{ mapping_form.dictionary }}
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <p class="form-info">
+            <strong>{% translate 'Vald ordok:' %}</strong> {{ chosen_dictionary }}
+        </p>
+        <input type="hidden" id="dictionary-in-file" name="dictionary-in-file" value="{{chosen_dictionary}}">
+        {% endif %}
+
+        <input type="hidden" id="column_mapping_json" name="column_mapping_json">
+        <input type="hidden" name="apply_mapping" id="apply_mapping_hidden" value="">
+
+        <div class="submit-row submit-row-left">
+            <input type="submit" name="apply_mapping" class="default" value="{% translate 'Skicka mappning' %}">
+        </div>
+
+</div>
+</form>
+</div>
+
+<script>
+    document.getElementById('column-mapping-form').addEventListener('submit', function (event) {
+        // Prevent form submission to collect data
+        event.preventDefault();
+
+        var columnMapping = {};
+        // Collect the column mappings from the form
+        var formElements = document.getElementById('column-mapping-form').elements;
+        for (var i = 0; i < formElements.length; i++) {
+            var element = formElements[i];
+            if (element.tagName === 'SELECT' && element.name) {
+                columnMapping[element.name] = element.value;
+            }
+        }
+
+        console.log("Collected column mappings: ", columnMapping);  // Log the collected mappings
+        // Serialize the mappings into JSON and store them in the hidden input field
+        document.getElementById('column_mapping_json').value = JSON.stringify(columnMapping);
+
+        // Submit the form now that the hidden field is populated
+        event.target.submit();
+    });
+</script>
+
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        margin-bottom: 10px;
+    }
+
+    .label {
+        text-align: right;
+        padding-right: 20px;
+        font-weight: bold;
+    }
+
+    .form-info {
+        margin: 1rem 0;
+        padding: 0.75rem 1rem;
+        background: #f8f9fa;
+        border-left: 4px solid #ccc;
+    }
+
+    .submit-row {
+        display: flex;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .form-container {
+        padding: 1.5rem;
+        border: 1px solid #ddd;
+        background-color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}

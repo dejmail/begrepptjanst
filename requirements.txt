@@ -1,0 +1,12 @@
+Django==5.2.12
+django-admin-multiple-choice-list-filter==0.1.1
+django-admin-rangefilter==0.13.2
+django-crispy-forms==1.9.0
+django-debug-toolbar==4.1.0
+django-extensions==3.2.3
+django-simple-history==3.0.0
+setuptools==72.2.0
+mysql-connector-python==9.1.0
+xlsxwriter==3.2.0
+pandas==2.2.3
+openpyxl==3.1.5

@@ -1,20 +1,27 @@
 #!/usr/bin/env python
 """Django's command-line utility for administrative tasks."""
 import os
-import sys
 import socket
+import sys
+
+# Ensure logging is configured as early as possible for all management commands
+import application.logs.setup_logging  # noqa: F401
+
 
 def main():
     if socket.gethostname() == 'suijin.oderland.com':
         dir_path = os.path.dirname(os.path.realpath(__file__))
         if 'dev' in dir_path:
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.dev')
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.dev')
+        if 'test' in dir_path:
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.test')
+        if 'eav' in dir_path:
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.eav')
         else:
-            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.production')
+            os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.production')
     else:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'begrepptjanst.settings.local')
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.local')
 
-        
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
@@ -24,7 +31,6 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-
 
 if __name__ == '__main__':
     main()

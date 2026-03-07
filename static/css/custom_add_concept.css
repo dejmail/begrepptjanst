@@ -1,0 +1,27 @@
+/* Ensure form-row uses flexbox */
+.form-row {
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Grow the fieldBox to take up the main space */
+.flex-grow-1 {
+    flex-grow: 1; /* Ensures the form field takes up most of the space */
+}
+
+/* Styling for the small text to align on the right */
+.highlight-field {
+    font-size: 0.7em;
+    background: #ffb937; /* Optional: Green color for visibility */
+    border-radius: 4px;
+    padding: 3px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: 10px;
+    padding-bottom: 4px;
+}
+
+.position-relative {
+    position: relative;
+}

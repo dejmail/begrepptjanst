@@ -5,22 +5,29 @@ body {
   font-weight: 400;
   line-height: 1.5;
   }
-   
+
   /* Increase all font sizes on mobile */
-  @media (max-width: 767px) { 
-   
+  @media (max-width: 767px) {
+
   body {
   /* default is 1rem or 16px */
   font-size: 12px;
   }
-   
+
   }
 
 .table-help {
   width : auto;
 }
 
+.custom-select {
+  font-size: 0.875rem; /* Smaller font size */
+  /* Padding around the text in the select box */
+}
 
+.custom-select option {
+  padding: 5px; /* Padding around the text in the options (browser support may vary) */
+}
 
 
 @font-face {
@@ -40,6 +47,17 @@ body {
   width : 30%;
 }
 
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
 
 
   td {
@@ -49,10 +67,16 @@ body {
 
 th {
   position: sticky;
-  top: 0; 
-  background: white;
+  top: 0;
+  /* background: transparent; */
   z-index: 2000;
   }
+
+th[scope="col"] {
+  position: sticky;
+  left: 0;
+  z-index: 2001;
+}
 
 nav {
     margin-bottom: 4em;
@@ -68,11 +92,19 @@ nav {
   font-size: 11px;
 }
 
+.dark-text {
+  color: darkslategrey;
+}
+
+.light-text {
+  color: white;
+}
+
 strike {
 text-decoration: line-through;
 }
-  
-  
+
+
 .blink {
     text-decoration: blink;
     animation-name: blinker;
@@ -85,13 +117,13 @@ text-decoration: line-through;
   .span-button {
     display: inline-block;
     width: 85px;
-    text-align: center; 
+    text-align: center;
     vertical-align: middle;
   }
 
 .p-center {
-  text-align: center; 
-  vertical-align: middle; 
+  text-align: center;
+  vertical-align: middle;
   line-height: normal;
   margin-top: 0.3rem;
   margin-bottom: 0.3rem;
@@ -116,7 +148,14 @@ text-decoration: line-through;
     padding-top: 1em;
   }
 
-  .btn-avrådd {
+  .tag-red {
+    border-color: #f44336;
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    border-radius: 4px;
+  }
+
+  .btn-red {
       border-color: #f44336;
       background-color: rgba(255, 0, 0, 0.8);
       color: white;
@@ -130,14 +169,22 @@ text-decoration: line-through;
       border-radius: 4px;
     }
 
-.btn-grön {
+  .tag-green {
+    background-color: rgb(105, 189, 27);
+  }
+
+.btn-green {
       border-color: rgb(105, 189, 27);
       background-color: rgb(105, 189, 27);
       color: rgb(0, 0, 0);
       border-radius: 4px;
     }
 
-.btn-oklart {
+.tag-orange{
+background-color: rgb(255, 126, 41);
+}
+
+.btn-orange {
       border-color: rgb(255, 126, 41);
       background-color: rgb(255, 126, 41);
       color: black;
@@ -151,13 +198,61 @@ text-decoration: line-through;
       border-radius: 4px;
     }
 
+/* Reduce interaction with background content while the comment modal is open */
+body.modal-open #concept-metadata,
+body.modal-open #term_metadata_table {
+  pointer-events: none;
+}
+
+body.modal-open #term_metadata_table tr:hover,
+body.modal-open #term_metadata_table tr:hover td,
+body.modal-open #term_metadata_table tr:hover th {
+  background-color: inherit !important;
+}
+
+body.modal-open #comment .modal,
+body.modal-open #comment .modal * {
+  pointer-events: auto;
+}
+
+#term_metadata_table .metadata-label {
+  font-weight: 500;
+  text-transform: none;
+  color: #333;
+  width: 30%;
+  border-right: 1px solid #ddd;
+  background-color: transparent;
+}
+
+#term_metadata_table .metadata-label--primary {
+  background-color: #f4f4f4;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #333;
+}
+
+#term_metadata_table .metadata-label--primary::after {
+  content: '';
+}
+
+#term_metadata_table th {
+  position: static;
+  top: auto;
+  left: auto;
+  z-index: auto;
+}
+
+.tag-light-blue {
+      background-color: rgb(222,234,246);
+
+    }
     .btn-light-blue{
       border-color: rgb(222,234,246);
       background-color: rgb(222,234,246);
       color: black;
       border-radius: 4px;
     }
-  
+
     .submit-row {
       padding: 12px 14px;
       margin: 0 0 20px;
@@ -167,7 +262,7 @@ text-decoration: line-through;
       text-align: right;
       overflow: hidden;
   }
-    
+
   .bg-pale-yellow{
     background-color: #ffffcc;
   }
@@ -197,46 +292,143 @@ text-decoration: line-through;
   }
 
 
-  
-  
-  .tooltip {
-    position: relative;
-    display: inline-block;
-    opacity : 1;
-    font-size: 14px;
-    font-family: -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, "“Helvetica Neue”", Arial, sans-serif, "“Apple Color Emoji”", "“Segoe UI Emoji”", "“Segoe UI Symbol”"
-  }
-  
-  .tooltip .tooltiptext {
-    visibility: hidden;
-    width: 120px;
-    color: #fff;
-    background-color: rgb(114, 211, 127);
-    text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-    /* Position the tooltip */
+  .definition {
     position: absolute;
-    opacity : 1;
-    z-index: 1000;
-  }
-
-  .statuscolours {
-    display: inline-block;
-    position: fixed;
-    width: 110px; 
-    height: 145px;
-  }
-
-  .status-padding {
-    border-spacing: 10px 4px;
+    background: #f9f9f9;
+    border: 1px solid #ccc;
     padding: 10px;
-    text-align: center;
-    align-self: center;
-    width: 100%;
-    height: 100%
-    
-  }
+    max-width: 300px;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.term:hover, .term:focus {
+  text-decoration: none;
+  background-color: #FFFF00;  /* Yellow highlight */
+}
+
+.term {
+  position: relative;
+  /* display: inline-block; Ensure span elements flow inline */
+  cursor: pointer;
+  color: rgb(45, 99, 214);
+  opacity: 1;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  white-space: normal; /* Allow text to wrap normally */
+  margin: 0; /* Ensure no extra margin */
+  padding: 0; /* Ensure no extra padding */
+  overflow-wrap: break-word; /* Break long words to prevent overflow */
+  word-break: break-word; /* Break long words if needed */
+  max-width: 100%;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+  opacity : 1;
+  font-size: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, "“Segoe UI”", Roboto, "“Helvetica Neue”", Arial, sans-serif, "“Apple Color Emoji”", "“Segoe UI Emoji”", "“Segoe UI Symbol”";
+  word-break: normal;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  color: #fff;
+  background-color: rgb(114, 211, 127);
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  /* Position the tooltip */
+  position: absolute;
+  opacity : 1;
+  z-index: 1000;
+}
+
+#tooltiptext span.red{
+  background-color: red !important;
+}
+
+.tooltip:hover .tooltiptext,
+.tooltip:focus .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.synonym-list {
+  list-style-type: disc; /* Set the list item style to disc (or use decimal for numbers) */
+  padding-left: 20px; /* Add padding to align the bullets or numbers */
+}
+
+.synonym-item {
+  display: flex;
+  align-items: normal;
+  margin-bottom: 5px;
+}
+
+.synonym-item::before {
+  content: '\2022'; /* Unicode for a bullet point */
+  display: inline-block;
+  margin-right: 8px; /* Space between bullet and text */
+  font-size: 1.2em; /* Adjust size as needed */
+  color: black; /* Set color of the bullet */
+}
+
+  .scrollable-content {
+    max-height: 100vh; /* Ensure the container doesn't exceed the viewport height */
+    padding-right: 15px; /* Add padding to avoid cutting off content when a scrollbar appears */
+    position: relative; /* Relative positioning within the column */
+}
+
+
+
+#colour-panel {
+position: fixed;
+z-index: 1000; /* Ensure it stays above other elements */
+max-width: 104px; /* Set a maximum width */
+width: 100%; /* Make it responsive */
+background-color: #f8f9fa; /* Light background color */
+border: 1px solid #ddd; /* Border for the panel */
+border-radius: 4px; /* Rounded corners */
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+/* Styling for the status indicators */
+.status-indicator {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  width: 85px; /* Set a fixed width */
+  height: 50px; /* Set a fixed height */
+  border-radius: 4px; /* Rounded corners */
+  border: 1px solid transparent; /* Border matching button look */
+  text-align: center; /* Center align text horizontally */
+  background-color: #f8f9fa; /* Default background color */
+  color: #333; /* Text color */
+  font-size: 0.75rem; /* Font size */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  margin: 0.5rem; /* Space between indicators */
+  overflow: hidden; /* Hide any overflow */
+}
+
+/* Specific colors for different statuses */
+.table-green { background-color: #d4edda;}
+.table-yellow { background-color: #fff3cd;}
+.table-red { background-color: #f8d7da;}
+
+/* Styling for text inside the indicators */
+.text-smaller {
+  word-wrap: break-word; /* Break long words to fit inside */
+  hyphens: auto; /* Automatic hyphenation */
+}
+
+.form-check {
+  display: flex;
+  align-items: center; /* Aligns checkbox vertically */
+  gap: 8px; /* Adds spacing between checkbox and label */
+}
+
+
 
   .buttonwidth {
     width: 100px;
@@ -244,11 +436,19 @@ text-decoration: line-through;
   }
 
   .text-smaller {
-    font-size: 12px; 
+    font-size: 12px;
   }
 
-
-
+.submit-row-left {
+    text-align: left;
+}
+mark {
+  padding-left: .1em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  padding-right: 0%;
+  background-color:#fcf8e3
+}
 
   .definitiontooltip {
     position: relative;
@@ -277,15 +477,104 @@ text-decoration: line-through;
     z-index: 1;
   }
 
-#tooltiptext span.red{
-  background-color: red !important;
-}
-  
-  .tooltip:hover .tooltiptext {
-    visibility: visible;
-  }
-  
+
+
   .definitiontooltip:hover .definitiontooltiptext {
     visibility: visible;
     z-index: 2!important;
   }
+
+
+.header-container {
+  display: flex; /* Flexbox layout */
+  align-items: center; /* Vertically center items */
+  justify-content: space-between; /* Space between heading and button */
+  margin-bottom: 5px; /* Space below header */
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  white-space: normal;
+}
+
+.header-container h5 {
+  margin: 0; /* Remove default margin from heading */
+  font-size: 16px; /* Font size for the heading */
+}
+
+.copied-definition {
+  position: absolute; /* Relative positioning for child absolute positioning */
+  padding: 10px; /* Padding inside the definition */
+  background-color: #fff; /* Background color for the tooltip */
+  border: 1px solid #ddd; /* Border for the tooltip */
+  border-radius: 5px; /* Optional rounded corners */
+  box-sizing: border-box;
+  margin-bottom: 10px; /* Space between tooltips */
+  width: calc(100% - 20px); /* Width of the tooltip */
+}
+
+.copied-definition p {
+  margin: 0; /* Remove default margin for paragraph */
+  overflow-wrap: break-word; /* Break long words to fit within container */
+  word-break: break-word; /* Break words at the end of the line if necessary */
+  white-space: normal; /* Allow text to wrap normally */
+  hyphens: auto;
+}
+
+.close-definition {
+  position: absolute; /* Absolute positioning within the tooltip */
+  top: 10px; /* Distance from the top */
+  left: -24px; /* Distance from the right */
+  background: #f1f1f1; /* Light background for the button */
+  border: 1px solid #ddd; /* Border for the button */
+  color: #333; /* Text color for the button */
+  cursor: pointer; /* Pointer cursor on hover */
+  font-size: 16px; /* Font size for the button */
+  padding: 3px 6px; /* Padding inside the button */
+  border-radius: 3px; /* Rounded corners for the button */
+  line-height: 1; /* Align button with text */
+}
+
+.close-definition:hover {
+  background-color: #e0e0e0; /* Background color on hover (optional) */
+}
+
+.tooltip-container {
+  position: relative;
+}
+
+#close-all-tooltips {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+  padding: 5px 10px;
+  background-color: #f00; /* Red background color */
+  color: #fff; /* White text color */
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  outline: none; /* Remove default outline */
+}
+
+#close-all-tooltips:focus {
+  outline: 2px solid #000; /* Custom focus outline */
+  outline-offset: 2px;
+}
+
+#close-all-tooltips:hover {
+  background-color: #c00; /* Darker red on hover */
+}
+
+.tag {
+  display: inline-block;
+  padding: 2px 4px;
+  font-size: 85%;
+  font-weight: 700;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+.help, p.help, form p.help, div.help, form div.help, div.help li {
+  font-size: 0.6875rem;
+  color: var(--body-quiet-color);
+}
