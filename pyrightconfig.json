@@ -1,0 +1,8 @@
+{
+  "typeCheckingMode": "basic",
+  "pythonVersion": "3.10",
+  "include": ["term_list", "application"],
+  "exclude": ["**/node_modules", "**/__pycache__"],
+  "reportMissingImports": false,
+  "reportUnknownVariableType": false
+}
