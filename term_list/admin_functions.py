@@ -268,6 +268,7 @@ class ConceptFileImportMixin:
     def import_excel_view(self, request):
 
         CONCEPT_FIELDS = {field.name.lower() for field in Concept._meta.get_fields() if not field.is_relation}
+        chosen_dictionary: Dictionary | None = None
 
         if 'apply' in request.POST:
             logger.debug("Apply button pressed, handling uploaded import file")
@@ -292,7 +293,6 @@ class ConceptFileImportMixin:
                 # Check if the dictionary column is present in the Excel file
                 available_dictionaries = self.get_accessible_dictionaries(request)
                 dictionary_in_excel = False
-                chosen_dictionary = None
                 if 'dictionary' in df.columns:
                     unique_dicts = df['dictionary'].dropna().unique()
                     if len(unique_dicts) == 1:
@@ -379,7 +379,8 @@ class ConceptFileImportMixin:
                         invalid_status_values.add(force_str(status_value).strip())
                         data['status'] = DEFAULT_STATUS
 
-                data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary
+                assert chosen_dictionary is not None, "Dictionary must be set before processing concepts"
+                data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary.dictionary_long_name
                 try:
                     existing_begrepp = Concept.objects.get(term=data.get('term'), dictionaries=chosen_dictionary)
 
@@ -453,7 +454,23 @@ class ConceptFileImportMixin:
                 )
                 attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS and k not in dictionary_names}
 
-                concept_instance, created = Concept.objects.update_or_create(term=data.get('term'), defaults=concept_data)
+                # Prefer term + dictionary constraint, so we don't pull the same term from another dictionary
+                term_value = data.get('term')
+                concept_query = Concept.objects.filter(term=term_value)
+                dictionary_obj = None
+                if dictionary_id:
+                    dictionary_obj = Dictionary.objects.filter(dictionary_long_name=dictionary_id).first()
+                    if dictionary_obj is not None:
+                        concept_query = concept_query.filter(dictionaries=dictionary_obj)
+
+                if concept_query.exists():
+                    concept_instance = concept_query.first()
+                    assert concept_instance is not None, "Concept query returned None despite exists() check"
+                    for field, value in concept_data.items():
+                        setattr(concept_instance, field, value)
+                    concept_instance.save()
+                else:
+                    concept_instance = Concept.objects.create(**concept_data)
 
                 if synonym_data:
                     split_synonyms = [synonym for synonym in synonym_data.split(',') if synonym not in ['', None]]
@@ -461,9 +478,8 @@ class ConceptFileImportMixin:
                     Synonym.objects.bulk_create(synonyms)
 
                 # Handle the M2M relation (dictionaries)
-                if dictionary_id:
-                    dictionaries_to_add = Dictionary.objects.filter(dictionary_long_name__in=[dictionary_id])
-                    concept_instance.dictionaries.set(dictionaries_to_add)
+                if dictionary_obj:
+                    concept_instance.dictionaries.add(dictionary_obj)
 
                 value_field_map = {
                     "string": "value_string",
