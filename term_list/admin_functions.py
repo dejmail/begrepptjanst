@@ -265,6 +265,22 @@ class ConceptFileImportMixin:
         logger.debug(f'Draft mapping: {draft_mapping}')
         return draft_mapping
 
+    def find_dictionary_column(self, df):
+        """Locate dictionary-like column names in the uploaded file."""
+        normalized_headers = {str(col).strip().casefold(): col for col in df.columns}
+
+        # common exact variants
+        for candidate in ['dictionary', 'dictionaries', 'ordbok', 'ordböcker']:
+            if candidate in normalized_headers:
+                return normalized_headers[candidate]
+
+        # fuzzy fallback match like 'dictionary' with typos
+        match = difflib.get_close_matches('dictionary', list(normalized_headers.keys()), n=1, cutoff=0.7)
+        if match:
+            return normalized_headers[match[0]]
+
+        return None
+
     def import_excel_view(self, request):
 
         CONCEPT_FIELDS = {field.name.lower() for field in Concept._meta.get_fields() if not field.is_relation}
@@ -293,19 +309,21 @@ class ConceptFileImportMixin:
                 # Check if the dictionary column is present in the Excel file
                 available_dictionaries = self.get_accessible_dictionaries(request)
                 dictionary_in_excel = False
-                if 'dictionary' in df.columns:
-                    unique_dicts = df['dictionary'].dropna().unique()
+                chosen_dictionary = None
+                dict_col = self.find_dictionary_column(df)
+                if dict_col is not None:
+                    unique_dicts = df[dict_col].dropna().unique()
                     if len(unique_dicts) == 1:
-                        dictionary_in_excel = True
-                        chosen_dictionary = unique_dicts[0]
+                        chosen_dictionary = force_str(unique_dicts[0]).strip()
                         try:
                             Dictionary.objects.get(dictionary_long_name=chosen_dictionary)
+                            dictionary_in_excel = True
                         except Dictionary.DoesNotExist:
                             messages.error(request, f"Ordbok '{chosen_dictionary}' från filen finns inte i DB, vänligen dubbelkolla stavningen.")
                             return redirect("admin:import_excel_view")
                     else:
-                        messages.error(request, "Flera ordböcker hittades i Excel-filen. Vänligen välj en från listan istället.")
-                        return redirect("admin:import_excel_view")
+                        # If multiple dictionaries are present, let user select manually
+                        messages.warning(request, "Flera ordböcker hittades i Excel-filen. Vänligen välj en från listan istället.")
 
                 # Get draft mappings
                 draft_mapping = self.get_draft_mappings(columns, available_dictionaries)
@@ -342,11 +360,17 @@ class ConceptFileImportMixin:
 
             if request.POST.get('dictionary-in-file'):
                 chosen_dictionary = Dictionary.objects.get(
-                    dictionary_long_name=request.POST.get('dictionary-in-file')
-                    )
+                    dictionary_id=request.POST.get('dictionary-in-file')
+                )
                 json_column_mapping['dictionary'] = chosen_dictionary
-            elif request.POST.get('dictionary') is not None:
-                chosen_dictionary = Dictionary.objects.get(dictionary_long_name=request.POST.get('dictionary_in_file'))
+            elif request.POST.get('dictionary'):
+                chosen_dictionary = Dictionary.objects.get(
+                    dictionary_id=request.POST.get('dictionary')
+                )
+                json_column_mapping['dictionary'] = chosen_dictionary
+            else:
+                messages.error(request, "Du måste välja en ordbok för importen")
+                return redirect("admin:import_excel_view")
 
             # the mapping of this is not quite right...I want the sqwedish headers in the
             # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
