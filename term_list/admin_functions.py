@@ -353,98 +353,106 @@ class ConceptFileImportMixin:
                 })
         # Step 2: Handle intermediate confirmation page
         if 'apply_mapping' in request.POST:
+            try:
+                # Assume form contains the parsed data from the uploaded file
+                logger.debug("Mapping accepted, creating new terms and attributes in DB")
+                json_column_mapping = json.loads(request.POST.get('column_mapping_json'))
 
-            # Assume form contains the parsed data from the uploaded file
-            logger.debug("Mapping accepted, creating new terms and attributes in DB")
-            json_column_mapping = json.loads(request.POST.get('column_mapping_json'))
+                if request.POST.get('dictionary-in-file'):
+                    chosen_dictionary = Dictionary.objects.get(
+                        dictionary_name=request.POST.get('dictionary-in-file')
+                    )
+                    json_column_mapping['dictionary'] = chosen_dictionary
+                elif request.POST.get('dictionary'):
+                    chosen_dictionary = Dictionary.objects.get(
+                        dictionary_name=request.POST.get('dictionary')
+                    )
+                    json_column_mapping['dictionary'] = chosen_dictionary
+                else:
+                    messages.error(request, "Du måste välja en ordbok för importen")
+                    return redirect("admin:import_excel_view")
 
-            if request.POST.get('dictionary-in-file'):
-                chosen_dictionary = Dictionary.objects.get(
-                    dictionary_id=request.POST.get('dictionary-in-file')
-                )
-                json_column_mapping['dictionary'] = chosen_dictionary
-            elif request.POST.get('dictionary'):
-                chosen_dictionary = Dictionary.objects.get(
-                    dictionary_id=request.POST.get('dictionary')
-                )
-                json_column_mapping['dictionary'] = chosen_dictionary
-            else:
-                messages.error(request, "Du måste välja en ordbok för importen")
+                # the mapping of this is not quite right...I want the sqwedish headers in the
+                # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
+                logger.debug(f'adding key - {json_column_mapping=}')
+                column_mapping = {k: force_str(v) for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
+
+                df = pd.read_excel(io.BytesIO(base64.b64decode(request.POST.get('excel_file'))), engine='openpyxl')
+
+                available_dictionaries = self.get_accessible_dictionaries(request)
+                dictionary_names = set(Dictionary.objects.values_list("dictionary_long_name", flat=True))
+                dictionary_names.add(force_str(Dictionary._meta.verbose_name_plural))
+
+                concept_data_list = []
+                invalid_status_values = set()
+
+                for _, row in df.iterrows():
+                    data = {force_str(column_mapping[col]): row[col] for col in df.columns if column_mapping.get(col)}
+                    data = {k: None if pd.isna(v) else v for k, v in data.items()}
+                    data['term'] = conditional_lowercase(data.get('term'))
+                    # if data.get('term') == "korv": set_trace()
+
+                    if data.get('definition') is not None:
+                        data['definition'] = str(data.get('definition')).replace('\u200b','').strip() if data.get('definition') is not None else ''
+                    status_value = data.get('status')
+                    if status_value is not None:
+                        normalised_status, is_valid_status = normalize_choice_value(status_value, STATUS_CHOICES)
+                        if is_valid_status:
+                            data['status'] = normalised_status
+                        else:
+                            invalid_status_values.add(force_str(status_value).strip())
+                            data['status'] = DEFAULT_STATUS
+
+                    assert chosen_dictionary is not None, "Dictionary must be set before processing concepts"
+                    data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary.dictionary_long_name
+                    try:
+                        existing_begrepp = Concept.objects.get(term=data.get('term'), dictionaries=chosen_dictionary)
+
+                        is_changed = False
+                        for field, value in data.items():
+                            # Get the corresponding field value from the existing object
+                            existing_value = getattr(existing_begrepp, field, None)
+                            if str(existing_value) != str(value):  # Convert both to string for safe comparison
+                                is_changed = True
+                                continue
+
+                        data['is_changed'] = is_changed
+                        data['is_new'] = True
+                        concept_data_list.append(data)
+
+                    except Concept.DoesNotExist:
+                        # Create a new Concept if it doesn't exist
+                        data['is_changed'] = False
+                        data['is_new'] = True
+                        concept_data_list.append(data)
+                if invalid_status_values:
+                    messages.warning(
+                        request,
+                        "Ogiltiga statusvärden hittades i importfilen och ersattes med standardstatus: "
+                        f"{', '.join(sorted(invalid_status_values))}."
+                    )
+
+                column_headers = [
+                    {
+                        "key": header,
+                        "label": "Ordbok" if header in dictionary_names else header,
+                    }
+                    for header in column_mapping.values()
+                ]
+                #Render the confirmation page
+                return render(request, 'admin/confirm_mapping.html', {
+                    'concept_data_list': concept_data_list,
+                    'concept_data_list_json': json.dumps(concept_data_list, ensure_ascii=False),
+                    'column_headers': column_headers,
+                })
+            except ValueError as e:
+                logger.error(f"ValueError during apply_mapping: {e}")
+                messages.error(request, f"Ett fel uppstod vid bearbetning av mappningen: {str(e)}")
                 return redirect("admin:import_excel_view")
-
-            # the mapping of this is not quite right...I want the sqwedish headers in the
-            # json_column_mapping['synonyms'] = Synonym._meta.verbose_name_plural
-            logger.debug(f'adding key - {json_column_mapping=}')
-            column_mapping = {k: force_str(v) for k, v in json_column_mapping.items() if v not in [None, '', [], {}, set()]}
-
-            df = pd.read_excel(io.BytesIO(base64.b64decode(request.POST.get('excel_file'))), engine='openpyxl')
-
-            available_dictionaries = self.get_accessible_dictionaries(request)
-            dictionary_names = set(Dictionary.objects.values_list("dictionary_long_name", flat=True))
-            dictionary_names.add(force_str(Dictionary._meta.verbose_name_plural))
-
-            concept_data_list = []
-            invalid_status_values = set()
-
-            for _, row in df.iterrows():
-                data = {force_str(column_mapping[col]): row[col] for col in df.columns if column_mapping.get(col)}
-                data = {k: None if pd.isna(v) else v for k, v in data.items()}
-                data['term'] = conditional_lowercase(data.get('term'))
-                # if data.get('term') == "korv": set_trace()
-
-                if data.get('definition') is not None:
-                    data['definition'] = str(data.get('definition')).replace('\u200b','').strip() if data.get('definition') is not None else ''
-                status_value = data.get('status')
-                if status_value is not None:
-                    normalised_status, is_valid_status = normalize_choice_value(status_value, STATUS_CHOICES)
-                    if is_valid_status:
-                        data['status'] = normalised_status
-                    else:
-                        invalid_status_values.add(force_str(status_value).strip())
-                        data['status'] = DEFAULT_STATUS
-
-                assert chosen_dictionary is not None, "Dictionary must be set before processing concepts"
-                data[force_str(Dictionary._meta.verbose_name_plural)] = chosen_dictionary.dictionary_long_name
-                try:
-                    existing_begrepp = Concept.objects.get(term=data.get('term'), dictionaries=chosen_dictionary)
-
-                    is_changed = False
-                    for field, value in data.items():
-                        # Get the corresponding field value from the existing object
-                        existing_value = getattr(existing_begrepp, field, None)
-                        if str(existing_value) != str(value):  # Convert both to string for safe comparison
-                            is_changed = True
-                            continue
-
-                    data['is_changed'] = is_changed
-                    data['is_new'] = True
-                    concept_data_list.append(data)
-
-                except Concept.DoesNotExist:
-                    # Create a new Concept if it doesn't exist
-                    data['is_changed'] = False
-                    data['is_new'] = True
-                    concept_data_list.append(data)
-            if invalid_status_values:
-                messages.warning(
-                    request,
-                    "Ogiltiga statusvärden hittades i importfilen och ersattes med standardstatus: "
-                    f"{', '.join(sorted(invalid_status_values))}."
-                )
-
-            column_headers = [
-                {
-                    "key": header,
-                    "label": "Ordbok" if header in dictionary_names else header,
-                }
-                for header in column_mapping.values()
-            ]
-            #Render the confirmation page
-            return render(request, 'admin/confirm_mapping.html', {
-                'concept_data_list': concept_data_list,
-                'concept_data_list_json': json.dumps(concept_data_list, ensure_ascii=False),
-                'column_headers': column_headers,
-            })
+            except Exception as e:
+                logger.error(f"Unexpected error during apply_mapping: {e}")
+                messages.error(request, "Ett oväntat fel uppstod vid bearbetning av importen. Kontakta administratören.")
+                return redirect("admin:import_excel_view")
 
         # Step 3: Final creation or update after confirmation
         if 'confirm_import' in request.POST:
