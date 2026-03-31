@@ -43,9 +43,9 @@ DATABASES = {
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-STATIC_ROOT = '/home/vgrinfor/public_html/begrepptjanst/static'
-STATICFILES_DIRS = ['/home/vgrinfor/begrepptjanst/static',]
-STATIC_URL = '/begrepptjanst/static/'
+STATIC_ROOT = '/home/vgrinfor/public_html/begreppstjanst/static'
+STATICFILES_DIRS = ['/home/vgrinfor/begreppstjanst/static',]
+STATIC_URL = '/begreppstjanst/static/'
 
 # media files
 MEDIA_URL = '/begreppstjanst/media/'
