@@ -4,9 +4,6 @@ import os
 import socket
 import sys
 
-# Ensure logging is configured as early as possible for all management commands
-import application.logs.setup_logging  # noqa: F401
-
 
 def main():
     if socket.gethostname() == 'suijin.oderland.com':

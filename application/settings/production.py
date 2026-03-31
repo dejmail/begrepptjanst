@@ -1,5 +1,6 @@
 import locale
 import os
+import pathlib
 import signal
 
 from application.settings.base import *  # noqa: F401,F403
@@ -55,3 +56,49 @@ MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
 # Email settings
 MEDIA_URL = '/begreppstjanst/media/'
 MEDIA_ROOT = '/home/vgrinfor/public_html/begreppstjanst/media'
+
+BASE_DIR = pathlib.Path(__file__).resolve().parents[2]
+LOG_FILE = os.getenv("LOG_FILE", str(BASE_DIR / "logs.log"))
+
+# Ensure directory exists BEFORE logging config runs
+pathlib.Path(LOG_FILE).parent.mkdir(parents=True, exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "simple": {
+            "format": "%(asctime)s %(levelname)s %(message)s",
+        },
+    },
+
+    "handlers": {
+        "file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": LOG_FILE,
+            "formatter": "simple",
+            "level": "INFO",
+            "maxBytes": 500000,
+            "backupCount": 3,
+        }
+    },
+
+    "root": {
+        "handlers": ["file"],
+        "level": "INFO",
+    },
+
+    "loggers": {
+        "django.server": {
+            "handlers": [],
+            "level": "CRITICAL",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": [],
+            "level": "CRITICAL",
+            "propagate": False,
+        },
+    },
+}

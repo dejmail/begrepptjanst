@@ -1,31 +1,24 @@
-"""
-WSGI config for application project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/2.2/howto/deployment/wsgi/
-"""
-
 import os
 import socket
 
 from django.core.wsgi import get_wsgi_application
 
-# Ensure logging is configured during WSGI startup
-import application.logs.setup_logging  # noqa: F401
+hostname = socket.gethostname()
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
-if socket.gethostname() == 'suijin.oderland.com':
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    if 'dev' in dir_path:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.dev')
-    if 'test' in dir_path:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.test')
-    if 'eav' in dir_path:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.eav')
+if hostname == "suijin.oderland.com":
+    if "eav" in dir_path:
+        settings_module = "application.settings.eav"
+    elif "test" in dir_path:
+        settings_module = "application.settings.test"
+    elif "dev" in dir_path:
+        settings_module = "application.settings.dev"
     else:
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.production')
+        settings_module = "application.settings.production"
 else:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'application.settings.local')
+    settings_module = "application.settings.local"
 
-application = get_wsgi_application()  # type: ignore[assignment]
+os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
+
+
+application = get_wsgi_application()

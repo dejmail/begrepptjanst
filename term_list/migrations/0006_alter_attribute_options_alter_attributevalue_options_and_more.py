@@ -100,11 +100,11 @@ class Migration(migrations.Migration):
                 "verbose_name_plural": "Beställaren",
             },
         ),
-        # migrations.AddField(
-        #     model_name="groupattribute",
-        #     name="visible",
-        #     field=models.BooleanField(default=True),
-        # ),
+        migrations.AddField(
+            model_name="groupattribute",
+            name="visible",
+            field=models.BooleanField(default=True),
+        ),
         migrations.AddConstraint(
             model_name="groupattribute",
             constraint=models.UniqueConstraint(
