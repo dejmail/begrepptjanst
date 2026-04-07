@@ -130,7 +130,7 @@ msgstr "Beställare"
 
 #: term_list/models.py:103
 msgid "Synonyms"
-msgstr "Syonymer"
+msgstr "Synonymer"
 
 #: term_list/models.py:104
 msgid "Synonym"
