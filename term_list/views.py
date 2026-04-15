@@ -963,8 +963,8 @@ def request_new_term(request: HttpRequest):
                     new_order = TaskOrderer()
                     new_order.name = form.clean_name()
                     new_order.email = form.clean_email()
-                    new_order.concept = new_term
-                    new_order.save()
+                new_order.concept = new_term
+                new_order.save()
 
                 chosen_dictionary = form.clean_dictionary()
                 new_term.dictionaries.set([chosen_dictionary])
