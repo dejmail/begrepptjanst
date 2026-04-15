@@ -955,14 +955,14 @@ def request_new_term(request: HttpRequest):
                 new_term.status = DEFAULT_STATUS
                 new_term.save()
 
-                existing_orderer = get_orderer(form.clean_name(), form.clean_email())
+                # existing_orderer = get_orderer(form.clean_name(), form.clean_email())
 
-                if existing_orderer is not None:
-                    new_order = existing_orderer
-                else:
-                    new_order = TaskOrderer()
-                    new_order.name = form.clean_name()
-                    new_order.email = form.clean_email()
+                # if existing_orderer is not None:
+                #     new_order = existing_orderer
+                # else:
+                new_order = TaskOrderer()
+                new_order.name = form.clean_name()
+                new_order.email = form.clean_email()
                 new_order.concept = new_term
                 new_order.save()
 
