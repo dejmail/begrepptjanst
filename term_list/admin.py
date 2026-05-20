@@ -736,7 +736,8 @@ class ConceptAdmin(
     list_dictionaries.verbose_name_plural = "Ordböcker"  # type: ignore[attr-defined]
     list_dictionaries.verbose_name = "Ordbok"  # type: ignore[attr-defined]
 
-    def export_chosen_attrs_view(self, request):
+    @staticmethod
+    def export_chosen_attrs_view(request):
 
         # Required default fields
         default_fields = ["Id", "Term", "Definition", "Status"]
