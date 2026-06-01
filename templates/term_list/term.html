@@ -30,6 +30,7 @@
                 <div class="col-4">
                     <label for="dictionary-select" class="sr-only">Välj ordlista</label>
                     <select id="dictionary-select" name="dictionary" class="form-control form-control-md custom-select" aria-describedby="dictionary-help">
+                        <option value="">Visa alla</option>
                         {% for dict_value, dict_label in dictionaries %}
                         <option value="{{ dict_value }}" {% if forloop.first %}selected{% endif %}>
                             {{ dict_label }}

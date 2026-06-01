@@ -36,13 +36,21 @@
         <colgroup>
           <col class="col-3">
           <col class="col-2">
+          {% if show_all_dictionaries %}
+          <col class="col-4">
+          <col class="col-3">
+          {% else %}
           <col class="col-7">
+          {% endif %}
         </colgroup>
         <thead>
           <tr>
             <th scope="col">Rekommenderad term</th>
             <th scope="col">Synonym</th>
             <th scope="col">Definition</th>
+            {% if show_all_dictionaries %}
+            <th scope="col">Ordlista</th>
+            {% endif %}
           </tr>
 
         </thead>
@@ -87,6 +95,9 @@
               {% endfor %}
             </td>
             <td>{{term.definition}}</td>
+            {% if show_all_dictionaries %}
+            <td>{{ term.dictionaries }}</td>
+            {% endif %}
 
           </tr>
           {% endfor %}

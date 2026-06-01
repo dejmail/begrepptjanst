@@ -212,6 +212,9 @@ def filter_by_dictionary(
         QuerySet: The filtered queryset.
     """
 
+    if not dictionary:
+        return queryset
+
     logger.info(f"Filtering search frontend query by {dictionary}")
 
     return queryset.filter(dictionaries__dictionary_name=dictionary)
@@ -426,19 +429,14 @@ def creating_tooltip_hover_substitution_object(
     :rtype:
     """
 
-    terms_with_tooltips = {
-        record.get(
-            "term"
-        ): f"""
+    terms_with_tooltips = {record.get("term"): f"""
         <span class="term"
               tabindex="0"
               role="button"
               aria-describedby="def-{record.get('term').strip()}">{record.get('term').strip()}</span>
         <div id="def-{record.get('term').strip()}" class="tooltiptext" hidden>{record.get('definition')}</div>
 
-        """
-        for record in all_terms_and_definitions
-    }
+        """ for record in all_terms_and_definitions}
 
     logger.debug(f"Number of records in {len(terms_with_tooltips)=}")
 
@@ -683,6 +681,13 @@ def assemble_search_results_view(url_parameter, dictionary) -> Tuple[str, List[d
 
     status_config = ConfigurationOptions.objects.get(name="status-and-colour").config
 
+    if dictionary:
+        chosen_dictionary = Dictionary.objects.get(
+            dictionary_name=dictionary
+        ).dictionary_name
+    else:
+        chosen_dictionary = "Alla ordlistor"
+
     html = render_to_string(
         template_name="term_list/term_results_partial.html",
         context={
@@ -690,9 +695,8 @@ def assemble_search_results_view(url_parameter, dictionary) -> Tuple[str, List[d
             "status_config": status_config,
             "search_results": search_results,
             "searched_for_term": url_parameter,
-            "chosen_dictionary": Dictionary.objects.get(
-                dictionary_name=dictionary
-            ).dictionary_name,
+            "chosen_dictionary": chosen_dictionary,
+            "show_all_dictionaries": not dictionary,
         },
     )
     return html, styled_results
@@ -1079,11 +1083,9 @@ def comment_term(request):
                 new_file.support_file = filename
                 new_file.save()
 
-            return HttpResponse(
-                """<div class="alert alert-success text-center">
+            return HttpResponse("""<div class="alert alert-success text-center">
                                    Tack för dina synpunkter.
-                                   </div>"""
-            )
+                                   </div>""")
 
     return render(request, "term_list/comment_term.html", {"comment": form})
 
