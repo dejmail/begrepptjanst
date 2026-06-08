@@ -225,8 +225,8 @@ in the certain cells without having to use <br> */
     $(document).ready(function () {
         $("#open-comment-button").click(function () {
 
-            console.log('Getting comment form for {{concept.term}}');
-            get_form_function(url = "{% url 'comment_term' %}?q={{concept.term}}",
+            console.log('Getting comment form for {{concept.id}}');
+            get_form_function(url = "{% url 'comment_term' %}?q={{concept.id}}",
                 div_to_replace = "#comment",
                 type_method = "GET");
         });

@@ -1047,8 +1047,8 @@ def comment_term(request):
     url_parameter = request.GET.get("q")
 
     if request.method == "GET":
-        inkommande_term = Concept.objects.get(term=url_parameter)
-        form = CommentTermForm(initial={"term": inkommande_term})
+        inkommande_term = Concept.objects.get(id=url_parameter)
+        form = CommentTermForm(initial={"term": inkommande_term.id})
         return render(request, "term_list/comment_term.html", {"comment": form})
 
     elif request.method == "POST":
@@ -1070,10 +1070,7 @@ def comment_term(request):
             new_comment.name = form.cleaned_data.get("name")
             new_comment.status = DEFAULT_STATUS
 
-            # entries with doublets cause a problem, so we take the first one
-            new_comment.concept = Concept.objects.filter(
-                term=form.cleaned_data.get("term")
-            ).first()
+            new_comment.concept = Concept.objects.get(id=form.cleaned_data.get("term"))
             new_comment.save()
 
             for filename in file_list:
