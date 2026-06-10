@@ -36,13 +36,7 @@
                         </tr>
                         <tr class="{{ concept.status|status_colour:status_config }}">
                             <th scope="row" class="metadata-label metadata-label--primary">Ordlista</th>
-                            <td>
-                                {% for dictionary in concept.dictionaries.all %}
-                                    {{ dictionary.dictionary_long_name|default:dictionary.dictionary_name }}{% if not forloop.last %}, {% endif %}
-                                {% empty %}
-                                    -
-                                {% endfor %}
-                            </td>
+                            <td>{% for dictionary in concept.dictionaries.all %}{{ dictionary.dictionary_long_name|default:dictionary.dictionary_name }}{% if not forloop.last %}, {% endif %}{% empty %}-{% endfor %}</td>
                         </tr>
                         <tr class="{{ concept.status|status_colour:status_config }}">
                             <th scope="row" class="metadata-label metadata-label--primary">Definition</th>
