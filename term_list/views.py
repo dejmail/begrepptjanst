@@ -1053,16 +1053,11 @@ def comment_term(request):
 
     elif request.method == "POST":
 
-        form = CommentTermForm(request.POST)
+        form = CommentTermForm(request.POST, request.FILES)
         if form.is_valid():
             file_list = []
             if len(request.FILES) != 0:
-                for file in request.FILES.getlist("file_field"):
-                    fs = FileSystemStorage()
-                    filename = fs.save(name=file.name, content=file)
-                    uploaded_file_url = fs.url(filename)
-                    file_list.append(uploaded_file_url)
-                    # file.name)
+                file_list = handle_file_uploads(request.FILES)
 
             new_comment = ConceptComment()
             new_comment.usage_context = form.cleaned_data.get("comment")
