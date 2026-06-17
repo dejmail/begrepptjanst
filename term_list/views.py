@@ -19,6 +19,7 @@ from django.urls import get_script_prefix, reverse
 from django.utils.datastructures import MultiValueDict
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
+from django.utils.text import get_valid_filename
 
 from term_list.forms import CommentTermForm, TermRequestForm
 from term_list.functions import (
@@ -865,7 +866,8 @@ def handle_file_uploads(
     for file in request_files.getlist("file_field"):
         fs = FileSystemStorage()
         fs.save(content=file, name=file.name)
-        file_list.append(str(file.name))
+        safe_filename = get_valid_filename(file.name)
+        file_list.append(str(safe_filename))
 
     return file_list
 
