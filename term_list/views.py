@@ -865,8 +865,8 @@ def handle_file_uploads(
     file_list = []
     for file in request_files.getlist("file_field"):
         fs = FileSystemStorage()
-        fs.save(content=file, name=file.name)
         safe_filename = get_valid_filename(file.name)
+        fs.save(content=file, name=safe_filename)
         file_list.append(str(safe_filename))
 
     return file_list
