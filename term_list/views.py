@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from collections import defaultdict
 from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Tuple, Union
@@ -19,7 +20,7 @@ from django.urls import get_script_prefix, reverse
 from django.utils.datastructures import MultiValueDict
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
-from django.utils.text import get_valid_filename
+from django.utils.text import slugify
 
 from term_list.forms import CommentTermForm, TermRequestForm
 from term_list.functions import (
@@ -865,7 +866,8 @@ def handle_file_uploads(
     file_list = []
     for file in request_files.getlist("file_field"):
         fs = FileSystemStorage()
-        safe_filename = get_valid_filename(file.name)
+        name, ext = os.path.splitext(file.name)
+        safe_filename = slugify(name) + ext
         fs.save(content=file, name=safe_filename)
         file_list.append(str(safe_filename))
 
