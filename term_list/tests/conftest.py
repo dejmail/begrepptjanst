@@ -2,17 +2,10 @@ import pytest
 from django.contrib.auth.models import User
 
 from term_list.tests.factories import (
-    AttributeFactory,
-    AttributeValueFactory,
-    ConceptCommentFactory,
-    ConceptExternalFilesFactory,
     ConceptFactory,
     ConfigurationOptionsFactory,
     DictionaryFactory,
-    GroupAttributeFactory,
     GroupFactory,
-    SynonymFactory,
-    TaskOrdererFactory,
 )
 
 
@@ -54,43 +47,6 @@ def concept(db, dictionary):
     concept = ConceptFactory()
     concept.dictionaries.add(dictionary)
     return concept
-
-
-@pytest.fixture
-def attribute(db, group):
-    attribute = AttributeFactory()
-    attribute.groups.add(group)
-    return attribute
-
-
-@pytest.fixture
-def group_attribute(db, group, attribute):
-    return GroupAttributeFactory(group=group, attribute=attribute)
-
-
-@pytest.fixture
-def attribute_value(db, concept, attribute):
-    return AttributeValueFactory(term=concept, attribute=attribute)
-
-
-@pytest.fixture
-def synonym(db, concept):
-    return SynonymFactory(concept=concept)
-
-
-@pytest.fixture
-def concept_comment(db, concept):
-    return ConceptCommentFactory(concept=concept)
-
-
-@pytest.fixture
-def concept_external_file(db, concept):
-    return ConceptExternalFilesFactory(concept=concept)
-
-
-@pytest.fixture
-def task_orderer(db, concept):
-    return TaskOrdererFactory(concept=concept)
 
 
 @pytest.fixture
