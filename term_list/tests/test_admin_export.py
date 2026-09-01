@@ -6,7 +6,7 @@ import openpyxl
 import pytest
 from django.urls import reverse
 
-from term_list.tests.factories import ConceptFactory, SynonymFactory
+from term_list.tests.factories import ConceptFactory, SynonymFactory, TaskOrdererFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -72,3 +72,17 @@ class TestExportWorkbook:
         header, data_row = rows[0], rows[1]
         synonym_col = header.index("Synonyms")
         assert data_row[synonym_col] == "Alias1 - Tillåten"
+
+    def test_task_requester_column_shows_the_requesters_name(
+        self, admin_user_authenticated_client, concept
+    ):
+        """A requested 'Task_requester' column surfaces the name of the person who requested the term."""
+        TaskOrdererFactory(concept=concept, name="Beställaren Persson")
+        response = export(
+            admin_user_authenticated_client, [concept], attributes=["Task_requester"]
+        )
+        workbook = openpyxl.load_workbook(io.BytesIO(response.content))
+        rows = list(workbook.active.iter_rows(values_only=True))
+        header, data_row = rows[0], rows[1]
+        requester_col = header.index("Task_requester")
+        assert data_row[requester_col] == "Beställaren Persson"

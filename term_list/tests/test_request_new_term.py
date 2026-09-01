@@ -3,10 +3,24 @@
 import pytest
 
 from term_list.models import Concept, TaskOrderer
+from term_list.tests.factories import DictionaryFactory
 
 pytestmark = pytest.mark.django_db
 
 AJAX_HEADERS = {"X-Custom-Requested-With": "XMLHttpRequest"}
+
+
+def submit_request(client, concept_name, dictionary, name, email, context="Sammanhang."):
+    return client.post(
+        "/requesttermform/",
+        {
+            "concept": concept_name,
+            "dictionary": dictionary.dictionary_long_name,
+            "context": context,
+            "name": name,
+            "email": email,
+        },
+    )
 
 
 class TestRequestFormDisplay:
@@ -91,3 +105,23 @@ class TestRequestSubmission:
         )
         assert response.status_code == 500
         assert not Concept.objects.filter(term="Begrepp utan ordbok").exists()
+
+
+class TestRepeatRequesterGetsTheirOwnOrderer:
+    def test_a_second_request_from_the_same_person_gets_its_own_task_orderer(
+        self, client
+    ):
+        """A second request from the same name/email creates a new TaskOrderer, without reassigning the earlier request's orderer to the new concept."""
+        # dictionary_name == dictionary_long_name here so this test isn't
+        # tripped up by the separately-tracked xfailed bug above.
+        dictionary = DictionaryFactory(dictionary_name="Samma", dictionary_long_name="Samma")
+
+        submit_request(client, "Första Begreppet", dictionary, "Beställaren", "b@example.com")
+        first_orderer = TaskOrderer.objects.get(concept__term="Första Begreppet")
+
+        submit_request(client, "Andra Begreppet", dictionary, "Beställaren", "b@example.com")
+        second_orderer = TaskOrderer.objects.get(concept__term="Andra Begreppet")
+
+        assert first_orderer.pk != second_orderer.pk
+        first_orderer.refresh_from_db()
+        assert first_orderer.concept.term == "Första Begreppet"
