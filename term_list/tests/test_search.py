@@ -134,6 +134,29 @@ class TestSearchDictionaryFiltering:
         assert "Alfa" in html
         assert "Alfabet" in html
 
+    def test_no_dictionary_filter_shows_alla_ordlistor_heading(self, client, dictionary):
+        """Searching without a dictionary filter shows the "all dictionaries" heading, not a crash."""
+        concept = ConceptFactory(term="Rubrik")
+        concept.dictionaries.add(dictionary)
+        html = search(client, "Rubrik")
+        assert "Alla ordlistor" in html
+
+    def test_no_dictionary_filter_shows_each_results_own_dictionary_name(
+        self, client, dictionary
+    ):
+        """Searching "show all" includes each result's own dictionary name, so the extra dictionary column has data."""
+        concept = ConceptFactory(term="Kolumn")
+        concept.dictionaries.add(dictionary)
+        html = search(client, "Kolumn")
+        assert dictionary.dictionary_name in html
+
+    def test_filtering_by_dictionary_shows_its_name_in_the_heading(self, client, dictionary):
+        """Filtering search to one dictionary shows that dictionary's name in the results heading."""
+        concept = ConceptFactory(term="Filtrerad")
+        concept.dictionaries.add(dictionary)
+        html = search(client, "Filtrerad", dictionary=dictionary.dictionary_name)
+        assert f"Visar resultat för {dictionary.dictionary_name}" in html
+
 
 class TestSearchTracking:
     def test_search_records_a_search_track_entry(self, client, dictionary):

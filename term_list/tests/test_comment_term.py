@@ -1,9 +1,13 @@
 """A visitor submitting a comment on an existing term."""
 
+import re
+
 import pytest
+from django.core.files.storage import FileSystemStorage
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from term_list.models import ConceptComment, ConceptExternalFiles, DEFAULT_STATUS
+from term_list.tests.factories import ConceptFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -68,3 +72,87 @@ class TestCommentSubmission:
         )
         assert response.status_code == 200
         assert not ConceptComment.objects.filter(concept=concept).exists()
+
+    def test_comment_on_one_of_two_duplicate_named_concepts_attaches_to_that_exact_one(
+        self, client, dictionary
+    ):
+        """Commenting on a concept looks it up by id, so it still works when another concept shares the same term text."""
+        first = ConceptFactory(term="Samma namn")
+        first.dictionaries.add(dictionary)
+        second = ConceptFactory(term="Samma namn")
+        second.dictionaries.add(dictionary)
+
+        client.post(
+            "/kommentera/",
+            {
+                "name": "Anna",
+                "epost": "anna@example.com",
+                "comment": "Gäller den andra.",
+                "term": second.id,
+            },
+        )
+
+        assert ConceptComment.objects.filter(concept=second).exists()
+        assert not ConceptComment.objects.filter(concept=first).exists()
+
+
+class TestCommentFileUploadSafety:
+    def test_swedish_characters_in_a_filename_are_made_safe(self, client, concept):
+        """A filename with å/ä/ö is transliterated to a plain-ASCII name before being saved."""
+        upload = SimpleUploadedFile(
+            "bilaga med åäö.png", b"innehall", content_type="image/png"
+        )
+        client.post(
+            "/kommentera/",
+            {
+                "name": "Anna",
+                "epost": "anna@example.com",
+                "comment": "Se bifogad fil.",
+                "term": concept.id,
+                "file_field": upload,
+            },
+        )
+        comment = ConceptComment.objects.get(concept=concept)
+        external_file = ConceptExternalFiles.objects.get(comment=comment)
+        base_name = str(external_file.support_file).rsplit(".", 1)[0]
+        assert re.fullmatch(r"[A-Za-z0-9_/-]+", base_name)
+
+    def test_extension_is_preserved_and_not_mangled(self, client, concept):
+        """The uploaded file's extension survives unchanged, including its case."""
+        upload = SimpleUploadedFile(
+            "Skärmklipp.PNG", b"innehall", content_type="image/png"
+        )
+        client.post(
+            "/kommentera/",
+            {
+                "name": "Anna",
+                "epost": "anna@example.com",
+                "comment": "Se bifogad fil.",
+                "term": concept.id,
+                "file_field": upload,
+            },
+        )
+        comment = ConceptComment.objects.get(concept=concept)
+        external_file = ConceptExternalFiles.objects.get(comment=comment)
+        assert str(external_file.support_file).endswith(".PNG")
+
+    def test_saved_file_matches_the_name_recorded_against_the_comment(
+        self, client, concept
+    ):
+        """The filename recorded on ConceptExternalFiles is the exact name the file was saved under."""
+        upload = SimpleUploadedFile(
+            "bevis för ärendet.txt", b"innehall", content_type="text/plain"
+        )
+        client.post(
+            "/kommentera/",
+            {
+                "name": "Anna",
+                "epost": "anna@example.com",
+                "comment": "Se bifogad fil.",
+                "term": concept.id,
+                "file_field": upload,
+            },
+        )
+        comment = ConceptComment.objects.get(concept=concept)
+        external_file = ConceptExternalFiles.objects.get(comment=comment)
+        assert FileSystemStorage().exists(str(external_file.support_file))
