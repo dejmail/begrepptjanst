@@ -2,7 +2,7 @@ import logging
 import os
 import re
 from collections import defaultdict
-from typing import Any, DefaultDict, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, DefaultDict, Dict, FrozenSet, Iterable, List, Optional, Tuple, Union
 from urllib.parse import unquote
 
 from django.conf import settings
@@ -219,6 +219,9 @@ def filter_by_dictionary(
 
     logger.info(f"Filtering search frontend query by {dictionary}")
 
+    if isinstance(dictionary, (list, tuple, set, frozenset)):
+        return queryset.filter(dictionaries__dictionary_name__in=dictionary).distinct()
+
     return queryset.filter(dictionaries__dictionary_name=dictionary)
 
 
@@ -332,7 +335,9 @@ def highlight_search_term_i_definition(
     return concept_dict_list
 
 
-def return_list_of_term_and_definition(dictionary: Optional[str]) -> QuerySet[Any]:
+def return_list_of_term_and_definition(
+    dictionary: Optional[Union[str, List[str]]]
+) -> QuerySet[Any]:
     """Return values "term" and "definition" from a queryset of all terms in
      :model:`term_list.Concept`. This is used to find references in realtime to
      other instances of Concept within the definitions of the eventual search
@@ -352,6 +357,35 @@ def return_list_of_term_and_definition(dictionary: Optional[str]) -> QuerySet[An
     queryset = filter_by_dictionary(queryset, dictionary)
 
     return queryset
+
+
+def group_search_results_by_dictionary(
+    search_results: List[Dict[str, Any]]
+) -> Dict[FrozenSet[str], List[Dict[str, Any]]]:
+    """Group search results by the exact set of dictionaries each concept
+    belongs to, so that tooltip/highlight references can later be scoped to
+    only the dictionaries a given result actually belongs to.
+
+    Arguments:
+    search_results -- list of result dicts, each carrying a "dictionaries"
+        key holding a comma-separated string of dictionary names (see
+        `enrich_serialised_concepts_with_attributes`).
+
+    :return: A mapping of dictionary-name-set to the results that belong to it.
+    :rtype: dict
+    """
+
+    groups: DefaultDict[FrozenSet[str], List[Dict[str, Any]]] = defaultdict(list)
+
+    for result in search_results:
+        dictionary_names = frozenset(
+            name.strip()
+            for name in result.get("dictionaries", "").split(",")
+            if name.strip()
+        )
+        groups[dictionary_names].append(result)
+
+    return groups
 
 
 def clean_dict_of_extra_characters(incoming_dict: dict) -> dict:
@@ -656,14 +690,46 @@ def assemble_search_results_view(url_parameter, dictionary) -> Tuple[str, List[d
         logger.error(f"Error determing search strategy: {e}")
         return render_to_string("term_list/error-page.html", context={}), []
 
-    # this is all the terms and definitions from this dictiomary in the DB
-    all_terms_and_definitions = return_list_of_term_and_definition(dictionary)
-    xlator_instance = creating_tooltip_hover_substitution_object(
-        all_terms_and_definitions
-    )
-    styled_results = substitute_occurrence_of_terms_in_definitions(
-        search_results=search_results, xlator_instance=xlator_instance, key="definition"
-    )
+    if dictionary:
+        # this is all the terms and definitions from this dictionary in the DB
+        all_terms_and_definitions = return_list_of_term_and_definition(dictionary)
+        xlator_instance = creating_tooltip_hover_substitution_object(
+            all_terms_and_definitions
+        )
+        styled_results = substitute_occurrence_of_terms_in_definitions(
+            search_results=search_results,
+            xlator_instance=xlator_instance,
+            key="definition",
+        )
+    else:
+        # "Show all" search: only cross-reference/highlight a term within
+        # definitions of concepts that share at least one dictionary with it,
+        # instead of referencing terms across unrelated dictionaries.
+        styled_results = []
+        for dictionary_names, group_results in group_search_results_by_dictionary(
+            search_results
+        ).items():
+            if not dictionary_names:
+                # Concepts with no dictionary at all have nothing to share a
+                # dictionary with, so leave their definitions untouched. An
+                # empty term set would otherwise build a regex that matches
+                # a zero-width string everywhere and corrupts the text.
+                styled_results.extend(group_results)
+                continue
+
+            all_terms_and_definitions = return_list_of_term_and_definition(
+                list(dictionary_names)
+            )
+            xlator_instance = creating_tooltip_hover_substitution_object(
+                all_terms_and_definitions
+            )
+            styled_results.extend(
+                substitute_occurrence_of_terms_in_definitions(
+                    search_results=group_results,
+                    xlator_instance=xlator_instance,
+                    key="definition",
+                )
+            )
 
     if should_highlight:
         styled_results = highlight_search_term_i_definition(
