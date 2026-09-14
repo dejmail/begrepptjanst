@@ -85,7 +85,7 @@
         var formElements = document.getElementById('column-mapping-form').elements;
         for (var i = 0; i < formElements.length; i++) {
             var element = formElements[i];
-            if (element.tagName === 'SELECT' && element.name) {
+            if (element.tagName === 'SELECT' && element.name && element.name !== 'dictionary') {
                 columnMapping[element.name] = element.value;
             }
         }
