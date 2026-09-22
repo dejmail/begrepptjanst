@@ -158,6 +158,59 @@ class TestSearchDictionaryFiltering:
         assert f"Visar resultat för {dictionary.dictionary_name}" in html
 
 
+class TestSearchHighlightingDictionaryScoping:
+    def test_show_all_does_not_cross_highlight_terms_from_other_dictionaries(
+        self, client, dictionary
+    ):
+        """In "show all" mode, a term from a different dictionary must not be turned into a tooltip inside a definition."""
+        other_dictionary = DictionaryFactory()
+        referenced = ConceptFactory(term="Alfa", definition="Första bokstaven")
+        referenced.dictionaries.add(dictionary)
+        referencing = ConceptFactory(
+            term="Beta", definition="Kommer efter Alfa i alfabetet"
+        )
+        referencing.dictionaries.add(other_dictionary)
+
+        html = search(client, "Beta")
+
+        assert 'aria-describedby="def-Alfa"' not in html
+
+    def test_show_all_still_cross_highlights_terms_within_the_same_dictionary(
+        self, client, dictionary
+    ):
+        """In "show all" mode, a term is still turned into a tooltip when it shares a dictionary with the referencing definition."""
+        referenced = ConceptFactory(term="Alfa", definition="Första bokstaven")
+        referenced.dictionaries.add(dictionary)
+        referencing = ConceptFactory(
+            term="Beta", definition="Kommer efter Alfa i alfabetet"
+        )
+        referencing.dictionaries.add(dictionary)
+
+        html = search(client, "Beta")
+
+        assert 'aria-describedby="def-Alfa"' in html
+
+    def test_show_all_handles_concepts_without_any_dictionary_safely(
+        self, client, dictionary
+    ):
+        """A concept with no dictionary at all must not corrupt its own or other definitions.
+
+        Regression test: building a tooltip substitution from an empty term
+        set produces a regex with an empty alternation, which matches a
+        zero-width string everywhere and mangles the text it is applied to.
+        """
+        orphan = ConceptFactory(
+            term="Särart", definition="Utan koppling till någon ordlista"
+        )
+        normal = ConceptFactory(term="Särdrag", definition="Har en ordlista")
+        normal.dictionaries.add(dictionary)
+
+        html = search(client, "Sär")
+
+        assert "Utan koppling till någon ordlista" in html
+        assert "Har en ordlista" in html
+
+
 class TestSearchTracking:
     def test_search_records_a_search_track_entry(self, client, dictionary):
         """Performing a search creates a SearchTrack row recording what was searched for."""

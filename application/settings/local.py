@@ -62,6 +62,20 @@ DEBUG_TOOLBAR_PANELS = ['debug_toolbar.panels.headers.HeadersPanel',
 PROJECT_PATH = os.path.realpath(os.path.dirname(__file__))
 logger.info(f'PROJECT_PATH --> {PROJECT_PATH}')
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
+}
+
 MEDIA_URL = '/application/media/'
 MEDIA_ROOT = 'media'
 

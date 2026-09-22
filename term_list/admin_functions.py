@@ -360,14 +360,12 @@ class ConceptFileImportMixin:
 
                 if request.POST.get('dictionary-in-file'):
                     chosen_dictionary = Dictionary.objects.get(
-                        dictionary_name=request.POST.get('dictionary-in-file')
+                        dictionary_long_name=request.POST.get('dictionary-in-file')
                     )
-                    json_column_mapping['dictionary'] = chosen_dictionary
                 elif request.POST.get('dictionary'):
                     chosen_dictionary = Dictionary.objects.get(
-                        dictionary_name=request.POST.get('dictionary')
+                        dictionary_id=request.POST.get('dictionary')
                     )
-                    json_column_mapping['dictionary'] = chosen_dictionary
                 else:
                     messages.error(request, "Du måste välja en ordbok för importen")
                     return redirect("admin:import_excel_view")
@@ -446,11 +444,11 @@ class ConceptFileImportMixin:
                     'column_headers': column_headers,
                 })
             except ValueError as e:
-                logger.error(f"ValueError during apply_mapping: {e}")
+                logger.exception("ValueError during apply_mapping")
                 messages.error(request, f"Ett fel uppstod vid bearbetning av mappningen: {str(e)}")
                 return redirect("admin:import_excel_view")
-            except Exception as e:
-                logger.error(f"Unexpected error during apply_mapping: {e}")
+            except Exception:
+                logger.exception("Unexpected error during apply_mapping")
                 messages.error(request, "Ett oväntat fel uppstod vid bearbetning av importen. Kontakta administratören.")
                 return redirect("admin:import_excel_view")
 
@@ -499,7 +497,12 @@ class ConceptFileImportMixin:
                     concept_instance = concept_query.first()
                     assert concept_instance is not None, "Concept query returned None despite exists() check"
                     for field, value in concept_data.items():
-                        setattr(concept_instance, field, value)
+                        # A blank cell (value is None) means the column wasn't really
+                        # provided for this row, so the existing value is kept.
+                        if value is None:
+                            continue
+                        if str(getattr(concept_instance, field, None)) != str(value):
+                            setattr(concept_instance, field, value)
                     concept_instance.save()
                 else:
                     concept_instance = Concept.objects.create(**concept_data)
@@ -510,7 +513,7 @@ class ConceptFileImportMixin:
                     Synonym.objects.bulk_create(synonyms)
 
                 # Handle the M2M relation (dictionaries)
-                if dictionary_obj:
+                if dictionary_obj and not concept_instance.dictionaries.filter(pk=dictionary_obj.pk).exists():
                     concept_instance.dictionaries.add(dictionary_obj)
 
                 value_field_map = {
