@@ -98,7 +98,7 @@ def export_chosen_concept_as_csv(
             elif field.lower() == "dictionaries":
                 row_data = ", ".join(
                     [
-                        dictionary.dictionary_name
+                        dictionary.dictionary_long_name or dictionary.dictionary_name
                         for dictionary in obj.dictionaries.all()
                     ]
                 )
