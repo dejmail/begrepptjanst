@@ -12,6 +12,7 @@ import json
 
 import openpyxl
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -149,6 +150,61 @@ class TestApplyMappingDictionaryResolution:
         )
         header_keys = {header["key"] for header in response.context["column_headers"]}
         assert header_keys == {"term", "definition"}
+
+
+def upload_file(client, file_bytes):
+    """Post the wizard's first step, the file upload ('apply')."""
+    return client.post(
+        reverse("admin:import_excel_view"),
+        {
+            "apply": "1",
+            "excel_file": SimpleUploadedFile("import.xlsx", file_bytes),
+        },
+    )
+
+
+class TestUploadStepDictionaryDetection:
+    """The upload step ('apply') reads the dictionary column of the file and
+    must recognise the dictionary, whether the file came from our own export
+    or is an older export that wrote the dictionary's short name. The
+    dictionary fixture has different short and long names, which is the case
+    that used to fail."""
+
+    def test_a_file_from_the_export_is_recognised_on_import(
+        self, admin_user_authenticated_client, concept, dictionary
+    ):
+        exported = admin_user_authenticated_client.get(
+            reverse("export_chosen_attrs"),
+            {"selected_concepts": str(concept.id), "attributes": ["Dictionaries"]},
+        )
+
+        response = upload_file(admin_user_authenticated_client, exported.content)
+
+        assert response.status_code == 200
+        assert response.context["dictionary_in_excel"] is True
+        assert response.context["chosen_dictionary"] == dictionary.dictionary_long_name
+
+    def test_a_file_with_the_dictionarys_short_name_is_recognised(
+        self, admin_user_authenticated_client, dictionary
+    ):
+        file_bytes = base64.b64decode(
+            build_excel_base64(
+                headers=["Term", "Definition", "Dictionaries"],
+                rows=[
+                    {
+                        "Term": "Äldre export",
+                        "Definition": "En definition",
+                        "Dictionaries": dictionary.dictionary_name,
+                    }
+                ],
+            )
+        )
+
+        response = upload_file(admin_user_authenticated_client, file_bytes)
+
+        assert response.status_code == 200
+        assert response.context["dictionary_in_excel"] is True
+        assert response.context["chosen_dictionary"] == dictionary.dictionary_long_name
 
 
 class TestConfirmImportUpdatesExistingConcepts:

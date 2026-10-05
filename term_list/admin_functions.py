@@ -315,12 +315,17 @@ class ConceptFileImportMixin:
                     unique_dicts = df[dict_col].dropna().unique()
                     if len(unique_dicts) == 1:
                         chosen_dictionary = force_str(unique_dicts[0]).strip()
-                        try:
-                            Dictionary.objects.get(dictionary_long_name=chosen_dictionary)
-                            dictionary_in_excel = True
-                        except Dictionary.DoesNotExist:
+                        # Older exports wrote dictionary_name, so accept either name here
+                        dictionary_obj = (
+                            Dictionary.objects.filter(dictionary_long_name=chosen_dictionary).first()
+                            or Dictionary.objects.filter(dictionary_name=chosen_dictionary).first()
+                        )
+                        if dictionary_obj is None:
                             messages.error(request, f"Ordbok '{chosen_dictionary}' från filen finns inte i DB, vänligen dubbelkolla stavningen.")
                             return redirect("admin:import_excel_view")
+                        # Later steps look the dictionary up by its long name
+                        chosen_dictionary = dictionary_obj.dictionary_long_name
+                        dictionary_in_excel = True
                     else:
                         # If multiple dictionaries are present, let user select manually
                         messages.warning(request, "Flera ordböcker hittades i Excel-filen. Vänligen välj en från listan istället.")
