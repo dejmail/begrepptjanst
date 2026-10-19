@@ -12,12 +12,14 @@ import json
 
 import openpyxl
 import pytest
+from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.db import connection
+from django.db import DataError, connection
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
-from term_list.models import Concept
+from term_list.models import AttributeValue, Concept
+from term_list.tests.factories import AttributeFactory
 
 pytestmark = pytest.mark.django_db
 
@@ -329,3 +331,93 @@ class TestConfirmImportDictionaryLinking:
         new_concept = Concept.objects.get(term="Dubblettbegrepp")
         assert new_concept.dictionaries.count() == 1
         assert _join_table_inserts(queries.captured_queries) == 1
+
+
+def message_texts(response):
+    return [str(m) for m in get_messages(response.wsgi_request)]
+
+
+@pytest.fixture
+def kalla_attribute(group):
+    attribute = AttributeFactory(display_name="Källa", data_type="string")
+    attribute.groups.add(group)
+    return attribute
+
+
+class TestConfirmImportValidation:
+    def test_too_long_value_is_reported_and_nothing_saved(
+        self, admin_user_authenticated_client, dictionary, kalla_attribute
+    ):
+        response = confirm_import(
+            admin_user_authenticated_client,
+            [{"term": "Långt begrepp", "Källa": "x" * 300, "Ordböcker": dictionary.dictionary_long_name}],
+        )
+
+        assert response.status_code == 302
+        assert not Concept.objects.filter(term="Långt begrepp").exists()
+        assert any("Rad 2" in m and "Källa" in m and "255" in m for m in message_texts(response))
+
+    def test_wrong_type_is_reported(self, admin_user_authenticated_client, dictionary, group):
+        AttributeFactory(display_name="Vikt", data_type="decimal").groups.add(group)
+
+        response = confirm_import(
+            admin_user_authenticated_client,
+            [{"term": "Fel typ", "Vikt": "abc", "Ordböcker": dictionary.dictionary_long_name}],
+        )
+
+        assert not Concept.objects.filter(term="Fel typ").exists()
+        assert any("Rad 2" in m and "Vikt" in m for m in message_texts(response))
+
+    def test_errors_in_several_rows_are_all_reported(
+        self, admin_user_authenticated_client, dictionary, kalla_attribute
+    ):
+        rows = [
+            {"term": f"Begrepp {i}", "Källa": "x" * 300, "Ordböcker": dictionary.dictionary_long_name}
+            for i in range(2)
+        ]
+
+        response = confirm_import(admin_user_authenticated_client, rows)
+
+        texts = message_texts(response)
+        assert any("Rad 2" in m for m in texts)
+        assert any("Rad 3" in m for m in texts)
+
+
+class TestConfirmImportIsAllOrNothing:
+    @pytest.mark.django_db(transaction=True)
+    def test_database_error_on_a_later_row_is_reported_and_nothing_saved(
+        self, admin_user_authenticated_client, dictionary, kalla_attribute, monkeypatch
+    ):
+        original = AttributeValue.objects.update_or_create
+
+        def fail_on_second_row(**kwargs):
+            if kwargs["term"].term == "Andra raden":
+                raise DataError("Data too long for column 'value_string' at row 1")
+            return original(**kwargs)
+
+        monkeypatch.setattr(AttributeValue.objects, "update_or_create", fail_on_second_row)
+        rows = [
+            {"term": term, "Källa": "kort", "Ordböcker": dictionary.dictionary_long_name}
+            for term in ["Första raden", "Andra raden"]
+        ]
+
+        response = confirm_import(admin_user_authenticated_client, rows)
+
+        assert response.status_code == 302
+        assert not Concept.objects.filter(term="Första raden").exists()
+        assert any(
+            "Rad 3" in m and "Källa" in m and "Data too long" in m for m in message_texts(response)
+        )
+
+
+class TestConfirmImportSkippedAttributes:
+    def test_attribute_without_group_is_reported(self, admin_user_authenticated_client, dictionary):
+        AttributeFactory(display_name="Utan grupp")
+
+        response = confirm_import(
+            admin_user_authenticated_client,
+            [{"term": "Med okänt attribut", "Utan grupp": "värde", "Ordböcker": dictionary.dictionary_long_name}],
+        )
+
+        assert Concept.objects.filter(term="Med okänt attribut").exists()
+        assert any("Utan grupp" in m for m in message_texts(response))
