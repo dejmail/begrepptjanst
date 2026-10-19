@@ -30,7 +30,8 @@
          <div class="form-row field-{{ inline_admin_form.form.visible_fields.0.name }}">
              <div>
                  <div class="flex-container">
-                     <label class="required" for="{{ inline_admin_form.form.visible_fields.0.id_for_label }}">
+                     <label class="required" for="{{ inline_admin_form.form.visible_fields.0.id_for_label }}"
+                            {% if inline_admin_form.form.instance.attribute.description %}title="{{ inline_admin_form.form.instance.attribute.description }}" style="cursor: help;"{% endif %}>
                          {{ inline_admin_form.form.instance.attribute.display_name }}:
                      </label>
                      {{ inline_admin_form.form.visible_fields.0 }}
