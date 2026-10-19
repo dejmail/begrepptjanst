@@ -9,7 +9,8 @@ from typing import Any
 import pandas as pd
 from django.contrib import admin, messages
 from django.contrib.auth.models import Group
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.db import DatabaseError, transaction
 from django.db.models import Count
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -24,6 +25,15 @@ from term_list.models import (DEFAULT_STATUS, STATUS_CHOICES, Attribute,
                               Dictionary, Synonym)
 
 logger = logging.getLogger(__name__)
+
+VALUE_FIELD_MAP = {
+    "string": "value_string",
+    "text": "value_text",
+    "integer": "value_integer",
+    "decimal": "value_decimal",
+    "boolean": "value_boolean",
+    "url": "value_url"
+}
 
 
 def add_non_breaking_space_to_status(status_item):
@@ -281,6 +291,49 @@ class ConceptFileImportMixin:
 
         return None
 
+    def _validate_import_rows(self, concept_data_list, concept_fields):
+        """Check every value against its model field before anything is saved, and return one message per problem."""
+        dictionary_names = set(Dictionary.objects.values_list("dictionary_long_name", flat=True))
+        dictionary_names.add(force_str(Dictionary._meta.verbose_name_plural))
+        skip_keys = {'is_changed', 'is_new', 'synonyms'}
+        attributes = {}
+        errors = []
+
+        for index, data in enumerate(concept_data_list):
+            row = index + 2  # Excel row; row 1 is the header
+            prefix = f'Rad {row}, term "{data.get("term")}"'
+
+            concept_data = {k.lower(): v for k, v in data.items() if k.lower() in concept_fields}
+            exclude = [f.name for f in Concept._meta.fields
+                       if f.name not in concept_data or (concept_data[f.name] is None and f.null)]
+            try:
+                Concept(**concept_data).clean_fields(exclude=exclude)
+            except ValidationError as e:
+                for field, field_errors in e.message_dict.items():
+                    errors.append(f"{prefix}, fält {field}: {' '.join(field_errors)}")
+
+            for attr_name, attr_value in data.items():
+                if (attr_name.lower() in concept_fields or attr_name in dictionary_names
+                        or attr_name in skip_keys or attr_value in [None, "", [], {}, set()]):
+                    continue
+                if attr_name not in attributes:
+                    # Attributes without a group are skipped (with a warning) when saving
+                    attributes[attr_name] = (Attribute.objects.filter(display_name__iexact=attr_name,
+                                                                      groups__isnull=False).first())
+                attribute_obj = attributes[attr_name]
+                if attribute_obj is None:
+                    continue
+
+                value_field = VALUE_FIELD_MAP.get(attribute_obj.data_type, "value_string")
+                exclude = [f.name for f in AttributeValue._meta.fields if f.name != value_field]
+                try:
+                    AttributeValue(**{value_field: attr_value}).clean_fields(exclude=exclude)
+                except ValidationError as e:
+                    for field_errors in e.message_dict.values():
+                        errors.append(f"{prefix}, fält {attr_name}: {' '.join(field_errors)}")
+
+        return errors
+
     def import_excel_view(self, request):
 
         CONCEPT_FIELDS = {field.name.lower() for field in Concept._meta.get_fields() if not field.is_relation}
@@ -468,103 +521,125 @@ class ConceptFileImportMixin:
                 messages.error(request, f"Error decoding JSON: {e}")
                 return redirect("admin:term_list_concept_changelist")
 
-            for data in concept_data_list:
-                # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create,
-                # additionally is_update is not part of the Concept model.
+            errors = self._validate_import_rows(concept_data_list, CONCEPT_FIELDS)
+            if errors:
+                for error in errors:
+                    messages.error(request, error)
+                messages.error(request, "Inget från filen har sparats. Rätta felen och importera igen.")
+                return redirect("admin:import_excel_view")
 
-                dictionary_id = data.pop(Dictionary._meta.verbose_name_plural, [])
-                data.pop('is_changed', None)
-                data.pop('is_new', None)
+            skipped_attributes = set()
+            try:
+                with transaction.atomic():
+                    for index, data in enumerate(concept_data_list):
+                        # Used to say where the import stopped if the database rejects a value
+                        current_row, current_term, current_field = index + 2, data.get('term'), 'term'
 
-                # Separate Concept Fields dynamically
-                concept_data = {k.lower(): v for k, v in data.items() if k.lower() in CONCEPT_FIELDS}
+                        # Remove 'dictionaries' from the data dictionary since we can't pass M2M fields to update_or_create,
+                        # additionally is_update is not part of the Concept model.
 
-                synonym_data = data.get('synonyms', [])
-                if data.get('synonyms'):
-                    data.pop('synonyms')
+                        dictionary_id = data.pop(Dictionary._meta.verbose_name_plural, [])
+                        data.pop('is_changed', None)
+                        data.pop('is_new', None)
 
-                # Separate Attribute Fields (EAV fields)
-                dictionary_names = set(
-                    Dictionary.objects.values_list("dictionary_long_name", flat=True)
-                )
-                attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS and k not in dictionary_names}
+                        # Separate Concept Fields dynamically
+                        concept_data = {k.lower(): v for k, v in data.items() if k.lower() in CONCEPT_FIELDS}
 
-                # Prefer term + dictionary constraint, so we don't pull the same term from another dictionary
-                term_value = data.get('term')
-                concept_query = Concept.objects.filter(term=term_value)
-                dictionary_obj = None
-                if dictionary_id:
-                    dictionary_obj = Dictionary.objects.filter(dictionary_long_name=dictionary_id).first()
-                    if dictionary_obj is not None:
-                        concept_query = concept_query.filter(dictionaries=dictionary_obj)
+                        synonym_data = data.get('synonyms', [])
+                        if data.get('synonyms'):
+                            data.pop('synonyms')
 
-                if concept_query.exists():
-                    concept_instance = concept_query.first()
-                    assert concept_instance is not None, "Concept query returned None despite exists() check"
-                    for field, value in concept_data.items():
-                        # A blank cell (value is None) means the column wasn't really
-                        # provided for this row, so the existing value is kept.
-                        if value is None:
-                            continue
-                        if str(getattr(concept_instance, field, None)) != str(value):
-                            setattr(concept_instance, field, value)
-                    concept_instance.save()
-                else:
-                    concept_instance = Concept.objects.create(**concept_data)
-
-                if synonym_data:
-                    split_synonyms = [synonym for synonym in synonym_data.split(',') if synonym not in ['', None]]
-                    synonyms = [Synonym(synonym=synonym, concept=concept_instance) for synonym in split_synonyms]
-                    Synonym.objects.bulk_create(synonyms)
-
-                # Handle the M2M relation (dictionaries)
-                if dictionary_obj and not concept_instance.dictionaries.filter(pk=dictionary_obj.pk).exists():
-                    concept_instance.dictionaries.add(dictionary_obj)
-
-                value_field_map = {
-                    "string": "value_string",
-                    "text": "value_text",
-                    "integer": "value_integer",
-                    "decimal": "value_decimal",
-                    "boolean": "value_boolean",
-                    "url": "value_url"
-                }
-
-                for attr_name, attr_value in attribute_data.items():
-                    # Try to locate attribute; create if missing
-                    attribute_obj = Attribute.objects.filter(display_name__iexact=attr_name).first()
-                    if attribute_obj is None:
-                        attribute_obj, _ = Attribute.objects.get_or_create(display_name=attr_name)
-                    # Get the correct field to update
-                    if attr_value in [None, "", [], {}, set()]:
-                        continue
-
-                    value_field = value_field_map.get(attribute_obj.data_type, "value_string")
-                    # Prepare the data dynamically
-                    defaults = {value_field: attr_value}
-
-                    if not attribute_obj.groups.exists():
-                        logger.warning(
-                            "Skipping attribute '%s' because it is missing group assignments",
-                            attr_name,
+                        # Separate Attribute Fields (EAV fields)
+                        dictionary_names = set(
+                            Dictionary.objects.values_list("dictionary_long_name", flat=True)
                         )
-                        continue
-                    AttributeValue.objects.update_or_create(
-                        term=concept_instance,
-                        attribute=attribute_obj,
-                        defaults=defaults,
-                    )
+                        attribute_data = {k: v for k, v in data.items() if k.lower() not in CONCEPT_FIELDS and k not in dictionary_names}
 
-                # for attr_name, attr_value in attribute_data.items():
-                #     attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
-                #     # Get the correct field to update
+                        # Prefer term + dictionary constraint, so we don't pull the same term from another dictionary
+                        term_value = data.get('term')
+                        concept_query = Concept.objects.filter(term=term_value)
+                        dictionary_obj = None
+                        if dictionary_id:
+                            dictionary_obj = Dictionary.objects.filter(dictionary_long_name=dictionary_id).first()
+                            if dictionary_obj is not None:
+                                concept_query = concept_query.filter(dictionaries=dictionary_obj)
 
-                #     attribute_value, _ = AttributeValue.objects.update_or_create(
-                #     term=concept_instance,
-                #     attribute=attribute_obj,
-                #     defaults=defaults
-                # )
+                        if concept_query.exists():
+                            concept_instance = concept_query.first()
+                            assert concept_instance is not None, "Concept query returned None despite exists() check"
+                            for field, value in concept_data.items():
+                                # A blank cell (value is None) means the column wasn't really
+                                # provided for this row, so the existing value is kept.
+                                if value is None:
+                                    continue
+                                if str(getattr(concept_instance, field, None)) != str(value):
+                                    setattr(concept_instance, field, value)
+                            concept_instance.save()
+                        else:
+                            concept_instance = Concept.objects.create(**concept_data)
 
+                        current_field = 'synonyms'
+                        if synonym_data:
+                            split_synonyms = [synonym for synonym in synonym_data.split(',') if synonym not in ['', None]]
+                            synonyms = [Synonym(synonym=synonym, concept=concept_instance) for synonym in split_synonyms]
+                            Synonym.objects.bulk_create(synonyms)
+
+                        # Handle the M2M relation (dictionaries)
+                        current_field = force_str(Dictionary._meta.verbose_name_plural)
+                        if dictionary_obj and not concept_instance.dictionaries.filter(pk=dictionary_obj.pk).exists():
+                            concept_instance.dictionaries.add(dictionary_obj)
+
+                        for attr_name, attr_value in attribute_data.items():
+                            current_field = attr_name
+                            # Try to locate attribute; create if missing
+                            attribute_obj = Attribute.objects.filter(display_name__iexact=attr_name).first()
+                            if attribute_obj is None:
+                                attribute_obj, _ = Attribute.objects.get_or_create(display_name=attr_name)
+                            # Get the correct field to update
+                            if attr_value in [None, "", [], {}, set()]:
+                                continue
+
+                            value_field = VALUE_FIELD_MAP.get(attribute_obj.data_type, "value_string")
+                            # Prepare the data dynamically
+                            defaults = {value_field: attr_value}
+
+                            if not attribute_obj.groups.exists():
+                                logger.warning(
+                                    "Skipping attribute '%s' because it is missing group assignments",
+                                    attr_name,
+                                )
+                                skipped_attributes.add(attr_name)
+                                continue
+                            AttributeValue.objects.update_or_create(
+                                term=concept_instance,
+                                attribute=attribute_obj,
+                                defaults=defaults,
+                            )
+
+                        # for attr_name, attr_value in attribute_data.items():
+                        #     attribute_obj, _ = Attribute.objects.get_or_create(display_name__iexact=attr_name)
+                        #     # Get the correct field to update
+
+                        #     attribute_value, _ = AttributeValue.objects.update_or_create(
+                        #     term=concept_instance,
+                        #     attribute=attribute_obj,
+                        #     defaults=defaults
+                        # )
+            except DatabaseError as e:
+                logger.exception("Database error during confirm_import")
+                messages.error(
+                    request,
+                    f'Rad {current_row}, term "{current_term}", fält {current_field}: '
+                    f'databasen avvisade värdet ({e}). Inget från filen har sparats.'
+                )
+                return redirect("admin:import_excel_view")
+
+            if skipped_attributes:
+                messages.warning(
+                    request,
+                    "Följande attribut tillhör ingen grupp och importerades inte: "
+                    f"{', '.join(sorted(skipped_attributes))}."
+                )
             messages.success(request, "Data från filen importerad!")
             return redirect("admin:term_list_concept_changelist")
 
